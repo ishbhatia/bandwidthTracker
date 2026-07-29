@@ -3,183 +3,277 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Easy Tracker</title>
+  <title>Easy Tracker — AI Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
-
-    /* ── Header ── */
-    header{
-      background:linear-gradient(120deg,#1d4ed8 0%,#4f46e5 100%);
-      color:#fff;padding:14px 28px;
-      display:flex;align-items:center;justify-content:space-between;
-      box-shadow:0 2px 12px rgba(30,64,175,.25);
+    :root{
+      --bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:#1e2d45;
+      --accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--yellow:#f59e0b;
+      --red:#ef4444;--cyan:#06b6d4;--text:#e2e8f0;--muted:#64748b;
     }
-    .hlogo{display:flex;align-items:center;gap:10px}
-    .hlogo h1{font-size:1.1rem;font-weight:700;letter-spacing:-.01em}
-    .hlogo .sub{font-size:.72rem;opacity:.7;font-weight:400;margin-top:1px}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+    /* ── animated bg grid ── */
+    body::before{content:'';position:fixed;inset:0;background:
+      linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);
+      background-size:40px 40px;pointer-events:none;z-index:0}
+
+    /* ── header ── */
+    header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;
+      padding:14px 28px;background:rgba(17,24,39,.8);border-bottom:1px solid var(--border);
+      backdrop-filter:blur(12px)}
+    .hlogo{display:flex;align-items:center;gap:12px}
+    .hlogo-icon{width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+      box-shadow:0 0 16px rgba(99,102,241,.4)}
+    .hlogo h1{font-size:1rem;font-weight:700;letter-spacing:-.01em;background:linear-gradient(90deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hlogo .sub{font-size:.65rem;color:var(--muted);margin-top:1px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
     .hright{display:flex;align-items:center;gap:10px}
-    .gh-pill{display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:600;
-      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
-      padding:4px 11px;border-radius:20px;backdrop-filter:blur(4px)}
-    .dot{width:7px;height:7px;border-radius:50%;background:#94a3b8;flex-shrink:0}
-    .dot.ok{background:#4ade80}.dot.sync{background:#fbbf24;animation:blink .9s infinite}.dot.err{background:#f87171}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-    .btn-ghost{background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.25);
-      padding:5px 13px;border-radius:7px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit}
-    .btn-ghost:hover{background:rgba(255,255,255,.22)}
+    .gh-pill{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;
+      background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);
+      padding:4px 12px;border-radius:20px;color:#a5b4fc}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
+    .dot.ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+    .dot.sync{background:var(--yellow);animation:blink .9s infinite}
+    .dot.err{background:var(--red)}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+    .btn-ghost{background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);
+      padding:6px 14px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+    .btn-ghost:hover{background:rgba(99,102,241,.22);box-shadow:0 0 12px rgba(99,102,241,.2)}
 
-    /* ── Layout ── */
-    .page{max-width:1180px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
-    @media(max-width:860px){.page{grid-template-columns:1fr}}
+    /* ── layout ── */
+    .page{position:relative;z-index:1;max-width:1220px;margin:22px auto;padding:0 20px;
+      display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+    @media(max-width:900px){.page{grid-template-columns:1fr}}
 
-    /* ── Cards ── */
-    .card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);border:1px solid #e2e8f0}
-    .card-title{font-size:.82rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;display:flex;align-items:center;gap:7px}
-    .card-title::before{content:'';display:block;width:3px;height:14px;border-radius:2px;background:linear-gradient(180deg,#1d4ed8,#4f46e5)}
-
-    /* ── Stats row (above both columns) ── */
+    /* ── stat row ── */
     .stats-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
-    @media(max-width:860px){.stats-row{grid-template-columns:repeat(3,1fr)}}
-    .stat-card{background:#fff;border-radius:12px;padding:14px 16px;text-align:center;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-    .stat-card .num{font-size:1.7rem;font-weight:700;color:#1d4ed8;line-height:1}
-    .stat-card .lbl{font-size:.68rem;color:#94a3b8;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+    @media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr)}}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:14px 16px;text-align:center;position:relative;overflow:hidden;transition:border-color .2s}
+    .stat-card:hover{border-color:rgba(99,102,241,.4)}
+    .stat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.04),transparent);pointer-events:none}
+    .stat-card .num{font-size:1.65rem;font-weight:700;color:#fff;line-height:1}
+    .stat-card .lbl{font-size:.63rem;color:var(--muted);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+    .stat-card .num.green{color:var(--green)}.stat-card .num.yellow{color:var(--yellow)}.stat-card .num.red{color:var(--red)}.stat-card .num.cyan{color:var(--cyan)}
 
-    /* ── Form ── */
-    .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
-    .fg label{font-size:.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
-    .fg input,.fg select{padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.875rem;
-      background:#f8fafc;transition:border-color .15s,box-shadow .15s;font-family:inherit;color:#1e293b}
-    .fg input:focus,.fg select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#fff}
-    .form-actions{display:flex;gap:8px;margin-top:4px}
-    .btn{padding:8px 18px;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;font-family:inherit}
-    .btn-primary{background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
-    .btn-primary:hover{box-shadow:0 4px 14px rgba(79,70,229,.4);transform:translateY(-1px)}
-    .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
-    .btn-secondary:hover{background:#e2e8f0}
-    .btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
-    .btn-danger:hover{background:#fee2e2}
-    .btn-success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
-    .btn-success:hover{background:#dcfce7}
-    .btn-sm{padding:4px 10px;font-size:.75rem;border-radius:6px}
+    /* ── card ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:border-color .2s}
+    .card:hover{border-color:rgba(99,102,241,.2)}
+    .card-title{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+      letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .card-title .ct-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
 
-    /* ── Right column stack ── */
-    .right-col{display:flex;flex-direction:column;gap:20px}
+    /* ── form ── */
+    .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+    .fg label{font-size:.67rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .fg input,.fg select{padding:8px 11px;border:1px solid var(--border);border-radius:8px;
+      font-size:.85rem;background:var(--surface2);color:var(--text);font-family:inherit;
+      transition:border-color .15s,box-shadow .15s}
+    .fg input::placeholder{color:var(--muted)}
+    .fg input:focus,.fg select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+    .fg select option{background:var(--surface)}
+    .form-actions{display:flex;gap:8px;margin-top:6px}
+    .btn{padding:8px 18px;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 12px rgba(99,102,241,.35)}
+    .btn-primary:hover{box-shadow:0 4px 20px rgba(99,102,241,.5);transform:translateY(-1px)}
+    .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .btn-secondary:hover{border-color:rgba(99,102,241,.4);background:#1e2d45}
+    .btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+    .btn-danger:hover{background:rgba(239,68,68,.18)}
+    .btn-success{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+    .btn-success:hover{background:rgba(16,185,129,.18)}
+    .btn-sm{padding:4px 10px;font-size:.72rem;border-radius:6px}
 
-    /* ── Toolbar ── */
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-    .toolbar input,.toolbar select{padding:7px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem;background:#f8fafc;font-family:inherit;color:#1e293b}
-    .toolbar input:focus,.toolbar select:focus{outline:none;border-color:#6366f1}
+    /* ── right col ── */
+    .right-col{display:flex;flex-direction:column;gap:18px}
+
+    /* ── toolbar ── */
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+    .toolbar input,.toolbar select{padding:7px 11px;border:1px solid var(--border);border-radius:8px;
+      font-size:.78rem;background:var(--surface2);color:var(--text);font-family:inherit}
+    .toolbar input::placeholder{color:var(--muted)}
+    .toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--accent)}
     .toolbar input{flex:1;min-width:160px}
+    .toolbar select option{background:var(--surface)}
 
-    /* ── Table ── */
-    .table-wrap{overflow-x:auto;margin:-4px}
-    table{width:100%;border-collapse:collapse;font-size:.82rem}
-    thead th{background:#f8fafc;color:#94a3b8;font-size:.68rem;font-weight:700;text-transform:uppercase;
-      letter-spacing:.06em;padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;
-      white-space:nowrap;cursor:pointer;user-select:none}
-    thead th:hover{color:#1d4ed8}
-    tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
-    tbody tr:hover{background:#f8fafc}
+    /* ── table ── */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    thead th{background:var(--surface2);color:var(--muted);font-size:.65rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;padding:10px 12px;text-align:left;
+      border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+    thead th:hover{color:var(--accent)}
+    tbody tr{border-bottom:1px solid rgba(30,45,69,.6);transition:background .12s}
+    tbody tr:hover{background:rgba(99,102,241,.05)}
     tbody td{padding:10px 12px;vertical-align:middle}
-    .emp-name{font-weight:600;color:#1e293b}
-    .task-name{color:#475569}
-
-    /* ── Badges ── */
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
-    .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
-    .badge-todo{background:#fef9c3;color:#a16207}
-    .badge-progress{background:#dbeafe;color:#1d4ed8}
-    .badge-review{background:#ede9fe;color:#6d28d9}
-    .badge-done{background:#dcfce7;color:#15803d}
-    .badge-blocked{background:#fee2e2;color:#b91c1c}
+    .emp-name{font-weight:600;color:#fff}
+    .task-name{color:#94a3b8}
     .action-btns{display:flex;gap:6px}
-    .empty-state{text-align:center;padding:40px 20px;color:#94a3b8}
-    .empty-state .ei{font-size:2rem;margin-bottom:8px}
+    .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
 
-    /* ── Chart ── */
-    .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-    .chart-controls label{font-size:.68rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
-    .chart-controls input[type=date]{padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem;background:#f8fafc;font-family:inherit}
+    /* ── badges ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:600}
+    .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
+    .badge-todo{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+    .badge-progress{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
+    .badge-review{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+    .badge-done{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)}
+    .badge-blocked{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+
+    /* ── chart ── */
+    .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+    .chart-controls label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .chart-controls input[type=date]{padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.78rem;background:var(--surface2);color:var(--text);font-family:inherit}
     .ctrl-grp{display:flex;align-items:center;gap:6px}
     .chart-wrap{position:relative;width:100%;min-height:160px;max-height:180px}
-    .legend-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .legend-item{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#475569;
-      background:#f8fafc;padding:3px 9px;border-radius:20px;border:1px solid #e2e8f0}
-    .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px;color:#94a3b8;font-size:.875rem}
-    .chart-empty span{font-size:2rem;margin-bottom:8px}
+    .legend-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#94a3b8;
+      background:var(--surface2);padding:2px 9px;border-radius:20px;border:1px solid var(--border)}
+    .legend-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:var(--muted);font-size:.85rem}
 
-    /* ── Modals ── */
-    .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+    /* ── AI Insights ── */
+    .insights-list{display:flex;flex-direction:column;gap:9px}
+    .insight-item{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;
+      border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-size:.8rem;line-height:1.5}
+    .insight-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+    .insight-text{color:#cbd5e1}
+    .insight-text strong{color:#fff}
+    .insight-warn{border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.05)}
+    .insight-good{border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.05)}
+    .insight-bad{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.05)}
+    .insight-info{border-color:rgba(6,182,212,.2);background:rgba(6,182,212,.05)}
+    .no-insights{text-align:center;color:var(--muted);font-size:.82rem;padding:18px}
+
+    /* ── AI Chat ── */
+    .chat-wrap{display:flex;flex-direction:column;gap:0}
+    .chat-msgs{height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+      padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;scroll-behavior:smooth}
+    .chat-msgs::-webkit-scrollbar{width:4px}
+    .chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .msg{display:flex;gap:8px;align-items:flex-start}
+    .msg.user{flex-direction:row-reverse}
+    .msg-bubble{max-width:85%;padding:8px 12px;border-radius:10px;font-size:.78rem;line-height:1.5}
+    .msg.ai   .msg-bubble{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#c7d2fe}
+    .msg.user .msg-bubble{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .msg-avatar{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;margin-top:1px}
+    .msg.ai   .msg-avatar{background:rgba(99,102,241,.2);color:#818cf8}
+    .msg.user .msg-avatar{background:rgba(255,255,255,.15);color:#fff}
+    .typing{display:flex;gap:4px;padding:10px 12px;align-items:center}
+    .typing span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:typingDot 1.2s infinite}
+    .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+    @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+    .chat-input-row{display:flex;gap:8px}
+    .chat-input-row input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+      background:var(--surface2);color:var(--text);font-size:.8rem;font-family:inherit}
+    .chat-input-row input::placeholder{color:var(--muted)}
+    .chat-input-row input:focus{outline:none;border-color:var(--accent)}
+    .openai-note{font-size:.68rem;color:var(--muted);margin-top:6px;text-align:center}
+    .openai-note a{color:#818cf8;text-decoration:none}
+
+    /* ── modals ── */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;
+      align-items:center;justify-content:center;backdrop-filter:blur(4px)}
     .overlay.open{display:flex}
-    .modal{background:#fff;border-radius:16px;padding:28px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid #e2e8f0}
-    .modal-title{font-size:.95rem;font-weight:700;color:#1e293b;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;
+      width:90%;max-width:500px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+    .modal-title{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:8px}
     .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-    .modal-actions{justify-content:flex-end;margin-top:8px;display:flex;gap:8px}
-    .setup-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 13px;font-size:.78rem;color:#1e40af;margin-bottom:14px;line-height:1.6}
-    .setup-note a{color:#1d4ed8;font-weight:600;text-decoration:none}
-    .setup-note a:hover{text-decoration:underline}
+    .modal-actions{justify-content:flex-end;margin-top:12px;display:flex;gap:8px}
+    .setup-note{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px;
+      padding:10px 13px;font-size:.76rem;color:#a5b4fc;margin-bottom:14px;line-height:1.6}
+    .setup-note a{color:#818cf8;font-weight:600;text-decoration:none}
     .token-row{display:flex;gap:7px;align-items:center}
     .token-row input{flex:1}
 
-    /* ── Toast ── */
-    .toast{position:fixed;bottom:22px;right:22px;background:#1e293b;color:#fff;padding:10px 18px;
-      border-radius:10px;font-size:.8rem;font-weight:600;opacity:0;transform:translateY(12px);
-      transition:all .28s;z-index:999;pointer-events:none;display:flex;align-items:center;gap:7px;
-      box-shadow:0 4px 20px rgba(0,0,0,.2)}
+    /* ── toast ── */
+    .toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--border);
+      color:var(--text);padding:10px 18px;border-radius:10px;font-size:.78rem;font-weight:600;
+      opacity:0;transform:translateY(12px);transition:all .28s;z-index:999;pointer-events:none;
+      display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
     .toast.show{opacity:1;transform:translateY(0)}
 
-    @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px;text-align:center}.stats-row{grid-template-columns:repeat(2,1fr)}}
+    /* ── glow pulse on stat cards ── */
+    @keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(99,102,241,.15)}}
+
+    @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px}.stats-row{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
 
 <header>
   <div class="hlogo">
+    <div class="hlogo-icon">⚡</div>
     <div>
-      <h1>🗂 Easy Tracker</h1>
-      <div class="sub">Team Bandwidth Dashboard</div>
+      <h1>Easy Tracker</h1>
+      <div class="sub">AI Powered Dashboard</div>
     </div>
   </div>
   <div class="hright">
-    <div class="gh-pill">
-      <div class="dot" id="ghDot"></div>
-      <span id="ghLabel">Not connected</span>
-    </div>
+    <div class="gh-pill"><div class="dot" id="ghDot"></div><span id="ghLabel">Not connected</span></div>
     <button class="btn-ghost" onclick="openSetup()">⚙ Setup</button>
   </div>
 </header>
 
 <div class="page">
-  <!-- Stats row spanning both columns -->
+  <!-- Stats row -->
   <div class="stats-row" id="stats"></div>
 
-  <!-- LEFT: Add Task form -->
-  <div class="card">
-    <div class="card-title">Add New Task</div>
-    <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
-    <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
-    <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
-    <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="e.g. 3.5" min="0" step="0.5"/></div>
-    <div class="fg"><label>Status</label>
-      <select id="status">
-        <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
-      </select>
+  <!-- LEFT col -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+
+    <!-- Add Task -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot"></span>Add New Task</div>
+      <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
+      <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="3.5" min="0" step="0.5"/></div>
+      <div class="fg"><label>Status</label>
+        <select id="status"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option></select>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
+        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+      </div>
     </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
-      <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+
+    <!-- AI Insights -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot" style="background:#10b981;box-shadow:0 0 6px #10b981"></span>AI Insights</div>
+      <div class="insights-list" id="insightsList"><div class="no-insights">Add tasks to see AI insights</div></div>
     </div>
+
+    <!-- AI Chat -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Ask AI about your data</div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg ai">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">Hi! I can answer questions about your team's tasks. Try: <em>"Who worked the most?"</em> or <em>"Any blocked tasks?"</em><br/><br/>For deeper answers, add your OpenAI key in Setup.</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="Ask about your tasks…" onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+        </div>
+        <div class="openai-note">Powered by local logic · <a href="#" onclick="openSetup();return false">Add OpenAI key for GPT answers ↗</a></div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- RIGHT: Chart + Table stacked -->
+  <!-- RIGHT col -->
   <div class="right-col">
     <!-- Chart -->
     <div class="card">
-      <div class="card-title">Day-wise Hours — Side by Side</div>
+      <div class="card-title"><span class="ct-dot"></span>Day-wise Hours — Side by Side</div>
       <div class="chart-controls">
         <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
         <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
@@ -187,14 +281,14 @@
       </div>
       <div class="chart-wrap">
         <canvas id="barChart"></canvas>
-        <div class="chart-empty" id="chartEmpty" style="display:none"><span>📭</span>No data yet. Add tasks!</div>
+        <div class="chart-empty" id="chartEmpty" style="display:none">📭 No data yet</div>
       </div>
       <div class="legend-wrap" id="chartLegend"></div>
     </div>
 
     <!-- Table -->
     <div class="card">
-      <div class="card-title">All Tasks</div>
+      <div class="card-title"><span class="ct-dot"></span>All Tasks</div>
       <div class="toolbar">
         <input id="searchInput" placeholder="🔍  Search employee or task…" oninput="renderTable()"/>
         <select id="filterStatus" onchange="renderTable()">
@@ -231,9 +325,7 @@
       <div class="fg"><label>Start Date</label><input type="date" id="editStartDate"/></div>
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="editTimeSpent" min="0" step="0.5"/></div>
       <div class="fg" style="grid-column:span 2"><label>Status</label>
-        <select id="editStatus">
-          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
-        </select>
+        <select id="editStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option></select>
       </div>
     </div>
     <div class="modal-actions">
@@ -243,14 +335,14 @@
   </div>
 </div>
 
-<!-- GitHub Setup Modal -->
+<!-- Setup Modal -->
 <div class="overlay" id="setupModal">
   <div class="modal">
-    <div class="modal-title">⚙️ GitHub Setup</div>
+    <div class="modal-title">⚙️ Setup</div>
     <div class="setup-note">
-      Data is stored as <strong>data.json</strong> in your GitHub repo.<br/>
-      Create a token with <code>repo</code> scope →
-      <a href="https://github.com/settings/tokens/new?scopes=repo&description=TaskTracker" target="_blank">Generate on GitHub ↗</a>
+      Data syncs to <strong>data.json</strong> in your GitHub repo via the GitHub API.<br/>
+      Need a token with <code>repo</code> scope →
+      <a href="https://github.com/settings/tokens/new?scopes=repo&description=EasyTracker" target="_blank">Create on GitHub ↗</a>
     </div>
     <div class="fg">
       <label>GitHub Token</label>
@@ -262,6 +354,7 @@
     <div class="fg"><label>Repository (owner/repo)</label><input id="setupRepo" value="ishbhatia/bandwidthTracker"/></div>
     <div class="fg"><label>Branch</label><input id="setupBranch" value="main"/></div>
     <div class="fg"><label>Data file path</label><input id="setupPath" value="data.json"/></div>
+    <div class="fg"><label>OpenAI API Key (optional)</label><input type="password" id="setupOpenAI" placeholder="sk-…"/></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('setupModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSetup()">Connect &amp; Load</button>
@@ -273,424 +366,287 @@
 
 <script>
 // ── Config ────────────────────────────────────────────────
-const REPO_DEFAULT   = 'ishbhatia/bandwidthTracker';
-const BRANCH_DEFAULT = 'main';
-const PATH_DEFAULT   = 'data.json';
-
-function getCfg() {
-  return {
-    token  : localStorage.getItem('gh_token')  || '',
-    repo   : localStorage.getItem('gh_repo')   || REPO_DEFAULT,
-    branch : localStorage.getItem('gh_branch') || BRANCH_DEFAULT,
-    path   : localStorage.getItem('gh_path')   || PATH_DEFAULT,
-  };
-}
+const REPO_DEFAULT='ishbhatia/bandwidthTracker',BRANCH_DEFAULT='main',PATH_DEFAULT='data.json';
+function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||''};}
 
 // ── State ─────────────────────────────────────────────────
-let tasks     = [];
-let fileSHA   = '';          // GitHub needs the current SHA to update a file
-let editIndex = null;
-let sortKey   = 'startDate';
-let sortAsc   = true;
-
-const STATUS_BADGE = {
-  'To Do':'badge-todo','In Progress':'badge-progress',
-  'In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked'
-};
-const PALETTE = [
-  '#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2',
-  '#db2777','#65a30d','#ea580c','#0284c7','#9333ea','#15803d'
-];
+let tasks=[],fileSHA='',editIndex=null,sortKey='startDate',sortAsc=true;
+const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked'};
+const PALETTE=['#6366f1','#10b981','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#ef4444','#14b8a6','#f97316','#3b82f6'];
 
 // ── Toast ─────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
-// ── GitHub status indicator ───────────────────────────────
-function setGhStatus(state, label) {
-  const dot = document.getElementById('ghDot');
-  const lbl = document.getElementById('ghLabel');
-  dot.className = 'dot ' + state;
-  lbl.textContent = label;
-}
+// ── GitHub status ─────────────────────────────────────────
+function setGhStatus(s,l){document.getElementById('ghDot').className='dot '+s;document.getElementById('ghLabel').textContent=l;}
 
-// ── GitHub API helpers ────────────────────────────────────
-async function ghFetch(method, endpoint, body) {
-  const { token } = getCfg();
-  const res = await fetch('https://api.github.com' + endpoint, {
-    method,
-    headers: {
-      Authorization: 'token ' + token,
-      'Content-Type': 'application/json',
-      Accept: 'application/vnd.github+json'
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || res.statusText);
-  }
+// ── GitHub API ────────────────────────────────────────────
+async function ghFetch(method,endpoint,body){
+  const{token}=getCfg();
+  const res=await fetch('https://api.github.com'+endpoint,{method,headers:{Authorization:'token '+token,'Content-Type':'application/json',Accept:'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||res.statusText);}
   return res.json();
 }
 
-// ── Load data from GitHub ─────────────────────────────────
-async function loadFromGitHub() {
-  const cfg = getCfg();
-  if (!cfg.token) { openSetup(); return; }
-  setGhStatus('sync', 'Loading…');
-  try {
-    const data = await ghFetch('GET', `/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`);
-    fileSHA = data.sha;
-    const json = JSON.parse(atob(data.content.replace(/\n/g, '')));
-    tasks = Array.isArray(json) ? json : [];
-    setGhStatus('ok', 'Synced');
-    renderAll();
-    showToast('🔄 Loaded from GitHub');
-  } catch(e) {
-    // file might not exist yet — that's fine
-    if (e.message.includes('Not Found') || e.message.includes('404')) {
-      tasks = []; fileSHA = '';
-      setGhStatus('ok', 'Connected (empty)');
-      renderAll();
-    } else {
-      setGhStatus('err', 'Error');
-      showToast('❌ ' + e.message);
-    }
+async function loadFromGitHub(){
+  const cfg=getCfg();if(!cfg.token){openSetup();return;}
+  setGhStatus('sync','Loading…');
+  try{
+    const d=await ghFetch('GET',`/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`);
+    fileSHA=d.sha;tasks=JSON.parse(atob(d.content.replace(/\n/g,'')));
+    if(!Array.isArray(tasks))tasks=[];
+    setGhStatus('ok','Synced');renderAll();showToast('🔄 Loaded from GitHub');
+  }catch(e){
+    if(e.message.includes('Not Found')||e.message.includes('404')){tasks=[];fileSHA='';setGhStatus('ok','Connected (empty)');renderAll();}
+    else{setGhStatus('err','Error');showToast('❌ '+e.message);}
   }
 }
 
-// ── Save data to GitHub ───────────────────────────────────
-async function saveToGitHub(commitMsg) {
-  const cfg = getCfg();
-  if (!cfg.token) { showToast('⚠️ Set up GitHub first'); openSetup(); return; }
-  setGhStatus('sync', 'Saving…');
-  try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(tasks, null, 2))));
-    const body = {
-      message : commitMsg || 'Update tasks',
-      content,
-      branch  : cfg.branch,
-    };
-    if (fileSHA) body.sha = fileSHA;
-    const res = await ghFetch('PUT', `/repos/${cfg.repo}/contents/${cfg.path}`, body);
-    fileSHA = res.content.sha;
-    setGhStatus('ok', 'Saved ✓');
-    const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    showToast('✅ Saved to GitHub · ' + now);
-  } catch(e) {
-    setGhStatus('err', 'Save failed');
-    showToast('❌ ' + e.message);
-    throw e;
-  }
+async function saveToGitHub(msg){
+  const cfg=getCfg();if(!cfg.token){showToast('⚠️ Set up GitHub first');openSetup();return;}
+  setGhStatus('sync','Saving…');
+  try{
+    const body={message:msg||'Update tasks',content:btoa(unescape(encodeURIComponent(JSON.stringify(tasks,null,2)))),branch:cfg.branch};
+    if(fileSHA)body.sha=fileSHA;
+    const r=await ghFetch('PUT',`/repos/${cfg.repo}/contents/${cfg.path}`,body);
+    fileSHA=r.content.sha;setGhStatus('ok','Saved ✓');
+    showToast('✅ Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){setGhStatus('err','Save failed');showToast('❌ '+e.message);throw e;}
 }
 
-// ── Setup modal ───────────────────────────────────────────
-function openSetup() {
-  const cfg = getCfg();
-  document.getElementById('setupToken').value  = cfg.token;
-  document.getElementById('setupRepo').value   = cfg.repo;
-  document.getElementById('setupBranch').value = cfg.branch;
-  document.getElementById('setupPath').value   = cfg.path;
-  document.getElementById('setupModal').classList.add('open');
-}
-
-function toggleTokenVis() {
-  const inp = document.getElementById('setupToken');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-}
-
-async function saveSetup() {
-  const token  = document.getElementById('setupToken').value.trim();
-  const repo   = document.getElementById('setupRepo').value.trim();
-  const branch = document.getElementById('setupBranch').value.trim() || 'main';
-  const path   = document.getElementById('setupPath').value.trim()   || 'data.json';
-  if (!token || !repo) { alert('Token and repository are required.'); return; }
-  localStorage.setItem('gh_token',  token);
-  localStorage.setItem('gh_repo',   repo);
-  localStorage.setItem('gh_branch', branch);
-  localStorage.setItem('gh_path',   path);
-  closeModal('setupModal');
-  await loadFromGitHub();
+// ── Setup ─────────────────────────────────────────────────
+function openSetup(){const c=getCfg();document.getElementById('setupToken').value=c.token;document.getElementById('setupRepo').value=c.repo;document.getElementById('setupBranch').value=c.branch;document.getElementById('setupPath').value=c.path;document.getElementById('setupOpenAI').value=c.openai;document.getElementById('setupModal').classList.add('open');}
+function toggleTokenVis(){const i=document.getElementById('setupToken');i.type=i.type==='password'?'text':'password';}
+async function saveSetup(){
+  const token=document.getElementById('setupToken').value.trim(),repo=document.getElementById('setupRepo').value.trim(),branch=document.getElementById('setupBranch').value.trim()||'main',path=document.getElementById('setupPath').value.trim()||'data.json',openai=document.getElementById('setupOpenAI').value.trim();
+  if(!token||!repo){alert('Token and repository are required.');return;}
+  localStorage.setItem('gh_token',token);localStorage.setItem('gh_repo',repo);localStorage.setItem('gh_branch',branch);localStorage.setItem('gh_path',path);if(openai)localStorage.setItem('openai_key',openai);
+  closeModal('setupModal');await loadFromGitHub();
 }
 
 // ── CRUD ──────────────────────────────────────────────────
-async function addTask() {
-  const empName   = document.getElementById('empName').value.trim();
-  const taskName  = document.getElementById('taskName').value.trim();
-  const startDate = document.getElementById('startDate').value;
-  const timeSpent = parseFloat(document.getElementById('timeSpent').value);
-  const status    = document.getElementById('status').value;
-  if (!empName || !taskName || !startDate || isNaN(timeSpent) || timeSpent < 0) {
-    alert('Please fill in all fields with valid values.'); return;
-  }
-  const task = { id: Date.now(), empName, taskName, startDate, timeSpent, status };
-  tasks.push(task);
-  renderAll();
-  clearForm();
-  await saveToGitHub(`Add task: ${taskName} (${empName})`);
+async function addTask(){
+  const empName=document.getElementById('empName').value.trim(),taskName=document.getElementById('taskName').value.trim(),startDate=document.getElementById('startDate').value,timeSpent=parseFloat(document.getElementById('timeSpent').value),status=document.getElementById('status').value;
+  if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
+  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,status});
+  renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
 }
-
-function clearForm() {
-  ['empName','taskName','timeSpent'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('startDate').valueAsDate = new Date();
-  document.getElementById('status').value = 'To Do';
+function clearForm(){['empName','taskName','timeSpent'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';}
+async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
+function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editStatus').value=t.status;document.getElementById('editModal').classList.add('open');}
+async function saveEdit(){
+  const empName=document.getElementById('editEmpName').value.trim(),taskName=document.getElementById('editTaskName').value.trim(),startDate=document.getElementById('editStartDate').value,timeSpent=parseFloat(document.getElementById('editTimeSpent').value),status=document.getElementById('editStatus').value;
+  if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,status};
+  closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
-
-async function deleteTask(idx) {
-  if (!confirm('Delete this task? This cannot be undone.')) return;
-  const t = tasks[idx];
-  tasks.splice(idx, 1);
-  renderAll();
-  await saveToGitHub(`Delete task: ${t.taskName} (${t.empName})`);
-}
-
-function openEdit(idx) {
-  editIndex = idx;
-  const t = tasks[idx];
-  document.getElementById('editEmpName').value   = t.empName;
-  document.getElementById('editTaskName').value  = t.taskName;
-  document.getElementById('editStartDate').value = t.startDate;
-  document.getElementById('editTimeSpent').value = t.timeSpent;
-  document.getElementById('editStatus').value    = t.status;
-  document.getElementById('editModal').classList.add('open');
-}
-
-async function saveEdit() {
-  const empName   = document.getElementById('editEmpName').value.trim();
-  const taskName  = document.getElementById('editTaskName').value.trim();
-  const startDate = document.getElementById('editStartDate').value;
-  const timeSpent = parseFloat(document.getElementById('editTimeSpent').value);
-  const status    = document.getElementById('editStatus').value;
-  if (!empName || !taskName || !startDate || isNaN(timeSpent) || timeSpent < 0) {
-    alert('Please fill in all fields.'); return;
-  }
-  tasks[editIndex] = { ...tasks[editIndex], empName, taskName, startDate, timeSpent, status };
-  closeModal('editModal');
-  renderAll();
-  await saveToGitHub(`Update task: ${taskName} (${empName})`);
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  editIndex = null;
-}
-document.querySelectorAll('.overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-});
+function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 </script>
 
 <script>
 // ── Sort / Filter ─────────────────────────────────────────
-function sortBy(key) {
-  sortAsc = (sortKey === key) ? !sortAsc : true;
-  sortKey = key;
-  renderTable();
-}
-function getSorted(list) {
-  return [...list].sort((a, b) => {
-    let va = a[sortKey], vb = b[sortKey];
-    if (sortKey === 'timeSpent') { va = +va; vb = +vb; }
-    return va < vb ? (sortAsc ? -1 : 1) : va > vb ? (sortAsc ? 1 : -1) : 0;
-  });
-}
-function getFiltered() {
-  const s = document.getElementById('searchInput').value.toLowerCase();
-  const st = document.getElementById('filterStatus').value;
-  return tasks.filter(t =>
-    (!s  || t.empName.toLowerCase().includes(s) || t.taskName.toLowerCase().includes(s)) &&
-    (!st || t.status === st)
-  );
-}
+function sortBy(k){sortAsc=(sortKey===k)?!sortAsc:true;sortKey=k;renderTable();}
+function getSorted(l){return[...l].sort((a,b)=>{let va=a[sortKey],vb=b[sortKey];if(sortKey==='timeSpent'){va=+va;vb=+vb;}return va<vb?(sortAsc?-1:1):va>vb?(sortAsc?1:-1):0;});}
+function getFiltered(){const s=document.getElementById('searchInput').value.toLowerCase(),st=document.getElementById('filterStatus').value;return tasks.filter(t=>(!s||t.empName.toLowerCase().includes(s)||t.taskName.toLowerCase().includes(s))&&(!st||t.status===st));}
 
-// ── Render Table ──────────────────────────────────────────
-function renderTable() {
-  const rows = getSorted(getFiltered());
-  const tb   = document.getElementById('tableBody');
-  if (!rows.length) {
-    tb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p style="font-size:2rem;margin-bottom:8px">📄</p><p>No tasks yet. Add one above!</p></div></td></tr>';
-    return;
-  }
-  tb.innerHTML = rows.map(t => {
-    const i  = tasks.indexOf(t);
-    const bc = STATUS_BADGE[t.status] || 'badge-todo';
-    const ds = t.startDate ? new Date(t.startDate + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '—';
-    return `<tr>
-      <td><span class="emp-name">${esc(t.empName)}</span></td>
-      <td><span class="task-name">${esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td>
-      <td><span class="badge ${bc}">${esc(t.status)}</span></td>
-      <td><div class="action-btns">
-        <button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button>
-        <button class="btn btn-danger btn-sm"    onclick="deleteTask(${i})">Delete</button>
-      </div></td>
-    </tr>`;
+// ── Table ─────────────────────────────────────────────────
+function renderTable(){
+  const rows=getSorted(getFiltered()),tb=document.getElementById('tableBody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state">📄 No tasks yet. Add one!</div></td></tr>';return;}
+  tb.innerHTML=rows.map(t=>{
+    const i=tasks.indexOf(t),bc=STATUS_BADGE[t.status]||'badge-todo';
+    const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
   }).join('');
 }
 
-// ── Render Stats ──────────────────────────────────────────
-function renderStats() {
-  const total   = tasks.length;
-  const done    = tasks.filter(t => t.status === 'Done').length;
-  const inProg  = tasks.filter(t => t.status === 'In Progress').length;
-  const blocked = tasks.filter(t => t.status === 'Blocked').length;
-  const hrs     = tasks.reduce((s, t) => s + (+t.timeSpent || 0), 0);
-  const emps    = new Set(tasks.map(t => t.empName.trim().toLowerCase())).size;
-  document.getElementById('stats').innerHTML = [
-    { num: total,          lbl: 'Tasks'       },
-    { num: emps,           lbl: 'Employees'   },
-    { num: inProg,         lbl: 'In Progress' },
-    { num: done,           lbl: 'Done'        },
-    { num: blocked,        lbl: 'Blocked'     },
-    { num: hrs.toFixed(1), lbl: 'Total Hrs'   },
-  ].map(s => `<div class="stat-card"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
+// ── Stats ─────────────────────────────────────────────────
+function renderStats(){
+  const total=tasks.length,done=tasks.filter(t=>t.status==='Done').length,
+    inProg=tasks.filter(t=>t.status==='In Progress').length,blocked=tasks.filter(t=>t.status==='Blocked').length,
+    hrs=tasks.reduce((s,t)=>s+(+t.timeSpent||0),0),emps=new Set(tasks.map(t=>t.empName.trim().toLowerCase())).size;
+  document.getElementById('stats').innerHTML=[
+    {num:total,lbl:'Tasks',cls:''},{num:emps,lbl:'Employees',cls:'cyan'},
+    {num:inProg,lbl:'In Progress',cls:'yellow'},{num:done,lbl:'Done',cls:'green'},
+    {num:blocked,lbl:'Blocked',cls:'red'},{num:hrs.toFixed(1),lbl:'Total Hrs',cls:''},
+  ].map(s=>`<div class="stat-card"><div class="num ${s.cls}">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
 }
 
-function renderAll() { renderStats(); renderTable(); renderChart(); }
+// ── AI Insights (rule-based) ──────────────────────────────
+function renderInsights(){
+  const el=document.getElementById('insightsList');
+  if(!tasks.length){el.innerHTML='<div class="no-insights">Add tasks to see AI insights ✨</div>';return;}
 
-// ── Timeline ──────────────────────────────────────────────
-function renderTimeline() {
-  const grid = document.getElementById('tlGrid');
-  if (!tasks.length) {
-    grid.innerHTML = '<div class="tl-empty">No tasks yet. Add some tasks above!</div>';
-    return;
+  const insights=[];
+  const emps=[...new Set(tasks.map(t=>t.empName.trim()))];
+  const today=new Date().toISOString().split('T')[0];
+  const week=new Date();week.setDate(week.getDate()-7);
+  const weekStr=week.toISOString().split('T')[0];
+  const recentTasks=tasks.filter(t=>t.startDate>=weekStr);
+
+  // Total hours per employee
+  const empHrs={};emps.forEach(e=>{empHrs[e]=tasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0);});
+  const maxEmp=emps.reduce((a,b)=>empHrs[a]>empHrs[b]?a:b,emps[0]);
+  const minEmp=emps.reduce((a,b)=>empHrs[a]<empHrs[b]?a:b,emps[0]);
+
+  if(emps.length>1){
+    insights.push({type:'info',icon:'🏆',text:`<strong>${maxEmp}</strong> has the highest hours this period (${empHrs[maxEmp]}h).`});
+    if(empHrs[minEmp]<empHrs[maxEmp]*0.4)insights.push({type:'warn',icon:'⚠️',text:`<strong>${minEmp}</strong> has significantly fewer hours (${empHrs[minEmp]}h) — consider checking workload balance.`});
   }
 
-  // All unique sorted dates across all tasks
-  const allDates = [...new Set(tasks.map(t => t.startDate).filter(Boolean))].sort();
-  // All unique employees sorted
-  const allEmps  = [...new Set(tasks.map(t => t.empName.trim()))].sort();
+  // Blocked tasks
+  const blocked=tasks.filter(t=>t.status==='Blocked');
+  if(blocked.length>0){
+    const bEmps=[...new Set(blocked.map(t=>t.empName.trim()))].join(', ');
+    insights.push({type:'bad',icon:'🚫',text:`<strong>${blocked.length} task${blocked.length>1?'s':''} blocked</strong> — affecting: ${bEmps}. Needs immediate attention.`});
+  }
 
-  const fmtDay = d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  // Done rate
+  const doneRate=tasks.length?Math.round(tasks.filter(t=>t.status==='Done').length/tasks.length*100):0;
+  if(doneRate>=70)insights.push({type:'good',icon:'✅',text:`Team completion rate is <strong>${doneRate}%</strong> — great momentum!`});
+  else if(doneRate>0)insights.push({type:'warn',icon:'📊',text:`Team completion rate is <strong>${doneRate}%</strong> — ${100-doneRate}% of tasks still pending.`});
 
-  // Build header row
-  const headerCols = allDates.map(d =>
-    `<div class="tl-day-label">${fmtDay(d)}</div>`
-  ).join('');
+  // Overloaded employee (>8h in a single day)
+  emps.forEach(emp=>{
+    const dayHrs={};tasks.filter(t=>t.empName.trim()===emp).forEach(t=>{dayHrs[t.startDate]=(dayHrs[t.startDate]||0)+(+t.timeSpent||0);});
+    Object.entries(dayHrs).forEach(([d,h])=>{
+      if(h>8)insights.push({type:'warn',icon:'🔥',text:`<strong>${emp}</strong> logged <strong>${h}h</strong> on ${new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})} — possible overload.`});
+    });
+  });
 
-  // Build one row per employee
-  const rows = allEmps.map((emp, ei) => {
-    const color = PALETTE[ei % PALETTE.length];
+  // No activity today
+  const todayWorkers=new Set(tasks.filter(t=>t.startDate===today).map(t=>t.empName.trim()));
+  const idle=emps.filter(e=>!todayWorkers.has(e));
+  if(idle.length&&emps.length>1)insights.push({type:'info',icon:'💤',text:`No tasks logged today for: <strong>${idle.join(', ')}</strong>.`});
 
-    const cells = allDates.map(date => {
-      // All tasks for this employee on this day
-      const dayTasks = tasks.filter(t => t.empName.trim() === emp && t.startDate === date);
-      if (!dayTasks.length) {
-        return `<div class="tl-cell empty"></div>`;
-      }
-      const totalHrs  = dayTasks.reduce((s, t) => s + (+t.timeSpent || 0), 0);
-      const taskNames = dayTasks.map(t => `${t.taskName} (${t.timeSpent}h)`).join(', ');
-      const statuses  = [...new Set(dayTasks.map(t => t.status))].join(', ');
-      return `<div class="tl-cell" style="background:${color}">
-        <span class="tl-hrs">${totalHrs}h</span>
-        <div class="tl-tip">${esc(emp)}: ${esc(taskNames)}<br/>Status: ${esc(statuses)}</div>
-      </div>`;
-    }).join('');
+  // Velocity
+  const lastWeekHrs=recentTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+  insights.push({type:'info',icon:'📈',text:`Team logged <strong>${lastWeekHrs}h</strong> in the last 7 days across ${recentTasks.length} tasks.`});
 
-    return `<div class="tl-row">
-      <div class="tl-emp" title="${esc(emp)}">${esc(emp)}</div>
-      <div class="tl-cells">${cells}</div>
-    </div>`;
-  }).join('<hr class="tl-divider"/>');
-
-  grid.innerHTML = `
-    <div class="tl-header">
-      <div style="width:0"></div>${headerCols}
-    </div>
-    ${rows}
-  `;
+  if(!insights.length){el.innerHTML='<div class="no-insights">Everything looks good! 🎉</div>';return;}
+  el.innerHTML=insights.map(i=>`<div class="insight-item insight-${i.type}"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
 }
 
+function renderAll(){renderStats();renderTable();renderChart();renderInsights();}
+
 // ── Export CSV ────────────────────────────────────────────
-function exportCSV() {
-  if (!tasks.length) { alert('No tasks to export.'); return; }
-  const rows = tasks.map(t =>
-    [t.empName, t.taskName, t.startDate, t.timeSpent, t.status]
-      .map(v => `"${String(v).replace(/"/g,'""')}"`)
-      .join(',')
-  );
-  const csv  = [['Employee','Task','Start Date','Hrs','Status'].join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a    = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'tasks.csv' });
-  a.click(); URL.revokeObjectURL(a.href);
-  showToast('⬇️ CSV exported!');
+function exportCSV(){
+  if(!tasks.length){alert('No tasks to export.');return;}
+  const rows=tasks.map(t=>[t.empName,t.taskName,t.startDate,t.timeSpent,t.status].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const blob=new Blob([['Employee,Task,Date,Hrs,Status',...rows].join('\n')],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'tasks.csv'});
+  a.click();URL.revokeObjectURL(a.href);showToast('⬇️ CSV exported!');
+}
+
+// ── AI Chat ───────────────────────────────────────────────
+const chatHistory=[{role:'system',content:'You are an AI assistant for a team task tracker. Answer questions about employee tasks, hours, and productivity based on the data provided.'}];
+
+function addMsg(role,text){
+  const box=document.getElementById('chatMsgs');
+  const div=document.createElement('div');div.className='msg '+role;
+  div.innerHTML=`<div class="msg-avatar">${role==='ai'?'🤖':'👤'}</div><div class="msg-bubble">${text}</div>`;
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+}
+
+function localAnswer(q){
+  const lq=q.toLowerCase();
+  if(!tasks.length)return"No tasks yet. Add some tasks first!";
+  const emps=[...new Set(tasks.map(t=>t.empName.trim()))];
+  const empHrs={};emps.forEach(e=>{empHrs[e]=tasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0);});
+
+  if(lq.includes('most')||lq.includes('highest')||lq.includes('top')){
+    const top=emps.reduce((a,b)=>empHrs[a]>empHrs[b]?a:b);
+    return`🏆 <strong>${top}</strong> worked the most with <strong>${empHrs[top]}h</strong> total.`;
+  }
+  if(lq.includes('blocked')){
+    const b=tasks.filter(t=>t.status==='Blocked');
+    return b.length?`🚫 ${b.length} blocked task(s):\n${b.map(t=>`• ${t.taskName} (${t.empName})`).join('\n')}`:'✅ No blocked tasks!';
+  }
+  if(lq.includes('done')||lq.includes('complete')){
+    const d=tasks.filter(t=>t.status==='Done');
+    return`✅ ${d.length} task(s) done out of ${tasks.length} total (${Math.round(d.length/tasks.length*100)}% completion rate).`;
+  }
+  if(lq.includes('hour')||lq.includes('hrs')||lq.includes('time')){
+    const total=tasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+    const lines=emps.map(e=>`• ${e}: ${empHrs[e]}h`).join('\n');
+    return`⏱ Total hours logged: <strong>${total}h</strong>\n\n${lines}`;
+  }
+  if(lq.includes('summar')||lq.includes('overview')||lq.includes('status')){
+    const todo=tasks.filter(t=>t.status==='To Do').length;
+    const prog=tasks.filter(t=>t.status==='In Progress').length;
+    const done=tasks.filter(t=>t.status==='Done').length;
+    const blocked=tasks.filter(t=>t.status==='Blocked').length;
+    return`📊 Team Summary:\n• ${emps.length} employee(s)\n• ${tasks.length} total tasks\n• ${todo} To Do · ${prog} In Progress · ${done} Done · ${blocked} Blocked`;
+  }
+  if(lq.includes('who')||lq.includes('employee')||lq.includes('team')){
+    return`👥 Team members: ${emps.map(e=>`<strong>${e}</strong> (${empHrs[e]}h)`).join(', ')}`;
+  }
+  if(lq.includes('today')){
+    const today=new Date().toISOString().split('T')[0];
+    const t=tasks.filter(t=>t.startDate===today);
+    return t.length?`📅 ${t.length} task(s) today:\n${t.map(t=>`• ${t.empName}: ${t.taskName} (${t.timeSpent}h)`).join('\n')}`:'📅 No tasks logged for today.';
+  }
+  return null;
+}
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const q=input.value.trim();if(!q)return;
+  input.value='';addMsg('user',esc(q));
+
+  // Show typing
+  const box=document.getElementById('chatMsgs');
+  const typing=document.createElement('div');typing.className='msg ai';typing.id='typing';
+  typing.innerHTML='<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  box.appendChild(typing);box.scrollTop=box.scrollHeight;
+
+  // Try local answer first
+  const local=localAnswer(q);
+  if(local){setTimeout(()=>{typing.remove();addMsg('ai',local.replace(/\n/g,'<br/>'));},600);return;}
+
+  // Try OpenAI if key available
+  const{openai}=getCfg();
+  if(openai){
+    chatHistory.push({role:'user',content:`Task data: ${JSON.stringify(tasks)}\n\nQuestion: ${q}`});
+    try{
+      const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+openai,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',messages:chatHistory,max_tokens:300})});
+      const d=await res.json();
+      const answer=d.choices?.[0]?.message?.content||'Sorry, I could not get an answer.';
+      chatHistory.push({role:'assistant',content:answer});
+      typing.remove();addMsg('ai',esc(answer).replace(/\n/g,'<br/>'));
+    }catch(e){typing.remove();addMsg('ai','⚠️ OpenAI error: '+e.message);}
+  }else{
+    setTimeout(()=>{typing.remove();addMsg('ai','I\'m not sure about that. Try asking about <em>hours</em>, <em>blocked tasks</em>, <em>summary</em>, or <em>who worked the most</em>. Add an OpenAI key in Setup for smarter answers! 🤖');},700);
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ── Chart ─────────────────────────────────────────────────
-let chartInst = null;
-
-function resetChartDates() {
-  document.getElementById('chartFrom').value = '';
-  document.getElementById('chartTo').value   = '';
-  renderChart();
-}
-function renderChart() {
-  const from = document.getElementById('chartFrom').value;
-  const to   = document.getElementById('chartTo').value;
-  const filt = tasks.filter(t => t.startDate &&
-    (!from || t.startDate >= from) && (!to || t.startDate <= to));
-  const empty  = document.getElementById('chartEmpty');
-  const canvas = document.getElementById('barChart');
-  if (!filt.length) {
-    empty.style.display = 'flex'; canvas.style.display = 'none';
-    document.getElementById('chartLegend').innerHTML = '';
-    if (chartInst) { chartInst.destroy(); chartInst = null; }
-    return;
-  }
-  empty.style.display = 'none'; canvas.style.display = 'block';
-  const dates = [...new Set(filt.map(t => t.startDate))].sort();
-  const emps  = [...new Set(filt.map(t => t.empName.trim()))].sort();
-  const fmt   = d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric' });
-  // One bar per employee per day — all side by side
-  const datasets = emps.map((emp, i) => ({
-    label: emp,
-    data: dates.map(d => filt.filter(t => t.startDate===d && t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),
-    backgroundColor: PALETTE[i % PALETTE.length],
-    borderRadius: 6,
-    borderSkipped: false,
-    barThickness: 16,
-  }));
-  const cfg = {
-    type:'bar', data:{ labels: dates.map(fmt), datasets },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y} hrs` }}},
-      scales:{
-        x:{ stacked:false, grid:{display:false}, ticks:{font:{size:11}} },
-        y:{ stacked:false, beginAtZero:true, ticks:{ callback: v=>v+'h' }, grid:{color:'#f1f5f9'} }
-      }
-    }
-  };
-  if (chartInst) chartInst.destroy();
-  chartInst = new Chart(canvas, cfg);
-  document.getElementById('chartLegend').innerHTML = emps.map((e,i) =>
-    `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`
-  ).join('');
+let chartInst=null;
+function resetChartDates(){document.getElementById('chartFrom').value='';document.getElementById('chartTo').value='';renderChart();}
+function renderChart(){
+  const from=document.getElementById('chartFrom').value,to=document.getElementById('chartTo').value;
+  const filt=tasks.filter(t=>t.startDate&&(!from||t.startDate>=from)&&(!to||t.startDate<=to));
+  const empty=document.getElementById('chartEmpty'),canvas=document.getElementById('barChart');
+  if(!filt.length){empty.style.display='flex';canvas.style.display='none';if(chartInst){chartInst.destroy();chartInst=null;}document.getElementById('chartLegend').innerHTML='';return;}
+  empty.style.display='none';canvas.style.display='block';
+  const dates=[...new Set(filt.map(t=>t.startDate))].sort();
+  const emps=[...new Set(filt.map(t=>t.empName.trim()))].sort();
+  const fmt=d=>new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const datasets=emps.map((emp,i)=>({label:emp,data:dates.map(d=>filt.filter(t=>t.startDate===d&&t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),backgroundColor:PALETTE[i%PALETTE.length]+'cc',borderColor:PALETTE[i%PALETTE.length],borderWidth:1,borderRadius:5,borderSkipped:false,barThickness:14}));
+  const cfg={type:'bar',data:{labels:dates.map(fmt),datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#111827',borderColor:'#1e2d45',borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}h`}}},scales:{x:{stacked:false,grid:{display:false,color:'#1e2d45'},ticks:{color:'#64748b',font:{size:10}}},y:{stacked:false,beginAtZero:true,grid:{color:'#1e2d45'},ticks:{color:'#64748b',callback:v=>v+'h'}}}}};
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(canvas,cfg);
+  document.getElementById('chartLegend').innerHTML=emps.map((e,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`).join('');
 }
 
 // ── Init ──────────────────────────────────────────────────
-document.getElementById('startDate').valueAsDate = new Date();
-(function initChartDates() {
-  const to = new Date(), from = new Date();
-  from.setDate(from.getDate() - 29);
-  document.getElementById('chartTo').valueAsDate   = to;
-  document.getElementById('chartFrom').valueAsDate = from;
-})();
-
-// On load: if token saved → load from GitHub, else show setup
-if (getCfg().token) {
-  loadFromGitHub();
-} else {
-  renderAll();
-  openSetup();
-}
+document.getElementById('startDate').valueAsDate=new Date();
+(function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);document.getElementById('chartTo').valueAsDate=to;document.getElementById('chartFrom').valueAsDate=from;})();
+if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
 </body>
 </html>
