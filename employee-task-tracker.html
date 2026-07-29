@@ -6,178 +6,217 @@
   <title>Employee Task Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
-    header{background:linear-gradient(135deg,#2563eb,#1e40af);color:white;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-    header h1{font-size:1.4rem;font-weight:700}
-    .hright{display:flex;align-items:center;gap:14px}
-    .gh-badge{display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px}
-    .dot{width:8px;height:8px;border-radius:50%;background:#9ca3af}
-    .dot.ok{background:#4ade80}.dot.sync{background:#fbbf24;animation:blink 1s infinite}.dot.err{background:#f87171}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-    .btn-ghost{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer}
-    .btn-ghost:hover{background:rgba(255,255,255,.28)}
-    .container{max-width:1200px;margin:28px auto;padding:0 22px}
-    .card{background:white;border-radius:12px;padding:26px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:28px}
-    .card h2{font-size:1rem;font-weight:700;margin-bottom:18px;color:#1e40af}
-    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
-    .fg{display:flex;flex-direction:column;gap:5px}
-    .fg label{font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em}
-    .fg input,.fg select{padding:9px 11px;border:1px solid #d1d5db;border-radius:8px;font-size:.93rem;background:#fafafa;transition:border-color .2s}
-    .fg input:focus,.fg select:focus{outline:none;border-color:#2563eb;background:white}
-    .form-actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
-    .btn{padding:9px 20px;border:none;border-radius:8px;font-size:.93rem;font-weight:600;cursor:pointer;transition:all .2s}
-    .btn-primary{background:#2563eb;color:white}.btn-primary:hover{background:#1d4ed8}
-    .btn-secondary{background:#e5e7eb;color:#374151}.btn-secondary:hover{background:#d1d5db}
-    .btn-danger{background:#fee2e2;color:#b91c1c}.btn-danger:hover{background:#fecaca}
-    .btn-success{background:#dcfce7;color:#166534}.btn-success:hover{background:#bbf7d0}
-    .btn-sm{padding:5px 11px;font-size:.8rem;border-radius:6px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-    .toolbar input,.toolbar select{padding:8px 13px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem;background:white}
-    .toolbar input{flex:1;min-width:180px}
-    .table-wrap{overflow-x:auto}
-    table{width:100%;border-collapse:collapse;font-size:.88rem}
-    thead th{background:#f8fafc;color:#6b7280;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:11px 13px;text-align:left;border-bottom:2px solid #e5e7eb;white-space:nowrap;cursor:pointer;user-select:none}
-    thead th:hover{color:#2563eb}
-    tbody tr{border-bottom:1px solid #f1f5f9;transition:background .15s}
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+
+    /* ── Header ── */
+    header{
+      background:linear-gradient(120deg,#1d4ed8 0%,#4f46e5 100%);
+      color:#fff;padding:14px 28px;
+      display:flex;align-items:center;justify-content:space-between;
+      box-shadow:0 2px 12px rgba(30,64,175,.25);
+    }
+    .hlogo{display:flex;align-items:center;gap:10px}
+    .hlogo h1{font-size:1.1rem;font-weight:700;letter-spacing:-.01em}
+    .hlogo .sub{font-size:.72rem;opacity:.7;font-weight:400;margin-top:1px}
+    .hright{display:flex;align-items:center;gap:10px}
+    .gh-pill{display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:600;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+      padding:4px 11px;border-radius:20px;backdrop-filter:blur(4px)}
+    .dot{width:7px;height:7px;border-radius:50%;background:#94a3b8;flex-shrink:0}
+    .dot.ok{background:#4ade80}.dot.sync{background:#fbbf24;animation:blink .9s infinite}.dot.err{background:#f87171}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+    .btn-ghost{background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.25);
+      padding:5px 13px;border-radius:7px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit}
+    .btn-ghost:hover{background:rgba(255,255,255,.22)}
+
+    /* ── Layout ── */
+    .page{max-width:1180px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+    @media(max-width:860px){.page{grid-template-columns:1fr}}
+
+    /* ── Cards ── */
+    .card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);border:1px solid #e2e8f0}
+    .card-title{font-size:.82rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+    .card-title::before{content:'';display:block;width:3px;height:14px;border-radius:2px;background:linear-gradient(180deg,#1d4ed8,#4f46e5)}
+
+    /* ── Stats row (above both columns) ── */
+    .stats-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+    @media(max-width:860px){.stats-row{grid-template-columns:repeat(3,1fr)}}
+    .stat-card{background:#fff;border-radius:12px;padding:14px 16px;text-align:center;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .stat-card .num{font-size:1.7rem;font-weight:700;color:#1d4ed8;line-height:1}
+    .stat-card .lbl{font-size:.68rem;color:#94a3b8;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+
+    /* ── Form ── */
+    .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+    .fg label{font-size:.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+    .fg input,.fg select{padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.875rem;
+      background:#f8fafc;transition:border-color .15s,box-shadow .15s;font-family:inherit;color:#1e293b}
+    .fg input:focus,.fg select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#fff}
+    .form-actions{display:flex;gap:8px;margin-top:4px}
+    .btn{padding:8px 18px;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;font-family:inherit}
+    .btn-primary{background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+    .btn-primary:hover{box-shadow:0 4px 14px rgba(79,70,229,.4);transform:translateY(-1px)}
+    .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+    .btn-secondary:hover{background:#e2e8f0}
+    .btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+    .btn-danger:hover{background:#fee2e2}
+    .btn-success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+    .btn-success:hover{background:#dcfce7}
+    .btn-sm{padding:4px 10px;font-size:.75rem;border-radius:6px}
+
+    /* ── Right column stack ── */
+    .right-col{display:flex;flex-direction:column;gap:20px}
+
+    /* ── Toolbar ── */
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+    .toolbar input,.toolbar select{padding:7px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem;background:#f8fafc;font-family:inherit;color:#1e293b}
+    .toolbar input:focus,.toolbar select:focus{outline:none;border-color:#6366f1}
+    .toolbar input{flex:1;min-width:160px}
+
+    /* ── Table ── */
+    .table-wrap{overflow-x:auto;margin:-4px}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
+    thead th{background:#f8fafc;color:#94a3b8;font-size:.68rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.06em;padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;
+      white-space:nowrap;cursor:pointer;user-select:none}
+    thead th:hover{color:#1d4ed8}
+    tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
     tbody tr:hover{background:#f8fafc}
-    tbody td{padding:12px 13px;vertical-align:middle}
-    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.76rem;font-weight:600}
-    .badge-todo{background:#fef9c3;color:#854d0e}
+    tbody td{padding:10px 12px;vertical-align:middle}
+    .emp-name{font-weight:600;color:#1e293b}
+    .task-name{color:#475569}
+
+    /* ── Badges ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
+    .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+    .badge-todo{background:#fef9c3;color:#a16207}
     .badge-progress{background:#dbeafe;color:#1d4ed8}
     .badge-review{background:#ede9fe;color:#6d28d9}
-    .badge-done{background:#dcfce7;color:#166534}
-    .badge-blocked{background:#fee2e2;color:#991b1b}
-    .action-btns{display:flex;gap:7px}
-    .empty-state{text-align:center;padding:44px 20px;color:#9ca3af}
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:28px}
-    .stat-card{background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07);text-align:center}
-    .stat-card .num{font-size:1.9rem;font-weight:700;color:#2563eb}
-    .stat-card .lbl{font-size:.75rem;color:#6b7280;margin-top:3px}
-    /* chart */
-    .chart-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
-    .chart-tab{padding:6px 16px;border:1.5px solid #d1d5db;border-radius:20px;background:white;font-size:.83rem;font-weight:600;cursor:pointer;color:#6b7280;transition:all .2s}
-    .chart-tab.active{background:#2563eb;color:white;border-color:#2563eb}
-    .chart-tab:hover:not(.active){border-color:#2563eb;color:#2563eb}
-    .chart-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
-    .chart-controls label{font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase}
-    .chart-controls input[type=date]{padding:7px 11px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem;background:#fafafa}
-    .ctrl-grp{display:flex;align-items:center;gap:7px}
-    .chart-wrap{position:relative;width:100%;min-height:320px}
-    .legend-wrap{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-    .legend-item{display:flex;align-items:center;gap:5px;font-size:.8rem;color:#374151}
-    .legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
-    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;color:#9ca3af;font-size:.93rem}
-    .chart-empty span{font-size:2.2rem;margin-bottom:8px}
-    /* ── Timeline / Gantt ───────────────────────── */
-    .tl-wrap{overflow-x:auto;padding-bottom:8px}
-    .tl-grid{min-width:600px}
-    .tl-header{display:flex;margin-left:140px;margin-bottom:4px}
-    .tl-day-label{flex:1;text-align:center;font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;white-space:nowrap;padding:0 2px}
-    .tl-row{display:flex;align-items:center;margin-bottom:6px;min-height:34px}
-    .tl-emp{width:140px;min-width:140px;font-size:.8rem;font-weight:700;color:#374151;padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .tl-cells{display:flex;flex:1;gap:3px;align-items:center}
-    .tl-cell{flex:1;height:28px;border-radius:6px;position:relative;display:flex;align-items:center;justify-content:center;cursor:default;transition:opacity .15s}
-    .tl-cell:hover{opacity:.85}
-    .tl-cell.empty{background:#f1f5f9}
-    .tl-cell .tl-hrs{font-size:.68rem;font-weight:700;color:white;text-shadow:0 1px 2px rgba(0,0,0,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
-    .tl-cell .tl-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:white;font-size:.72rem;padding:5px 9px;border-radius:7px;white-space:nowrap;z-index:50;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-    .tl-cell:hover .tl-tip{display:block}
-    .tl-divider{border:none;border-top:1px solid #e5e7eb;margin:10px 0}
-    .tl-empty{text-align:center;padding:36px;color:#9ca3af;font-size:.9rem}
-    /* modals */
-    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+    .badge-done{background:#dcfce7;color:#15803d}
+    .badge-blocked{background:#fee2e2;color:#b91c1c}
+    .action-btns{display:flex;gap:6px}
+    .empty-state{text-align:center;padding:40px 20px;color:#94a3b8}
+    .empty-state .ei{font-size:2rem;margin-bottom:8px}
+
+    /* ── Chart ── */
+    .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+    .chart-controls label{font-size:.68rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+    .chart-controls input[type=date]{padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem;background:#f8fafc;font-family:inherit}
+    .ctrl-grp{display:flex;align-items:center;gap:6px}
+    .chart-wrap{position:relative;width:100%;min-height:260px}
+    .legend-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#475569;
+      background:#f8fafc;padding:3px 9px;border-radius:20px;border:1px solid #e2e8f0}
+    .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px;color:#94a3b8;font-size:.875rem}
+    .chart-empty span{font-size:2rem;margin-bottom:8px}
+
+    /* ── Modals ── */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
     .overlay.open{display:flex}
-    .modal{background:white;border-radius:14px;padding:30px;width:90%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
-    .modal h2{font-size:1.05rem;font-weight:700;margin-bottom:18px;color:#1e40af}
-    .modal .form-grid{grid-template-columns:1fr 1fr}
-    .modal .form-actions{justify-content:flex-end;margin-top:18px}
-    /* setup modal */
-    .setup-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;font-size:.83rem;color:#1e40af;margin-bottom:16px;line-height:1.5}
-    .setup-note a{color:#2563eb;font-weight:600}
-    .token-row{display:flex;gap:8px;align-items:center}
+    .modal{background:#fff;border-radius:16px;padding:28px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid #e2e8f0}
+    .modal-title{font-size:.95rem;font-weight:700;color:#1e293b;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+    .modal-actions{justify-content:flex-end;margin-top:8px;display:flex;gap:8px}
+    .setup-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 13px;font-size:.78rem;color:#1e40af;margin-bottom:14px;line-height:1.6}
+    .setup-note a{color:#1d4ed8;font-weight:600;text-decoration:none}
+    .setup-note a:hover{text-decoration:underline}
+    .token-row{display:flex;gap:7px;align-items:center}
     .token-row input{flex:1}
-    /* toast */
-    .toast{position:fixed;bottom:26px;right:26px;background:#1e40af;color:white;padding:11px 20px;border-radius:10px;font-size:.88rem;font-weight:600;opacity:0;transform:translateY(14px);transition:all .3s;z-index:999;pointer-events:none}
+
+    /* ── Toast ── */
+    .toast{position:fixed;bottom:22px;right:22px;background:#1e293b;color:#fff;padding:10px 18px;
+      border-radius:10px;font-size:.8rem;font-weight:600;opacity:0;transform:translateY(12px);
+      transition:all .28s;z-index:999;pointer-events:none;display:flex;align-items:center;gap:7px;
+      box-shadow:0 4px 20px rgba(0,0,0,.2)}
     .toast.show{opacity:1;transform:translateY(0)}
-    @media(max-width:600px){.modal .form-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px;text-align:center}}
+
+    @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px;text-align:center}.stats-row{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
 
 <header>
-  <h1>🗂️ Employee Task Tracker</h1>
+  <div class="hlogo">
+    <div>
+      <h1>🗂 Task Tracker</h1>
+      <div class="sub">Team Bandwidth Dashboard</div>
+    </div>
+  </div>
   <div class="hright">
-    <div class="gh-badge">
+    <div class="gh-pill">
       <div class="dot" id="ghDot"></div>
       <span id="ghLabel">Not connected</span>
     </div>
-    <button class="btn-ghost" onclick="openSetup()">⚙️ GitHub Setup</button>
+    <button class="btn-ghost" onclick="openSetup()">⚙ Setup</button>
   </div>
 </header>
 
-<div class="container">
-  <div class="stats" id="stats"></div>
+<div class="page">
+  <!-- Stats row spanning both columns -->
+  <div class="stats-row" id="stats"></div>
 
-  <!-- Add Task -->
+  <!-- LEFT: Add Task form -->
   <div class="card">
-    <h2>➕ Add New Task</h2>
-    <div class="form-grid">
-      <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
-      <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
-      <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
-      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="e.g. 3.5" min="0" step="0.5"/></div>
-      <div class="fg"><label>Status</label>
-        <select id="status">
-          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
-        </select>
-      </div>
+    <div class="card-title">Add New Task</div>
+    <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
+    <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
+    <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
+    <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="e.g. 3.5" min="0" step="0.5"/></div>
+    <div class="fg"><label>Status</label>
+      <select id="status">
+        <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+      </select>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+      <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
       <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
     </div>
   </div>
 
-  <!-- Chart -->
-  <div class="card">
-    <h2>📊 Day-wise Hours — All Employees (Side by Side)</h2>
-    <div class="chart-controls">
-      <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
-      <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
-      <button class="btn btn-secondary btn-sm" onclick="resetChartDates()">Reset</button>
+  <!-- RIGHT: Chart + Table stacked -->
+  <div class="right-col">
+    <!-- Chart -->
+    <div class="card">
+      <div class="card-title">Day-wise Hours — Side by Side</div>
+      <div class="chart-controls">
+        <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
+        <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
+        <button class="btn btn-secondary btn-sm" onclick="resetChartDates()">Reset</button>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="barChart"></canvas>
+        <div class="chart-empty" id="chartEmpty" style="display:none"><span>📭</span>No data yet. Add tasks!</div>
+      </div>
+      <div class="legend-wrap" id="chartLegend"></div>
     </div>
-    <div class="chart-wrap">
-      <canvas id="barChart"></canvas>
-      <div class="chart-empty" id="chartEmpty" style="display:none"><span>📭</span>No data yet. Add tasks above!</div>
-    </div>
-    <div class="legend-wrap" id="chartLegend"></div>
-  </div>
 
-  <!-- Table -->
-  <div class="card">
-    <h2>📋 All Tasks</h2>
-    <div class="toolbar">
-      <input id="searchInput" placeholder="🔍 Search employee or task…" oninput="renderTable()"/>
-      <select id="filterStatus" onchange="renderTable()">
-        <option value="">All Statuses</option>
-        <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
-      </select>
-      <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇️ CSV</button>
-      <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th onclick="sortBy('empName')">Employee ⇅</th>
-          <th onclick="sortBy('taskName')">Task ⇅</th>
-          <th onclick="sortBy('startDate')">Start Date ⇅</th>
-          <th onclick="sortBy('timeSpent')">Time (hrs) ⇅</th>
-          <th onclick="sortBy('status')">Status ⇅</th>
-          <th>Actions</th>
-        </tr></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
+    <!-- Table -->
+    <div class="card">
+      <div class="card-title">All Tasks</div>
+      <div class="toolbar">
+        <input id="searchInput" placeholder="🔍  Search employee or task…" oninput="renderTable()"/>
+        <select id="filterStatus" onchange="renderTable()">
+          <option value="">All Statuses</option>
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+        </select>
+        <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th onclick="sortBy('empName')">Employee ⇅</th>
+            <th onclick="sortBy('taskName')">Task ⇅</th>
+            <th onclick="sortBy('startDate')">Date ⇅</th>
+            <th onclick="sortBy('timeSpent')">Hrs ⇅</th>
+            <th onclick="sortBy('status')">Status ⇅</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -185,8 +224,8 @@
 <!-- Edit Modal -->
 <div class="overlay" id="editModal">
   <div class="modal">
-    <h2>✏️ Edit Task</h2>
-    <div class="form-grid">
+    <div class="modal-title">✏️ Edit Task</div>
+    <div class="modal-grid">
       <div class="fg"><label>Employee Name</label><input id="editEmpName"/></div>
       <div class="fg"><label>Task Name</label><input id="editTaskName"/></div>
       <div class="fg"><label>Start Date</label><input type="date" id="editStartDate"/></div>
@@ -197,7 +236,7 @@
         </select>
       </div>
     </div>
-    <div class="form-actions">
+    <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
     </div>
@@ -207,32 +246,23 @@
 <!-- GitHub Setup Modal -->
 <div class="overlay" id="setupModal">
   <div class="modal">
-    <h2>⚙️ GitHub Setup</h2>
+    <div class="modal-title">⚙️ GitHub Setup</div>
     <div class="setup-note">
-      Data is stored in <strong>data.json</strong> in your GitHub repo.<br/>
-      You need a <strong>Personal Access Token</strong> with <code>repo</code> scope.<br/>
-      <a href="https://github.com/settings/tokens/new?scopes=repo&description=TaskTracker" target="_blank">→ Create token on GitHub</a>
+      Data is stored as <strong>data.json</strong> in your GitHub repo.<br/>
+      Create a token with <code>repo</code> scope →
+      <a href="https://github.com/settings/tokens/new?scopes=repo&description=TaskTracker" target="_blank">Generate on GitHub ↗</a>
     </div>
-    <div class="fg" style="margin-bottom:12px">
+    <div class="fg">
       <label>GitHub Token</label>
       <div class="token-row">
         <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
         <button class="btn btn-secondary btn-sm" onclick="toggleTokenVis()">👁</button>
       </div>
     </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label>Repository (owner/repo)</label>
-      <input id="setupRepo" placeholder="ishbhatia/bandwidthTracker" value="ishbhatia/bandwidthTracker"/>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label>Branch</label>
-      <input id="setupBranch" placeholder="main" value="main"/>
-    </div>
-    <div class="fg" style="margin-bottom:4px">
-      <label>Data file path in repo</label>
-      <input id="setupPath" placeholder="data.json" value="data.json"/>
-    </div>
-    <div class="form-actions">
+    <div class="fg"><label>Repository (owner/repo)</label><input id="setupRepo" value="ishbhatia/bandwidthTracker"/></div>
+    <div class="fg"><label>Branch</label><input id="setupBranch" value="main"/></div>
+    <div class="fg"><label>Data file path</label><input id="setupPath" value="data.json"/></div>
+    <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('setupModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSetup()">Connect &amp; Load</button>
     </div>
@@ -486,10 +516,10 @@ function renderTable() {
   tb.innerHTML = rows.map(t => {
     const i  = tasks.indexOf(t);
     const bc = STATUS_BADGE[t.status] || 'badge-todo';
-    const ds = t.startDate ? new Date(t.startDate + 'T00:00:00').toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—';
+    const ds = t.startDate ? new Date(t.startDate + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '—';
     return `<tr>
-      <td><strong>${esc(t.empName)}</strong></td>
-      <td>${esc(t.taskName)}</td><td>${ds}</td><td>${t.timeSpent} hrs</td>
+      <td><span class="emp-name">${esc(t.empName)}</span></td>
+      <td><span class="task-name">${esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td>
       <td><span class="badge ${bc}">${esc(t.status)}</span></td>
       <td><div class="action-btns">
         <button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button>
@@ -508,12 +538,12 @@ function renderStats() {
   const hrs     = tasks.reduce((s, t) => s + (+t.timeSpent || 0), 0);
   const emps    = new Set(tasks.map(t => t.empName.trim().toLowerCase())).size;
   document.getElementById('stats').innerHTML = [
-    { num: total,          lbl: 'Total Tasks'  },
-    { num: emps,           lbl: 'Employees'    },
-    { num: inProg,         lbl: 'In Progress'  },
-    { num: done,           lbl: 'Done'         },
-    { num: blocked,        lbl: 'Blocked'      },
-    { num: hrs.toFixed(1), lbl: 'Total Hours'  },
+    { num: total,          lbl: 'Tasks'       },
+    { num: emps,           lbl: 'Employees'   },
+    { num: inProg,         lbl: 'In Progress' },
+    { num: done,           lbl: 'Done'        },
+    { num: blocked,        lbl: 'Blocked'     },
+    { num: hrs.toFixed(1), lbl: 'Total Hrs'   },
   ].map(s => `<div class="stat-card"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
 }
 
