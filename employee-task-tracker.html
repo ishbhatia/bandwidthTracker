@@ -141,12 +141,7 @@
 
   <!-- Chart -->
   <div class="card">
-    <h2>📊 Day-wise Hours — All Employees</h2>
-    <div class="chart-tabs">
-      <button class="chart-tab active" onclick="setChartMode('grouped')">Grouped</button>
-      <button class="chart-tab"        onclick="setChartMode('stacked')">Stacked</button>
-      <button class="chart-tab"        onclick="setChartMode('total')">Total / Day</button>
-    </div>
+    <h2>📊 Day-wise Hours — All Employees (Side by Side)</h2>
     <div class="chart-controls">
       <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
       <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
@@ -157,16 +152,6 @@
       <div class="chart-empty" id="chartEmpty" style="display:none"><span>📭</span>No data yet. Add tasks above!</div>
     </div>
     <div class="legend-wrap" id="chartLegend"></div>
-  </div>
-
-  <!-- Timeline -->
-  <div class="card">
-    <h2>📅 Task Timeline — All Employees (Parallel)</h2>
-    <div class="tl-wrap">
-      <div class="tl-grid" id="tlGrid">
-        <div class="tl-empty">No tasks yet. Add some tasks above!</div>
-      </div>
-    </div>
   </div>
 
   <!-- Table -->
@@ -532,7 +517,7 @@ function renderStats() {
   ].map(s => `<div class="stat-card"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
 }
 
-function renderAll() { renderStats(); renderTable(); renderChart(); renderTimeline(); }
+function renderAll() { renderStats(); renderTable(); renderChart(); }
 
 // ── Timeline ──────────────────────────────────────────────
 function renderTimeline() {
@@ -609,15 +594,7 @@ function esc(s) {
 
 // ── Chart ─────────────────────────────────────────────────
 let chartInst = null;
-let chartMode = 'grouped';
 
-function setChartMode(m) {
-  chartMode = m;
-  document.querySelectorAll('.chart-tab').forEach((b,i) =>
-    b.classList.toggle('active', ['grouped','stacked','total'][i] === m)
-  );
-  renderChart();
-}
 function resetChartDates() {
   document.getElementById('chartFrom').value = '';
   document.getElementById('chartTo').value   = '';
@@ -640,19 +617,15 @@ function renderChart() {
   const dates = [...new Set(filt.map(t => t.startDate))].sort();
   const emps  = [...new Set(filt.map(t => t.empName.trim()))].sort();
   const fmt   = d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric' });
-  let datasets;
-  if (chartMode === 'total') {
-    datasets = [{ label:'Total Hours', data: dates.map(d => filt.filter(t => t.startDate===d).reduce((s,t)=>s+(+t.timeSpent||0),0)), backgroundColor:'#2563eb', borderRadius:6, borderSkipped:false, barThickness:18 }];
-  } else {
-    datasets = emps.map((emp, i) => ({
-      label: emp,
-      data: dates.map(d => filt.filter(t => t.startDate===d && t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),
-      backgroundColor: PALETTE[i % PALETTE.length],
-      borderRadius: chartMode==='grouped' ? 6 : 0,
-      borderSkipped: false,
-      barThickness: chartMode==='grouped' ? 14 : 18
-    }));
-  }
+  // One bar per employee per day — all side by side
+  const datasets = emps.map((emp, i) => ({
+    label: emp,
+    data: dates.map(d => filt.filter(t => t.startDate===d && t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),
+    backgroundColor: PALETTE[i % PALETTE.length],
+    borderRadius: 6,
+    borderSkipped: false,
+    barThickness: 16,
+  }));
   const cfg = {
     type:'bar', data:{ labels: dates.map(fmt), datasets },
     options:{
@@ -660,17 +633,16 @@ function renderChart() {
       interaction:{ mode:'index', intersect:false },
       plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y} hrs` }}},
       scales:{
-        x:{ stacked: chartMode==='stacked', grid:{display:false}, ticks:{font:{size:11}} },
-        y:{ stacked: chartMode==='stacked', beginAtZero:true, ticks:{ callback: v=>v+'h' }, grid:{color:'#f1f5f9'} }
+        x:{ stacked:false, grid:{display:false}, ticks:{font:{size:11}} },
+        y:{ stacked:false, beginAtZero:true, ticks:{ callback: v=>v+'h' }, grid:{color:'#f1f5f9'} }
       }
     }
   };
   if (chartInst) chartInst.destroy();
   chartInst = new Chart(canvas, cfg);
-  const leg = (chartMode==='total')
-    ? `<div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>Total Hours</div>`
-    : emps.map((e,i) => `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`).join('');
-  document.getElementById('chartLegend').innerHTML = leg;
+  document.getElementById('chartLegend').innerHTML = emps.map((e,i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`
+  ).join('');
 }
 
 // ── Init ──────────────────────────────────────────────────
