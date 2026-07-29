@@ -205,6 +205,58 @@
       display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
     .toast.show{opacity:1;transform:translateY(0)}
 
+    /* ── Print / PDF Report ── */
+    @media print{
+      body{background:#fff !important;color:#000 !important}
+      header,.page>div:first-child,.right-col>.card:last-child,.toolbar,
+      .form-actions,.action-btns,.overlay,.toast,
+      .chart-controls,.legend-wrap,button{display:none !important}
+      .page{display:block !important}
+      .rpt{display:block !important}
+      .rpt-page{page-break-after:always;padding:20px}
+    }
+    .rpt{display:none}
+
+    /* ── Report Modal ── */
+    .rpt-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;
+      align-items:flex-start;justify-content:center;backdrop-filter:blur(4px);overflow-y:auto;padding:30px 16px}
+    .rpt-overlay.open{display:flex}
+    .rpt-box{background:#fff;color:#1e293b;border-radius:16px;width:100%;max-width:820px;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+    .rpt-toolbar{background:#1e293b;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .rpt-toolbar span{color:#e2e8f0;font-size:.85rem;font-weight:600}
+    .rpt-toolbar-btns{display:flex;gap:8px}
+    .rpt-body{padding:28px}
+
+    /* Report internals */
+    .rpt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e2e8f0}
+    .rpt-title{font-size:1.3rem;font-weight:700;color:#1e293b}
+    .rpt-subtitle{font-size:.8rem;color:#64748b;margin-top:3px}
+    .rpt-logo{font-size:1.8rem}
+    .rpt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+    .rpt-stat{background:#f8fafc;border-radius:10px;padding:14px;text-align:center;border:1px solid #e2e8f0}
+    .rpt-stat .rn{font-size:1.6rem;font-weight:700;color:#4f46e5}
+    .rpt-stat .rl{font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+    .rpt-section{margin-bottom:24px}
+    .rpt-section h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+    .rpt-table{width:100%;border-collapse:collapse;font-size:.8rem}
+    .rpt-table th{background:#f8fafc;color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;text-align:left;border-bottom:2px solid #e2e8f0}
+    .rpt-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .rpt-table tr:hover td{background:#f8fafc}
+    .rpt-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:600}
+    .rb-todo{background:#fef9c3;color:#a16207}
+    .rb-progress{background:#dbeafe;color:#1d4ed8}
+    .rb-review{background:#ede9fe;color:#6d28d9}
+    .rb-done{background:#dcfce7;color:#15803d}
+    .rb-blocked{background:#fee2e2;color:#b91c1c}
+    .rpt-emp-card{background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0}
+    .rpt-emp-name{font-weight:700;font-size:.9rem;color:#1e293b;margin-bottom:6px}
+    .rpt-emp-bar{height:6px;border-radius:3px;background:#e2e8f0;margin-bottom:8px;overflow:hidden}
+    .rpt-emp-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#4f46e5,#8b5cf6)}
+    .rpt-emp-meta{display:flex;gap:16px;font-size:.75rem;color:#64748b}
+    .rpt-emp-meta span strong{color:#1e293b}
+    .rpt-footer{margin-top:24px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:.72rem;color:#94a3b8;display:flex;justify-content:space-between}
+
     /* ── glow pulse on stat cards ── */
     @keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(99,102,241,.15)}}
 
@@ -304,6 +356,7 @@
         </select>
         <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openReport()">📄 Report</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -370,6 +423,25 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Report Modal -->
+<div class="rpt-overlay" id="rptOverlay">
+  <div class="rpt-box" id="rptBox">
+    <div class="rpt-toolbar">
+      <span id="rptPeriodLabel">📄 Summary Report</span>
+      <div class="rpt-toolbar-btns">
+        <select id="rptPeriod" onchange="buildReport()" style="padding:5px 10px;border-radius:7px;border:1px solid #334155;background:#334155;color:#e2e8f0;font-size:.78rem;cursor:pointer">
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="all">All Time</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Print / Save PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="closeReport()">✕ Close</button>
+      </div>
+    </div>
+    <div class="rpt-body" id="rptBody"></div>
+  </div>
+</div>
 
 <script>
 // ── Config ────────────────────────────────────────────────
@@ -648,6 +720,104 @@ function renderChart(){
   if(chartInst)chartInst.destroy();
   chartInst=new Chart(canvas,cfg);
   document.getElementById('chartLegend').innerHTML=emps.map((e,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`).join('');
+}
+
+// ── Report ────────────────────────────────────────────────
+function openReport(){document.getElementById('rptOverlay').classList.add('open');buildReport();}
+function closeReport(){document.getElementById('rptOverlay').classList.remove('open');}
+document.getElementById('rptOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('rptOverlay'))closeReport();});
+
+function getReportTasks(){
+  const period=document.getElementById('rptPeriod').value;
+  const now=new Date();
+  let from='';
+  if(period==='week'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());from=d.toISOString().split('T')[0];}
+  else if(period==='month'){from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];}
+  return period==='all'?tasks:tasks.filter(t=>t.startDate>=from);
+}
+
+function buildReport(){
+  const period=document.getElementById('rptPeriod').value;
+  const periodLabel={'week':'This Week','month':'This Month','all':'All Time'}[period];
+  document.getElementById('rptPeriodLabel').textContent='📄 '+periodLabel+' Report';
+
+  const rTasks=getReportTasks();
+  const emps=[...new Set(rTasks.map(t=>t.empName.trim()))].sort();
+  const total=rTasks.length;
+  const done=rTasks.filter(t=>t.status==='Done').length;
+  const blocked=rTasks.filter(t=>t.status==='Blocked').length;
+  const hrs=rTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+  const doneRate=total?Math.round(done/total*100):0;
+
+  const now=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  const RBADGE={'To Do':'rb-todo','In Progress':'rb-progress','In Review':'rb-review','Done':'rb-done','Blocked':'rb-blocked'};
+
+  // Employee breakdown
+  const maxHrs=emps.reduce((mx,e)=>Math.max(mx,rTasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0)),0)||1;
+  const empCards=emps.map(emp=>{
+    const et=rTasks.filter(t=>t.empName.trim()===emp);
+    const eh=et.reduce((s,t)=>s+(+t.timeSpent||0),0);
+    const ed=et.filter(t=>t.status==='Done').length;
+    const eb=et.filter(t=>t.status==='Blocked').length;
+    const pct=Math.round(eh/maxHrs*100);
+    return`<div class="rpt-emp-card">
+      <div class="rpt-emp-name">${esc(emp)}</div>
+      <div class="rpt-emp-bar"><div class="rpt-emp-bar-fill" style="width:${pct}%"></div></div>
+      <div class="rpt-emp-meta">
+        <span>Tasks <strong>${et.length}</strong></span>
+        <span>Hours <strong>${eh}h</strong></span>
+        <span>Done <strong>${ed}</strong></span>
+        ${eb?`<span style="color:#ef4444">Blocked <strong>${eb}</strong></span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Task table
+  const taskRows=rTasks.length?rTasks.map(t=>{
+    const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
+    return`<tr>
+      <td><strong>${esc(t.empName)}</strong></td>
+      <td>${esc(t.taskName)}</td>
+      <td>${ds}</td>
+      <td>${t.timeSpent}h</td>
+      <td><span class="rpt-badge ${RBADGE[t.status]||'rb-todo'}">${esc(t.status)}</span></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">No tasks for this period</td></tr>';
+
+  document.getElementById('rptBody').innerHTML=`
+    <div class="rpt-header">
+      <div>
+        <div class="rpt-title">⚡ Easy Tracker — ${periodLabel} Report</div>
+        <div class="rpt-subtitle">Generated on ${now}</div>
+      </div>
+      <div class="rpt-logo">📊</div>
+    </div>
+
+    <div class="rpt-stats">
+      <div class="rpt-stat"><div class="rn">${total}</div><div class="rl">Total Tasks</div></div>
+      <div class="rpt-stat"><div class="rn" style="color:#10b981">${done}</div><div class="rl">Completed</div></div>
+      <div class="rpt-stat"><div class="rn" style="color:#f59e0b">${doneRate}%</div><div class="rl">Done Rate</div></div>
+      <div class="rpt-stat"><div class="rn" style="color:#06b6d4">${hrs.toFixed(1)}h</div><div class="rl">Total Hours</div></div>
+    </div>
+
+    ${emps.length?`<div class="rpt-section">
+      <h3>👥 Team Breakdown</h3>
+      ${empCards}
+    </div>`:''}
+
+    <div class="rpt-section">
+      <h3>📋 Task Details</h3>
+      <table class="rpt-table">
+        <thead><tr><th>Employee</th><th>Task</th><th>Date</th><th>Hrs</th><th>Status</th></tr></thead>
+        <tbody>${taskRows}</tbody>
+      </table>
+    </div>
+
+    <div class="rpt-footer">
+      <span>Easy Tracker · AI Dashboard</span>
+      <span>ishbhatia/bandwidthTracker</span>
+    </div>
+  `;
 }
 
 // ── Init ──────────────────────────────────────────────────
