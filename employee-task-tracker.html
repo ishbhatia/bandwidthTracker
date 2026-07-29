@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Task Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
+    header{background:linear-gradient(135deg,#2563eb,#1e40af);color:white;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+    header h1{font-size:1.4rem;font-weight:700}
+    .hright{display:flex;align-items:center;gap:14px}
+    .gh-badge{display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#9ca3af}
+    .dot.ok{background:#4ade80}.dot.sync{background:#fbbf24;animation:blink 1s infinite}.dot.err{background:#f87171}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .btn-ghost{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer}
+    .btn-ghost:hover{background:rgba(255,255,255,.28)}
+    .container{max-width:1200px;margin:28px auto;padding:0 22px}
+    .card{background:white;border-radius:12px;padding:26px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:28px}
+    .card h2{font-size:1rem;font-weight:700;margin-bottom:18px;color:#1e40af}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+    .fg{display:flex;flex-direction:column;gap:5px}
+    .fg label{font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em}
+    .fg input,.fg select{padding:9px 11px;border:1px solid #d1d5db;border-radius:8px;font-size:.93rem;background:#fafafa;transition:border-color .2s}
+    .fg input:focus,.fg select:focus{outline:none;border-color:#2563eb;background:white}
+    .form-actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:9px 20px;border:none;border-radius:8px;font-size:.93rem;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-primary{background:#2563eb;color:white}.btn-primary:hover{background:#1d4ed8}
+    .btn-secondary{background:#e5e7eb;color:#374151}.btn-secondary:hover{background:#d1d5db}
+    .btn-danger{background:#fee2e2;color:#b91c1c}.btn-danger:hover{background:#fecaca}
+    .btn-success{background:#dcfce7;color:#166534}.btn-success:hover{background:#bbf7d0}
+    .btn-sm{padding:5px 11px;font-size:.8rem;border-radius:6px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+    .toolbar input,.toolbar select{padding:8px 13px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem;background:white}
+    .toolbar input{flex:1;min-width:180px}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:.88rem}
+    thead th{background:#f8fafc;color:#6b7280;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:11px 13px;text-align:left;border-bottom:2px solid #e5e7eb;white-space:nowrap;cursor:pointer;user-select:none}
+    thead th:hover{color:#2563eb}
+    tbody tr{border-bottom:1px solid #f1f5f9;transition:background .15s}
+    tbody tr:hover{background:#f8fafc}
+    tbody td{padding:12px 13px;vertical-align:middle}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.76rem;font-weight:600}
+    .badge-todo{background:#fef9c3;color:#854d0e}
+    .badge-progress{background:#dbeafe;color:#1d4ed8}
+    .badge-review{background:#ede9fe;color:#6d28d9}
+    .badge-done{background:#dcfce7;color:#166534}
+    .badge-blocked{background:#fee2e2;color:#991b1b}
+    .action-btns{display:flex;gap:7px}
+    .empty-state{text-align:center;padding:44px 20px;color:#9ca3af}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:28px}
+    .stat-card{background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07);text-align:center}
+    .stat-card .num{font-size:1.9rem;font-weight:700;color:#2563eb}
+    .stat-card .lbl{font-size:.75rem;color:#6b7280;margin-top:3px}
+    /* chart */
+    .chart-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+    .chart-tab{padding:6px 16px;border:1.5px solid #d1d5db;border-radius:20px;background:white;font-size:.83rem;font-weight:600;cursor:pointer;color:#6b7280;transition:all .2s}
+    .chart-tab.active{background:#2563eb;color:white;border-color:#2563eb}
+    .chart-tab:hover:not(.active){border-color:#2563eb;color:#2563eb}
+    .chart-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+    .chart-controls label{font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase}
+    .chart-controls input[type=date]{padding:7px 11px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem;background:#fafafa}
+    .ctrl-grp{display:flex;align-items:center;gap:7px}
+    .chart-wrap{position:relative;width:100%;min-height:320px}
+    .legend-wrap{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:.8rem;color:#374151}
+    .legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;color:#9ca3af;font-size:.93rem}
+    .chart-empty span{font-size:2.2rem;margin-bottom:8px}
+    /* modals */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+    .overlay.open{display:flex}
+    .modal{background:white;border-radius:14px;padding:30px;width:90%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+    .modal h2{font-size:1.05rem;font-weight:700;margin-bottom:18px;color:#1e40af}
+    .modal .form-grid{grid-template-columns:1fr 1fr}
+    .modal .form-actions{justify-content:flex-end;margin-top:18px}
+    /* setup modal */
+    .setup-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;font-size:.83rem;color:#1e40af;margin-bottom:16px;line-height:1.5}
+    .setup-note a{color:#2563eb;font-weight:600}
+    .token-row{display:flex;gap:8px;align-items:center}
+    .token-row input{flex:1}
+    /* toast */
+    .toast{position:fixed;bottom:26px;right:26px;background:#1e40af;color:white;padding:11px 20px;border-radius:10px;font-size:.88rem;font-weight:600;opacity:0;transform:translateY(14px);transition:all .3s;z-index:999;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:600px){.modal .form-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px;text-align:center}}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🗂️ Employee Task Tracker</h1>
+  <div class="hright">
+    <div class="gh-badge">
+      <div class="dot" id="ghDot"></div>
+      <span id="ghLabel">Not connected</span>
+    </div>
+    <button class="btn-ghost" onclick="openSetup()">⚙️ GitHub Setup</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="stats" id="stats"></div>
+
+  <!-- Add Task -->
+  <div class="card">
+    <h2>➕ Add New Task</h2>
+    <div class="form-grid">
+      <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
+      <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="e.g. 3.5" min="0" step="0.5"/></div>
+      <div class="fg"><label>Status</label>
+        <select id="status">
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+      <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <h2>📊 Day-wise Hours — All Employees</h2>
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="setChartMode('grouped')">Grouped</button>
+      <button class="chart-tab"        onclick="setChartMode('stacked')">Stacked</button>
+      <button class="chart-tab"        onclick="setChartMode('total')">Total / Day</button>
+    </div>
+    <div class="chart-controls">
+      <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
+      <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
+      <button class="btn btn-secondary btn-sm" onclick="resetChartDates()">Reset</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="barChart"></canvas>
+      <div class="chart-empty" id="chartEmpty" style="display:none"><span>📭</span>No data yet. Add tasks above!</div>
+    </div>
+    <div class="legend-wrap" id="chartLegend"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <h2>📋 All Tasks</h2>
+    <div class="toolbar">
+      <input id="searchInput" placeholder="🔍 Search employee or task…" oninput="renderTable()"/>
+      <select id="filterStatus" onchange="renderTable()">
+        <option value="">All Statuses</option>
+        <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+      </select>
+      <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇️ CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('empName')">Employee ⇅</th>
+          <th onclick="sortBy('taskName')">Task ⇅</th>
+          <th onclick="sortBy('startDate')">Start Date ⇅</th>
+          <th onclick="sortBy('timeSpent')">Time (hrs) ⇅</th>
+          <th onclick="sortBy('status')">Status ⇅</th>
+          <th>Actions</th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <h2>✏️ Edit Task</h2>
+    <div class="form-grid">
+      <div class="fg"><label>Employee Name</label><input id="editEmpName"/></div>
+      <div class="fg"><label>Task Name</label><input id="editTaskName"/></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="editStartDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="editTimeSpent" min="0" step="0.5"/></div>
+      <div class="fg" style="grid-column:span 2"><label>Status</label>
+        <select id="editStatus">
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub Setup Modal -->
+<div class="overlay" id="setupModal">
+  <div class="modal">
+    <h2>⚙️ GitHub Setup</h2>
+    <div class="setup-note">
+      Data is stored in <strong>data.json</strong> in your GitHub repo.<br/>
+      You need a <strong>Personal Access Token</strong> with <code>repo</code> scope.<br/>
+      <a href="https://github.com/settings/tokens/new?scopes=repo&description=TaskTracker" target="_blank">→ Create token on GitHub</a>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>GitHub Token</label>
+      <div class="token-row">
+        <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+        <button class="btn btn-secondary btn-sm" onclick="toggleTokenVis()">👁</button>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Repository (owner/repo)</label>
+      <input id="setupRepo" placeholder="ishbhatia/bandwidthTracker" value="ishbhatia/bandwidthTracker"/>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Branch</label>
+      <input id="setupBranch" placeholder="main" value="main"/>
+    </div>
+    <div class="fg" style="margin-bottom:4px">
+      <label>Data file path in repo</label>
+      <input id="setupPath" placeholder="data.json" value="data.json"/>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('setupModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSetup()">Connect &amp; Load</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────
+const REPO_DEFAULT   = 'ishbhatia/bandwidthTracker';
+const BRANCH_DEFAULT = 'main';
+const PATH_DEFAULT   = 'data.json';
+
+function getCfg() {
+  return {
+    token  : localStorage.getItem('gh_token')  || '',
+    repo   : localStorage.getItem('gh_repo')   || REPO_DEFAULT,
+    branch : localStorage.getItem('gh_branch') || BRANCH_DEFAULT,
+    path   : localStorage.getItem('gh_path')   || PATH_DEFAULT,
+  };
+}
+
+// ── State ─────────────────────────────────────────────────
+let tasks     = [];
+let fileSHA   = '';          // GitHub needs the current SHA to update a file
+let editIndex = null;
+let sortKey   = 'startDate';
+let sortAsc   = true;
+
+const STATUS_BADGE = {
+  'To Do':'badge-todo','In Progress':'badge-progress',
+  'In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked'
+};
+const PALETTE = [
+  '#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2',
+  '#db2777','#65a30d','#ea580c','#0284c7','#9333ea','#15803d'
+];
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── GitHub status indicator ───────────────────────────────
+function setGhStatus(state, label) {
+  const dot = document.getElementById('ghDot');
+  const lbl = document.getElementById('ghLabel');
+  dot.className = 'dot ' + state;
+  lbl.textContent = label;
+}
+
+// ── GitHub API helpers ────────────────────────────────────
+async function ghFetch(method, endpoint, body) {
+  const { token } = getCfg();
+  const res = await fetch('https://api.github.com' + endpoint, {
+    method,
+    headers: {
+      Authorization: 'token ' + token,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github+json'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || res.statusText);
+  }
+  return res.json();
+}
+
+// ── Load data from GitHub ─────────────────────────────────
+async function loadFromGitHub() {
+  const cfg = getCfg();
+  if (!cfg.token) { openSetup(); return; }
+  setGhStatus('sync', 'Loading…');
+  try {
+    const data = await ghFetch('GET', `/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`);
+    fileSHA = data.sha;
+    const json = JSON.parse(atob(data.content.replace(/\n/g, '')));
+    tasks = Array.isArray(json) ? json : [];
+    setGhStatus('ok', 'Synced');
+    renderAll();
+    showToast('🔄 Loaded from GitHub');
+  } catch(e) {
+    // file might not exist yet — that's fine
+    if (e.message.includes('Not Found') || e.message.includes('404')) {
+      tasks = []; fileSHA = '';
+      setGhStatus('ok', 'Connected (empty)');
+      renderAll();
+    } else {
+      setGhStatus('err', 'Error');
+      showToast('❌ ' + e.message);
+    }
+  }
+}
+
+// ── Save data to GitHub ───────────────────────────────────
+async function saveToGitHub(commitMsg) {
+  const cfg = getCfg();
+  if (!cfg.token) { showToast('⚠️ Set up GitHub first'); openSetup(); return; }
+  setGhStatus('sync', 'Saving…');
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(tasks, null, 2))));
+    const body = {
+      message : commitMsg || 'Update tasks',
+      content,
+      branch  : cfg.branch,
+    };
+    if (fileSHA) body.sha = fileSHA;
+    const res = await ghFetch('PUT', `/repos/${cfg.repo}/contents/${cfg.path}`, body);
+    fileSHA = res.content.sha;
+    setGhStatus('ok', 'Saved ✓');
+    const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    showToast('✅ Saved to GitHub · ' + now);
+  } catch(e) {
+    setGhStatus('err', 'Save failed');
+    showToast('❌ ' + e.message);
+    throw e;
+  }
+}
+
+// ── Setup modal ───────────────────────────────────────────
+function openSetup() {
+  const cfg = getCfg();
+  document.getElementById('setupToken').value  = cfg.token;
+  document.getElementById('setupRepo').value   = cfg.repo;
+  document.getElementById('setupBranch').value = cfg.branch;
+  document.getElementById('setupPath').value   = cfg.path;
+  document.getElementById('setupModal').classList.add('open');
+}
+
+function toggleTokenVis() {
+  const inp = document.getElementById('setupToken');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function saveSetup() {
+  const token  = document.getElementById('setupToken').value.trim();
+  const repo   = document.getElementById('setupRepo').value.trim();
+  const branch = document.getElementById('setupBranch').value.trim() || 'main';
+  const path   = document.getElementById('setupPath').value.trim()   || 'data.json';
+  if (!token || !repo) { alert('Token and repository are required.'); return; }
+  localStorage.setItem('gh_token',  token);
+  localStorage.setItem('gh_repo',   repo);
+  localStorage.setItem('gh_branch', branch);
+  localStorage.setItem('gh_path',   path);
+  closeModal('setupModal');
+  await loadFromGitHub();
+}
+
+// ── CRUD ──────────────────────────────────────────────────
+async function addTask() {
+  const empName   = document.getElementById('empName').value.trim();
+  const taskName  = document.getElementById('taskName').value.trim();
+  const startDate = document.getElementById('startDate').value;
+  const timeSpent = parseFloat(document.getElementById('timeSpent').value);
+  const status    = document.getElementById('status').value;
+  if (!empName || !taskName || !startDate || isNaN(timeSpent) || timeSpent < 0) {
+    alert('Please fill in all fields with valid values.'); return;
+  }
+  const task = { id: Date.now(), empName, taskName, startDate, timeSpent, status };
+  tasks.push(task);
+  renderAll();
+  clearForm();
+  await saveToGitHub(`Add task: ${taskName} (${empName})`);
+}
+
+function clearForm() {
+  ['empName','taskName','timeSpent'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('startDate').valueAsDate = new Date();
+  document.getElementById('status').value = 'To Do';
+}
+
+async function deleteTask(idx) {
+  if (!confirm('Delete this task? This cannot be undone.')) return;
+  const t = tasks[idx];
+  tasks.splice(idx, 1);
+  renderAll();
+  await saveToGitHub(`Delete task: ${t.taskName} (${t.empName})`);
+}
+
+function openEdit(idx) {
+  editIndex = idx;
+  const t = tasks[idx];
+  document.getElementById('editEmpName').value   = t.empName;
+  document.getElementById('editTaskName').value  = t.taskName;
+  document.getElementById('editStartDate').value = t.startDate;
+  document.getElementById('editTimeSpent').value = t.timeSpent;
+  document.getElementById('editStatus').value    = t.status;
+  document.getElementById('editModal').classList.add('open');
+}
+
+async function saveEdit() {
+  const empName   = document.getElementById('editEmpName').value.trim();
+  const taskName  = document.getElementById('editTaskName').value.trim();
+  const startDate = document.getElementById('editStartDate').value;
+  const timeSpent = parseFloat(document.getElementById('editTimeSpent').value);
+  const status    = document.getElementById('editStatus').value;
+  if (!empName || !taskName || !startDate || isNaN(timeSpent) || timeSpent < 0) {
+    alert('Please fill in all fields.'); return;
+  }
+  tasks[editIndex] = { ...tasks[editIndex], empName, taskName, startDate, timeSpent, status };
+  closeModal('editModal');
+  renderAll();
+  await saveToGitHub(`Update task: ${taskName} (${empName})`);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  editIndex = null;
+}
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+
+<script>
+// ── Sort / Filter ─────────────────────────────────────────
+function sortBy(key) {
+  sortAsc = (sortKey === key) ? !sortAsc : true;
+  sortKey = key;
+  renderTable();
+}
+function getSorted(list) {
+  return [...list].sort((a, b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    if (sortKey === 'timeSpent') { va = +va; vb = +vb; }
+    return va < vb ? (sortAsc ? -1 : 1) : va > vb ? (sortAsc ? 1 : -1) : 0;
+  });
+}
+function getFiltered() {
+  const s = document.getElementById('searchInput').value.toLowerCase();
+  const st = document.getElementById('filterStatus').value;
+  return tasks.filter(t =>
+    (!s  || t.empName.toLowerCase().includes(s) || t.taskName.toLowerCase().includes(s)) &&
+    (!st || t.status === st)
+  );
+}
+
+// ── Render Table ──────────────────────────────────────────
+function renderTable() {
+  const rows = getSorted(getFiltered());
+  const tb   = document.getElementById('tableBody');
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p style="font-size:2rem;margin-bottom:8px">📄</p><p>No tasks yet. Add one above!</p></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(t => {
+    const i  = tasks.indexOf(t);
+    const bc = STATUS_BADGE[t.status] || 'badge-todo';
+    const ds = t.startDate ? new Date(t.startDate + 'T00:00:00').toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '—';
+    return `<tr>
+      <td><strong>${esc(t.empName)}</strong></td>
+      <td>${esc(t.taskName)}</td><td>${ds}</td><td>${t.timeSpent} hrs</td>
+      <td><span class="badge ${bc}">${esc(t.status)}</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button>
+        <button class="btn btn-danger btn-sm"    onclick="deleteTask(${i})">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Render Stats ──────────────────────────────────────────
+function renderStats() {
+  const total   = tasks.length;
+  const done    = tasks.filter(t => t.status === 'Done').length;
+  const inProg  = tasks.filter(t => t.status === 'In Progress').length;
+  const blocked = tasks.filter(t => t.status === 'Blocked').length;
+  const hrs     = tasks.reduce((s, t) => s + (+t.timeSpent || 0), 0);
+  const emps    = new Set(tasks.map(t => t.empName.trim().toLowerCase())).size;
+  document.getElementById('stats').innerHTML = [
+    { num: total,          lbl: 'Total Tasks'  },
+    { num: emps,           lbl: 'Employees'    },
+    { num: inProg,         lbl: 'In Progress'  },
+    { num: done,           lbl: 'Done'         },
+    { num: blocked,        lbl: 'Blocked'      },
+    { num: hrs.toFixed(1), lbl: 'Total Hours'  },
+  ].map(s => `<div class="stat-card"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
+}
+
+function renderAll() { renderStats(); renderTable(); renderChart(); }
+
+// ── Export CSV ────────────────────────────────────────────
+function exportCSV() {
+  if (!tasks.length) { alert('No tasks to export.'); return; }
+  const rows = tasks.map(t =>
+    [t.empName, t.taskName, t.startDate, t.timeSpent, t.status]
+      .map(v => `"${String(v).replace(/"/g,'""')}"`)
+      .join(',')
+  );
+  const csv  = [['Employee','Task','Start Date','Hrs','Status'].join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a    = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'tasks.csv' });
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('⬇️ CSV exported!');
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Chart ─────────────────────────────────────────────────
+let chartInst = null;
+let chartMode = 'grouped';
+
+function setChartMode(m) {
+  chartMode = m;
+  document.querySelectorAll('.chart-tab').forEach((b,i) =>
+    b.classList.toggle('active', ['grouped','stacked','total'][i] === m)
+  );
+  renderChart();
+}
+function resetChartDates() {
+  document.getElementById('chartFrom').value = '';
+  document.getElementById('chartTo').value   = '';
+  renderChart();
+}
+function renderChart() {
+  const from = document.getElementById('chartFrom').value;
+  const to   = document.getElementById('chartTo').value;
+  const filt = tasks.filter(t => t.startDate &&
+    (!from || t.startDate >= from) && (!to || t.startDate <= to));
+  const empty  = document.getElementById('chartEmpty');
+  const canvas = document.getElementById('barChart');
+  if (!filt.length) {
+    empty.style.display = 'flex'; canvas.style.display = 'none';
+    document.getElementById('chartLegend').innerHTML = '';
+    if (chartInst) { chartInst.destroy(); chartInst = null; }
+    return;
+  }
+  empty.style.display = 'none'; canvas.style.display = 'block';
+  const dates = [...new Set(filt.map(t => t.startDate))].sort();
+  const emps  = [...new Set(filt.map(t => t.empName.trim()))].sort();
+  const fmt   = d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  let datasets;
+  if (chartMode === 'total') {
+    datasets = [{ label:'Total Hours', data: dates.map(d => filt.filter(t => t.startDate===d).reduce((s,t)=>s+(+t.timeSpent||0),0)), backgroundColor:'#2563eb', borderRadius:5, borderSkipped:false }];
+  } else {
+    datasets = emps.map((emp, i) => ({
+      label: emp,
+      data: dates.map(d => filt.filter(t => t.startDate===d && t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),
+      backgroundColor: PALETTE[i % PALETTE.length],
+      borderRadius: chartMode==='grouped' ? 5 : 0,
+      borderSkipped: false
+    }));
+  }
+  const cfg = {
+    type:'bar', data:{ labels: dates.map(fmt), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y} hrs` }}},
+      scales:{
+        x:{ stacked: chartMode==='stacked', grid:{display:false}, ticks:{font:{size:11}} },
+        y:{ stacked: chartMode==='stacked', beginAtZero:true, ticks:{ callback: v=>v+'h' }, grid:{color:'#f1f5f9'} }
+      }
+    }
+  };
+  if (chartInst) chartInst.destroy();
+  chartInst = new Chart(canvas, cfg);
+  const leg = (chartMode==='total')
+    ? `<div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>Total Hours</div>`
+    : emps.map((e,i) => `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`).join('');
+  document.getElementById('chartLegend').innerHTML = leg;
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.getElementById('startDate').valueAsDate = new Date();
+(function initChartDates() {
+  const to = new Date(), from = new Date();
+  from.setDate(from.getDate() - 29);
+  document.getElementById('chartTo').valueAsDate   = to;
+  document.getElementById('chartFrom').valueAsDate = from;
+})();
+
+// On load: if token saved → load from GitHub, else show setup
+if (getCfg().token) {
+  loadFromGitHub();
+} else {
+  renderAll();
+  openSetup();
+}
+</script>
+</body>
+</html>
