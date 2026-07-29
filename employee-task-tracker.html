@@ -69,6 +69,22 @@
     .legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
     .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;color:#9ca3af;font-size:.93rem}
     .chart-empty span{font-size:2.2rem;margin-bottom:8px}
+    /* ── Timeline / Gantt ───────────────────────── */
+    .tl-wrap{overflow-x:auto;padding-bottom:8px}
+    .tl-grid{min-width:600px}
+    .tl-header{display:flex;margin-left:140px;margin-bottom:4px}
+    .tl-day-label{flex:1;text-align:center;font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;white-space:nowrap;padding:0 2px}
+    .tl-row{display:flex;align-items:center;margin-bottom:6px;min-height:34px}
+    .tl-emp{width:140px;min-width:140px;font-size:.8rem;font-weight:700;color:#374151;padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tl-cells{display:flex;flex:1;gap:3px;align-items:center}
+    .tl-cell{flex:1;height:28px;border-radius:6px;position:relative;display:flex;align-items:center;justify-content:center;cursor:default;transition:opacity .15s}
+    .tl-cell:hover{opacity:.85}
+    .tl-cell.empty{background:#f1f5f9}
+    .tl-cell .tl-hrs{font-size:.68rem;font-weight:700;color:white;text-shadow:0 1px 2px rgba(0,0,0,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+    .tl-cell .tl-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:white;font-size:.72rem;padding:5px 9px;border-radius:7px;white-space:nowrap;z-index:50;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+    .tl-cell:hover .tl-tip{display:block}
+    .tl-divider{border:none;border-top:1px solid #e5e7eb;margin:10px 0}
+    .tl-empty{text-align:center;padding:36px;color:#9ca3af;font-size:.9rem}
     /* modals */
     .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
     .overlay.open{display:flex}
@@ -141,6 +157,16 @@
       <div class="chart-empty" id="chartEmpty" style="display:none"><span>📭</span>No data yet. Add tasks above!</div>
     </div>
     <div class="legend-wrap" id="chartLegend"></div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card">
+    <h2>📅 Task Timeline — All Employees (Parallel)</h2>
+    <div class="tl-wrap">
+      <div class="tl-grid" id="tlGrid">
+        <div class="tl-empty">No tasks yet. Add some tasks above!</div>
+      </div>
+    </div>
   </div>
 
   <!-- Table -->
@@ -506,7 +532,60 @@ function renderStats() {
   ].map(s => `<div class="stat-card"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
 }
 
-function renderAll() { renderStats(); renderTable(); renderChart(); }
+function renderAll() { renderStats(); renderTable(); renderChart(); renderTimeline(); }
+
+// ── Timeline ──────────────────────────────────────────────
+function renderTimeline() {
+  const grid = document.getElementById('tlGrid');
+  if (!tasks.length) {
+    grid.innerHTML = '<div class="tl-empty">No tasks yet. Add some tasks above!</div>';
+    return;
+  }
+
+  // All unique sorted dates across all tasks
+  const allDates = [...new Set(tasks.map(t => t.startDate).filter(Boolean))].sort();
+  // All unique employees sorted
+  const allEmps  = [...new Set(tasks.map(t => t.empName.trim()))].sort();
+
+  const fmtDay = d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month:'short', day:'numeric' });
+
+  // Build header row
+  const headerCols = allDates.map(d =>
+    `<div class="tl-day-label">${fmtDay(d)}</div>`
+  ).join('');
+
+  // Build one row per employee
+  const rows = allEmps.map((emp, ei) => {
+    const color = PALETTE[ei % PALETTE.length];
+
+    const cells = allDates.map(date => {
+      // All tasks for this employee on this day
+      const dayTasks = tasks.filter(t => t.empName.trim() === emp && t.startDate === date);
+      if (!dayTasks.length) {
+        return `<div class="tl-cell empty"></div>`;
+      }
+      const totalHrs  = dayTasks.reduce((s, t) => s + (+t.timeSpent || 0), 0);
+      const taskNames = dayTasks.map(t => `${t.taskName} (${t.timeSpent}h)`).join(', ');
+      const statuses  = [...new Set(dayTasks.map(t => t.status))].join(', ');
+      return `<div class="tl-cell" style="background:${color}">
+        <span class="tl-hrs">${totalHrs}h</span>
+        <div class="tl-tip">${esc(emp)}: ${esc(taskNames)}<br/>Status: ${esc(statuses)}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="tl-row">
+      <div class="tl-emp" title="${esc(emp)}">${esc(emp)}</div>
+      <div class="tl-cells">${cells}</div>
+    </div>`;
+  }).join('<hr class="tl-divider"/>');
+
+  grid.innerHTML = `
+    <div class="tl-header">
+      <div style="width:0"></div>${headerCols}
+    </div>
+    ${rows}
+  `;
+}
 
 // ── Export CSV ────────────────────────────────────────────
 function exportCSV() {
