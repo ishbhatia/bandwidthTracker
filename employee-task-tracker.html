@@ -570,7 +570,12 @@ CR-202 Dark mode feature request
     <div class="fg"><label>Data file path</label><input id="setupPath" value="data.json"/></div>
     <div class="fg"><label>OpenAI API Key (optional)</label><input type="password" id="setupOpenAI" placeholder="sk-…"/></div>
     <div class="fg"><label>Redmine URL</label><input id="setupRedmineUrl" placeholder="http://svn.aps1aws.lumiq.int" value="http://svn.aps1aws.lumiq.int"/></div>
-    <div class="fg"><label>Redmine API Key</label><input type="password" id="setupRedmineKey" placeholder="your-redmine-api-key"/></div>
+    <div class="fg"><label>Redmine API Key</label>
+      <div class="token-row">
+        <input type="password" id="setupRedmineKey" placeholder="your-redmine-api-key"/>
+        <button class="btn btn-secondary btn-sm" onclick="toggleRedmineVis()">👁</button>
+      </div>
+    </div>
     <div class="fg"><label>Redmine Project Identifier</label><input id="setupRedmineProject" placeholder="e.g. oktovia-recur-df" value="oktovia-recur-df"/></div>
     <div class="fg"><label>Microsoft Client ID (for Outlook)</label><input id="setupMsClientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
     <div class="fg"><label>Microsoft Tenant ID</label><input id="setupMsTenantId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
@@ -605,7 +610,9 @@ CR-202 Dark mode feature request
 <script>
 // ── Config ────────────────────────────────────────────────
 const REPO_DEFAULT='ishbhatia/bandwidthTracker',BRANCH_DEFAULT='main',PATH_DEFAULT='data.json';
-function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||'http://svn.aps1aws.lumiq.int',redmineKey:localStorage.getItem('redmine_key')||'',redmineProject:localStorage.getItem('redmine_project')||'oktovia-recur-df',msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
+const REDMINE_DEFAULT_URL='http://svn.aps1aws.lumiq.int';
+const REDMINE_DEFAULT_PROJECT='oktovia-recur-df';
+function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||REDMINE_DEFAULT_URL,redmineKey:localStorage.getItem('redmine_key')||'',redmineProject:localStorage.getItem('redmine_project')||REDMINE_DEFAULT_PROJECT,msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
 // ── State ─────────────────────────────────────────────────
 let tasks=[],fileSHA='',editIndex=null,sortKey='startDate',sortAsc=true;
 const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked'};
@@ -654,6 +661,7 @@ async function saveToGitHub(msg){
 // ── Setup ─────────────────────────────────────────────────
 function openSetup(){const c=getCfg();document.getElementById('setupToken').value=c.token;document.getElementById('setupRepo').value=c.repo;document.getElementById('setupBranch').value=c.branch;document.getElementById('setupPath').value=c.path;document.getElementById('setupOpenAI').value=c.openai;document.getElementById('setupRedmineUrl').value=c.redmineUrl;document.getElementById('setupRedmineKey').value=c.redmineKey;document.getElementById('setupRedmineProject').value=c.redmineProject;document.getElementById('setupMsClientId').value=c.msClientId;document.getElementById('setupMsTenantId').value=c.msTenantId;document.getElementById('setupModal').classList.add('open');}
 function toggleTokenVis(){const i=document.getElementById('setupToken');i.type=i.type==='password'?'text':'password';}
+function toggleRedmineVis(){const i=document.getElementById('setupRedmineKey');i.type=i.type==='password'?'text':'password';}
 async function saveSetup(){
   const token=document.getElementById('setupToken').value.trim(),repo=document.getElementById('setupRepo').value.trim(),branch=document.getElementById('setupBranch').value.trim()||'main',path=document.getElementById('setupPath').value.trim()||'data.json',openai=document.getElementById('setupOpenAI').value.trim();
   const redmineUrl=document.getElementById('setupRedmineUrl').value.trim(),redmineKey=document.getElementById('setupRedmineKey').value.trim(),redmineProject=document.getElementById('setupRedmineProject').value.trim();
