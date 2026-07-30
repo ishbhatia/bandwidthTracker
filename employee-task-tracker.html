@@ -449,7 +449,7 @@
       <div class="outlook-connect-bar" id="outlookBar">
         <div class="oc-info">
           <strong>📧 Connect Outlook</strong> — auto-fetch CR/PD/DM emails from your inbox<br/>
-          <span id="outlookStatus">Paste your Graph Explorer token below OR sign in with Microsoft Client ID</span>
+          <span id="outlookStatus">Click "Sign in with Microsoft" — no Client ID needed</span>
         </div>
         <button class="ms-btn" id="outlookBtn" onclick="connectOutlook()">
           <svg width="16" height="16" viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
@@ -1068,14 +1068,12 @@ let msalToken=null;
 
 function connectOutlook(){
   const cfg=getCfg();
-  if(!cfg.msClientId){
-    alert('Please add your Microsoft Client ID in ⚙ Setup first.\n\nGet it from: portal.azure.com → App Registrations');
-    openSetup();return;
-  }
+  // Use Graph Explorer's public client ID if no custom one configured
+  const clientId=cfg.msClientId||'de8bc8b5-d9f9-48b1-a8ad-b748da725064';
   const tenantId=cfg.msTenantId||'common';
-  const redirectUri=encodeURIComponent(window.location.href.split('?')[0]);
+  const redirectUri=encodeURIComponent(window.location.href.split('?')[0].split('#')[0]);
   const scope=encodeURIComponent('https://graph.microsoft.com/Mail.Read');
-  const authUrl=`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?client_id=${cfg.msClientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scope}&response_mode=fragment`;
+  const authUrl=`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scope}&response_mode=fragment`;
   // Open popup
   const popup=window.open(authUrl,'ms-auth','width=500,height=600,scrollbars=yes');
   // Listen for token in URL hash (implicit flow)
