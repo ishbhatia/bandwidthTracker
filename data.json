@@ -200,17 +200,6 @@
     "status": "In Progress"
   },
   {
-    "id": 1785408428413.2793,
-    "empName": "ishant",
-    "taskName": "[CR] Re: CR-46695 || Testing Observation || UAT",
-    "startDate": "2026-07-30",
-    "timeSpent": 1,
-    "status": "To Do",
-    "taskType": "CR",
-    "redmineId": null,
-    "redmineUrl": null
-  },
-  {
     "id": 1785408428413.1917,
     "empName": "ishant",
     "taskName": "[CR] Re: CR-18022||Case got stucked in data error queue",
