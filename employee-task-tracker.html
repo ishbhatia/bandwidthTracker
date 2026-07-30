@@ -260,6 +260,43 @@
     /* ── glow pulse on stat cards ── */
     @keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(99,102,241,.15)}}
 
+    /* ── Tab Nav ── */
+    .tab-nav{position:relative;z-index:1;display:flex;gap:4px;padding:0 28px;background:rgba(17,24,39,.8);border-bottom:1px solid var(--border)}
+    .tab-btn{padding:10px 18px;font-size:.78rem;font-weight:600;color:var(--muted);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:#a5b4fc;border-bottom-color:var(--accent)}
+    .tab-page{display:none}.tab-page.active{display:block}
+
+    /* ── Outlook Scraper page ── */
+    .scraper-page{max-width:1100px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start}
+    @media(max-width:860px){.scraper-page{grid-template-columns:1fr}}
+    .type-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+    .type-cr{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+    .type-pd{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+    .type-dm{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+    .type-unknown{background:rgba(100,116,139,.12);color:#94a3b8;border:1px solid rgba(100,116,139,.25)}
+    .scraper-textarea{width:100%;height:180px;padding:12px;border:1px solid var(--border);border-radius:10px;
+      background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit;resize:vertical;line-height:1.6}
+    .scraper-textarea::placeholder{color:var(--muted)}
+    .scraper-textarea:focus{outline:none;border-color:var(--accent)}
+    .preview-table{width:100%;border-collapse:collapse;font-size:.8rem}
+    .preview-table th{background:var(--surface2);color:var(--muted);font-size:.65rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0}
+    .preview-table td{padding:9px 11px;border-bottom:1px solid rgba(30,45,69,.5);vertical-align:middle}
+    .preview-table tr:hover td{background:rgba(99,102,241,.04)}
+    .preview-table input,.preview-table select{padding:5px 8px;border:1px solid var(--border);border-radius:6px;
+      background:var(--surface);color:var(--text);font-size:.78rem;font-family:inherit;width:100%}
+    .preview-table input:focus,.preview-table select:focus{outline:none;border-color:var(--accent)}
+    .preview-table select option{background:var(--surface)}
+    .preview-wrap{max-height:400px;overflow-y:auto}
+    .preview-wrap::-webkit-scrollbar{width:4px}
+    .preview-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .legend-box{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .import-summary{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;
+      padding:12px 16px;font-size:.8rem;color:#34d399;display:none;margin-top:12px}
+    .remove-row{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 6px;border-radius:4px}
+    .remove-row:hover{color:var(--red);background:rgba(239,68,68,.1)}
+
     @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px}.stats-row{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
@@ -279,6 +316,14 @@
   </div>
 </header>
 
+<!-- Tab Navigation -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper</button>
+</nav>
+
+<!-- Dashboard Tab -->
+<div class="tab-page active" id="tab-dashboard">
 <div class="page">
   <!-- Stats row -->
   <div class="stats-row" id="stats"></div>
@@ -373,7 +418,80 @@
       </div>
     </div>
   </div>
+</div><!-- end .page -->
+</div><!-- end #tab-dashboard -->
+
+<!-- Outlook Scraper Tab -->
+<div class="tab-page" id="tab-scraper">
+<div class="scraper-page">
+
+  <!-- LEFT: Paste + settings -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div class="card">
+      <div class="card-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Paste Outlook Subject Lines</div>
+      <div class="legend-box">
+        <span class="type-pill type-cr">CR — Feature</span>
+        <span class="type-pill type-pd">PD — Prod Defect</span>
+        <span class="type-pill type-dm">DM — Non-Prod Defect</span>
+      </div>
+      <textarea class="scraper-textarea" id="subjectInput" placeholder="Paste subject lines here, one per line:
+
+CR-101: Add user authentication
+PD - Payment gateway failing
+DM: Dashboard not loading in staging
+CR-202 Dark mode feature request
+[PD] API timeout on checkout"></textarea>
+      <div class="form-actions" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="parseSubjects()">🔍 Parse Subjects</button>
+        <button class="btn btn-secondary" onclick="clearScraper()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Global defaults -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot"></span>Default Values</div>
+      <div class="fg"><label>Assign To (Employee)</label><input id="scraperEmp" placeholder="e.g. Alice Johnson"/></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="scraperDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="scraperHrs" placeholder="1" min="0" step="0.5" value="1"/></div>
+      <div class="fg"><label>Status</label>
+        <select id="scraperStatus">
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+        </select>
+      </div>
+      <p style="font-size:.72rem;color:var(--muted);margin-top:4px">These are applied to all rows. You can override each row individually in the preview.</p>
+    </div>
+  </div>
+
+  <!-- RIGHT: Preview table -->
+  <div class="card">
+    <div class="card-title"><span class="ct-dot"></span>Parsed Tasks Preview <span id="previewCount" style="color:var(--muted);font-weight:400;font-size:.72rem;margin-left:6px"></span></div>
+    <div id="previewEmpty" style="text-align:center;padding:48px 20px;color:var(--muted)">
+      <div style="font-size:2rem;margin-bottom:8px">📋</div>
+      Paste subject lines and click Parse to see tasks here
+    </div>
+    <div class="preview-wrap" id="previewWrap" style="display:none">
+      <table class="preview-table">
+        <thead><tr>
+          <th>Type</th>
+          <th>Task Name</th>
+          <th>Employee</th>
+          <th>Date</th>
+          <th>Hrs</th>
+          <th>Status</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+    <div id="importSummary" class="import-summary"></div>
+    <div class="form-actions" style="margin-top:14px" id="importActions" style="display:none">
+      <button class="btn btn-primary" id="importBtn" onclick="importParsed()" style="display:none">✅ Import All to Tracker</button>
+      <button class="btn btn-secondary btn-sm" onclick="applyDefaults()">↺ Re-apply Defaults</button>
+    </div>
+  </div>
+
 </div>
+</div><!-- end #tab-scraper -->
 
 <!-- Edit Modal -->
 <div class="overlay" id="editModal">
@@ -820,8 +938,150 @@ function buildReport(){
   `;
 }
 
+// ── Tab switching ─────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
+}
+
+// ── Outlook Scraper ───────────────────────────────────────
+let parsedRows=[];
+
+const TYPE_RULES=[
+  {key:'CR',  label:'CR',  fullLabel:'Change Request (Feature)', cls:'type-cr', status:'To Do'},
+  {key:'PD',  label:'PD',  fullLabel:'Production Defect',        cls:'type-pd', status:'To Do'},
+  {key:'DM',  label:'DM',  fullLabel:'Non-Prod Defect',          cls:'type-dm', status:'To Do'},
+];
+
+function detectType(subject){
+  const s=subject.toUpperCase();
+  for(const r of TYPE_RULES){
+    // match CR, CR-, CR:, [CR], (CR), CR123, CR-123 etc
+    if(new RegExp('(^|[^A-Z])'+r.key+'([^A-Z]|\\d|$)').test(s))return r;
+  }
+  return{key:'?',label:'Unknown',fullLabel:'Unknown',cls:'type-unknown',status:'To Do'};
+}
+
+function cleanTaskName(subject,typeKey){
+  // Remove type prefix patterns like CR-123:, [PD], (DM), PD -, CR:, etc.
+  return subject
+    .replace(/^\[.*?\]\s*/,'')
+    .replace(/^\(.*?\)\s*/,'')
+    .replace(new RegExp('^'+typeKey+'[-:_#\\s]*\\d*[-:_#\\s]*','i'),'')
+    .replace(/^[-:\s]+/,'')
+    .trim()||subject.trim();
+}
+
+function parseSubjects(){
+  const raw=document.getElementById('subjectInput').value;
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  if(!lines.length){alert('Please paste at least one subject line.');return;}
+
+  const emp=document.getElementById('scraperEmp').value.trim();
+  const date=document.getElementById('scraperDate').value;
+  const hrs=document.getElementById('scraperHrs').value||'1';
+  const status=document.getElementById('scraperStatus').value;
+
+  parsedRows=lines.map((line,i)=>{
+    const type=detectType(line);
+    return{id:i,originalSubject:line,type,taskName:cleanTaskName(line,type.key),emp,date,hrs,status};
+  });
+
+  renderPreview();
+  document.getElementById('previewEmpty').style.display='none';
+  document.getElementById('previewWrap').style.display='block';
+  document.getElementById('importBtn').style.display='inline-flex';
+  document.getElementById('importActions').style.display='flex';
+  document.getElementById('importSummary').style.display='none';
+  document.getElementById('previewCount').textContent=`(${parsedRows.length} task${parsedRows.length>1?'s':''} detected)`;
+}
+
+function renderPreview(){
+  const STATUS_OPTS=['To Do','In Progress','In Review','Done','Blocked'].map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('previewBody').innerHTML=parsedRows.map((r,i)=>`
+    <tr id="pr-${i}">
+      <td><span class="type-pill ${r.type.cls}" title="${r.type.fullLabel}">${r.type.label}</span></td>
+      <td><input value="${esc(r.taskName)}" onchange="parsedRows[${i}].taskName=this.value" style="min-width:160px"/></td>
+      <td><input value="${esc(r.emp)}" onchange="parsedRows[${i}].emp=this.value" placeholder="Employee"/></td>
+      <td><input type="date" value="${r.date}" onchange="parsedRows[${i}].date=this.value"/></td>
+      <td><input type="number" value="${r.hrs}" min="0" step="0.5" onchange="parsedRows[${i}].hrs=this.value" style="width:60px"/></td>
+      <td><select onchange="parsedRows[${i}].status=this.value">${STATUS_OPTS.replace(`<option>${r.status}</option>`,`<option selected>${r.status}</option>`)}</select></td>
+      <td><button class="remove-row" onclick="removeRow(${i})" title="Remove">✕</button></td>
+    </tr>`).join('');
+}
+
+function removeRow(i){
+  parsedRows.splice(i,1);
+  if(!parsedRows.length){
+    document.getElementById('previewWrap').style.display='none';
+    document.getElementById('previewEmpty').style.display='block';
+    document.getElementById('importBtn').style.display='none';
+    document.getElementById('previewCount').textContent='';
+    return;
+  }
+  parsedRows.forEach((r,idx)=>r.id=idx);
+  renderPreview();
+  document.getElementById('previewCount').textContent=`(${parsedRows.length} task${parsedRows.length>1?'s':''} detected)`;
+}
+
+function applyDefaults(){
+  const emp=document.getElementById('scraperEmp').value.trim();
+  const date=document.getElementById('scraperDate').value;
+  const hrs=document.getElementById('scraperHrs').value||'1';
+  const status=document.getElementById('scraperStatus').value;
+  parsedRows.forEach(r=>{if(emp)r.emp=emp;if(date)r.date=date;r.hrs=hrs;r.status=status;});
+  renderPreview();
+}
+
+async function importParsed(){
+  const invalid=parsedRows.filter(r=>!r.emp||!r.date||!r.taskName);
+  if(invalid.length){alert(`${invalid.length} row(s) are missing Employee or Date. Please fill them in.`);return;}
+
+  const newTasks=parsedRows.map(r=>({
+    id:Date.now()+Math.random(),
+    empName:r.emp,
+    taskName:`[${r.type.label}] ${r.taskName}`,
+    startDate:r.date,
+    timeSpent:parseFloat(r.hrs)||1,
+    status:r.status,
+    taskType:r.type.key
+  }));
+
+  tasks.push(...newTasks);
+  renderAll();
+
+  const summary=document.getElementById('importSummary');
+  summary.style.display='block';
+  const cr=parsedRows.filter(r=>r.type.key==='CR').length;
+  const pd=parsedRows.filter(r=>r.type.key==='PD').length;
+  const dm=parsedRows.filter(r=>r.type.key==='DM').length;
+  summary.innerHTML=`✅ Imported ${newTasks.length} task(s) — CR: ${cr} · PD: ${pd} · DM: ${dm}. Saving to GitHub…`;
+
+  await saveToGitHub(`Import ${newTasks.length} tasks from Outlook (CR:${cr} PD:${pd} DM:${dm})`);
+  summary.innerHTML=`✅ ${newTasks.length} task(s) imported and saved to GitHub! Switch to Dashboard to see them.`;
+  parsedRows=[];
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('previewEmpty').style.display='block';
+  document.getElementById('importBtn').style.display='none';
+  document.getElementById('previewCount').textContent='';
+  document.getElementById('subjectInput').value='';
+}
+
+function clearScraper(){
+  document.getElementById('subjectInput').value='';
+  parsedRows=[];
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('previewEmpty').style.display='block';
+  document.getElementById('importBtn').style.display='none';
+  document.getElementById('previewCount').textContent='';
+  document.getElementById('importSummary').style.display='none';
+}
+
 // ── Init ──────────────────────────────────────────────────
 document.getElementById('startDate').valueAsDate=new Date();
+document.getElementById('scraperDate').valueAsDate=new Date();
 (function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);document.getElementById('chartTo').valueAsDate=to;document.getElementById('chartFrom').valueAsDate=from;})();
 if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
