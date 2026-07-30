@@ -479,6 +479,11 @@ CR-202 Dark mode feature request
     <div class="card">
       <div class="card-title"><span class="ct-dot"></span>Default Values</div>
       <div class="fg"><label>Assign To (Employee)</label><input id="scraperEmp" placeholder="e.g. Alice Johnson"/></div>
+      <div class="fg"><label>Redmine Assignee</label>
+        <select id="scraperAssignee">
+          ${REDMINE_MEMBERS.map(m=>`<option value="${m.id}"${m.id===727?' selected':''}>${m.name}</option>`).join('')}
+        </select>
+      </div>
       <div class="fg"><label>Start Date</label><input type="date" id="scraperDate"/></div>
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="scraperHrs" placeholder="1" min="0" step="0.5" value="1"/></div>
       <div class="fg"><label>Status</label>
@@ -999,6 +1004,23 @@ function buildReport(){
 // ── Redmine Integration ───────────────────────────────────
 const TRACKER_MAP={'CR':75,'PD':1,'DM':1}; // CR→CR tracker, PD/DM→Bug tracker
 const PRIORITY_MAP={'CR':2,'PD':5,'DM':4}; // 2=Normal, 5=Urgent, 4=High
+const REDMINE_MEMBERS=[
+  {id:36,  name:'Shubham Jain'},
+  {id:254, name:'Radhika Karode'},
+  {id:259, name:'Shubh Sharma'},
+  {id:313, name:'Vijay Jaybhay'},
+  {id:363, name:'Bharat Sarda'},
+  {id:400, name:'Rajni Kumari'},
+  {id:459, name:'Suhel Khan'},
+  {id:479, name:'Harivansh Shukla'},
+  {id:487, name:'Puneet Srivastava'},
+  {id:531, name:'Priyanshi Gupta'},
+  {id:631, name:'Mohd Talha'},
+  {id:653, name:'Akash Kumar'},
+  {id:727, name:'Ishant Bhatia'},   // default assignee
+  {id:728, name:'Mohammad Saddam'},
+];
+const DEFAULT_ASSIGNEE_ID=727; // Ishant Bhatia
 
 function updateRedmineNote(){
   const cfg=getCfg();
@@ -1008,12 +1030,19 @@ function updateRedmineNote(){
   el.style.color=cfg.redmineKey?'#34d399':'#fbbf24';
 }
 
-async function createRedmineIssue(subject,typeKey,description){
+async function createRedmineIssue(subject,typeKey,description,assigneeId){
   const cfg=getCfg();
   if(!cfg.redmineKey||!cfg.redmineProject)return null;
   const trackerId=TRACKER_MAP[typeKey]||2;
   const priorityId=PRIORITY_MAP[typeKey]||2;
-  const body={issue:{project_id:cfg.redmineProject,tracker_id:trackerId,priority_id:priorityId,subject:subject,description:description||`Created from Easy Tracker\nType: ${typeKey}`}};
+  const body={issue:{
+    project_id:cfg.redmineProject,
+    tracker_id:trackerId,
+    priority_id:priorityId,
+    subject:subject,
+    description:description||`Created from Easy Tracker\nType: ${typeKey}`,
+    assigned_to_id:assigneeId||DEFAULT_ASSIGNEE_ID
+  }};
   try{
     const res=await fetch(`${cfg.redmineUrl}/issues.json`,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!res.ok){const e=await res.text();console.error('Redmine error:',e);return null;}
@@ -1121,13 +1150,14 @@ function parseSubjects(){
   if(!lines.length){alert('Please paste at least one subject line.');return;}
 
   const emp=document.getElementById('scraperEmp').value.trim();
+  const assigneeId=parseInt(document.getElementById('scraperAssignee').value)||DEFAULT_ASSIGNEE_ID;
   const date=document.getElementById('scraperDate').value;
   const hrs=document.getElementById('scraperHrs').value||'1';
   const status=document.getElementById('scraperStatus').value;
 
   parsedRows=lines.map((line,i)=>{
     const type=detectType(line);
-    return{id:i,originalSubject:line,type,taskName:cleanTaskName(line,type.key),emp,date,hrs,status};
+    return{id:i,originalSubject:line,type,taskName:cleanTaskName(line,type.key),emp,assigneeId,date,hrs,status};
   });
 
   renderPreview();
@@ -1193,7 +1223,7 @@ async function importParsed(){
       const r=parsedRows[i];
       const el=document.getElementById(`rm-${i}`);
       if(el)el.textContent='Creating…';
-      const issue=await createRedmineIssue(`[${r.type.label}] ${r.taskName}`,r.type.key,`Source: Outlook\nEmployee: ${r.emp}\nDate: ${r.date}`);
+      const issue=await createRedmineIssue(`[${r.type.label}] ${r.taskName}`,r.type.key,`Source: Outlook\nEmployee: ${r.emp}\nDate: ${r.date}`,r.assigneeId||DEFAULT_ASSIGNEE_ID);
       if(issue){parsedRows[i].redmineId=issue.id;parsedRows[i].redmineUrl=issue.url;if(el){el.className='redmine-link redmine-badge created';el.innerHTML=`<a href="${issue.url}" target="_blank">🔗 #${issue.id}</a>`;}}
       else{if(el)el.textContent='Failed';}
     }
