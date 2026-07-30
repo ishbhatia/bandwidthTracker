@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Easy Tracker — AI Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:#1e2d45;
+      --accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--yellow:#f59e0b;
+      --red:#ef4444;--cyan:#06b6d4;--text:#e2e8f0;--muted:#64748b;
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+    /* ── animated bg grid ── */
+    body::before{content:'';position:fixed;inset:0;background:
+      linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);
+      background-size:40px 40px;pointer-events:none;z-index:0}
+
+    /* ── header ── */
+    header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;
+      padding:14px 28px;background:rgba(17,24,39,.8);border-bottom:1px solid var(--border);
+      backdrop-filter:blur(12px)}
+    .hlogo{display:flex;align-items:center;gap:12px}
+    .hlogo-icon{width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+      box-shadow:0 0 16px rgba(99,102,241,.4)}
+    .hlogo h1{font-size:1rem;font-weight:700;letter-spacing:-.01em;background:linear-gradient(90deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hlogo .sub{font-size:.65rem;color:var(--muted);margin-top:1px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+    .hright{display:flex;align-items:center;gap:10px}
+    .gh-pill{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;
+      background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);
+      padding:4px 12px;border-radius:20px;color:#a5b4fc}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
+    .dot.ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+    .dot.sync{background:var(--yellow);animation:blink .9s infinite}
+    .dot.err{background:var(--red)}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+    .btn-ghost{background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);
+      padding:6px 14px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+    .btn-ghost:hover{background:rgba(99,102,241,.22);box-shadow:0 0 12px rgba(99,102,241,.2)}
+
+    /* ── layout ── */
+    .page{position:relative;z-index:1;max-width:1220px;margin:22px auto;padding:0 20px;
+      display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+    @media(max-width:900px){.page{grid-template-columns:1fr}}
+
+    /* ── stat row ── */
+    .stats-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+    @media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr)}}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:14px 16px;text-align:center;position:relative;overflow:hidden;transition:border-color .2s}
+    .stat-card:hover{border-color:rgba(99,102,241,.4)}
+    .stat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.04),transparent);pointer-events:none}
+    .stat-card .num{font-size:1.65rem;font-weight:700;color:#fff;line-height:1}
+    .stat-card .lbl{font-size:.63rem;color:var(--muted);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+    .stat-card .num.green{color:var(--green)}.stat-card .num.yellow{color:var(--yellow)}.stat-card .num.red{color:var(--red)}.stat-card .num.cyan{color:var(--cyan)}
+
+    /* ── card ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:border-color .2s}
+    .card:hover{border-color:rgba(99,102,241,.2)}
+    .card-title{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+      letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .card-title .ct-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+    /* ── form ── */
+    .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+    .fg label{font-size:.67rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .fg input,.fg select{padding:8px 11px;border:1px solid var(--border);border-radius:8px;
+      font-size:.85rem;background:var(--surface2);color:var(--text);font-family:inherit;
+      transition:border-color .15s,box-shadow .15s}
+    .fg input::placeholder{color:var(--muted)}
+    .fg input:focus,.fg select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+    .fg select option{background:var(--surface)}
+    .form-actions{display:flex;gap:8px;margin-top:6px}
+    .btn{padding:8px 18px;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 12px rgba(99,102,241,.35)}
+    .btn-primary:hover{box-shadow:0 4px 20px rgba(99,102,241,.5);transform:translateY(-1px)}
+    .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .btn-secondary:hover{border-color:rgba(99,102,241,.4);background:#1e2d45}
+    .btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+    .btn-danger:hover{background:rgba(239,68,68,.18)}
+    .btn-success{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+    .btn-success:hover{background:rgba(16,185,129,.18)}
+    .btn-sm{padding:4px 10px;font-size:.72rem;border-radius:6px}
+
+    /* ── right col ── */
+    .right-col{display:flex;flex-direction:column;gap:18px}
+
+    /* ── toolbar ── */
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+    .toolbar input,.toolbar select{padding:7px 11px;border:1px solid var(--border);border-radius:8px;
+      font-size:.78rem;background:var(--surface2);color:var(--text);font-family:inherit}
+    .toolbar input::placeholder{color:var(--muted)}
+    .toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--accent)}
+    .toolbar input{flex:1;min-width:160px}
+    .toolbar select option{background:var(--surface)}
+
+    /* ── table ── */
+    .table-wrap{overflow-x:auto;max-height:320px;overflow-y:auto}
+    .table-wrap::-webkit-scrollbar{width:4px}
+    .table-wrap::-webkit-scrollbar-track{background:transparent}
+    .table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    thead th{background:var(--surface2);color:var(--muted);font-size:.65rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;padding:10px 12px;text-align:left;
+      border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;
+      position:sticky;top:0;z-index:1}
+    thead th:hover{color:var(--accent)}
+    tbody tr{border-bottom:1px solid rgba(30,45,69,.6);transition:background .12s}
+    tbody tr:hover{background:rgba(99,102,241,.05)}
+    tbody td{padding:10px 12px;vertical-align:middle}
+    .emp-name{font-weight:600;color:#fff}
+    .task-name{color:#94a3b8}
+    .action-btns{display:flex;gap:6px}
+    .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
+
+    /* ── badges ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:600}
+    .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
+    .badge-todo{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+    .badge-progress{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
+    .badge-review{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+    .badge-done{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)}
+    .badge-blocked{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+
+    /* ── chart ── */
+    .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+    .chart-controls label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .chart-controls input[type=date]{padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.78rem;background:var(--surface2);color:var(--text);font-family:inherit}
+    .ctrl-grp{display:flex;align-items:center;gap:6px}
+    .chart-wrap{position:relative;width:100%;min-height:160px;max-height:180px}
+    .legend-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#94a3b8;
+      background:var(--surface2);padding:2px 9px;border-radius:20px;border:1px solid var(--border)}
+    .legend-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:var(--muted);font-size:.85rem}
+
+    /* ── AI Insights ── */
+    .insights-list{display:flex;flex-direction:column;gap:9px;max-height:220px;overflow-y:auto;padding-right:4px}
+    .insights-list::-webkit-scrollbar{width:4px}
+    .insights-list::-webkit-scrollbar-track{background:transparent}
+    .insights-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .insight-item{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;
+      border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-size:.8rem;line-height:1.5}
+    .insight-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+    .insight-text{color:#cbd5e1}
+    .insight-text strong{color:#fff}
+    .insight-warn{border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.05)}
+    .insight-good{border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.05)}
+    .insight-bad{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.05)}
+    .insight-info{border-color:rgba(6,182,212,.2);background:rgba(6,182,212,.05)}
+    .no-insights{text-align:center;color:var(--muted);font-size:.82rem;padding:18px}
+
+    /* ── AI Chat ── */
+    .chat-wrap{display:flex;flex-direction:column;gap:0}
+    .chat-msgs{height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+      padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;scroll-behavior:smooth}
+    .chat-msgs::-webkit-scrollbar{width:4px}
+    .chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .msg{display:flex;gap:8px;align-items:flex-start}
+    .msg.user{flex-direction:row-reverse}
+    .msg-bubble{max-width:85%;padding:8px 12px;border-radius:10px;font-size:.78rem;line-height:1.5}
+    .msg.ai   .msg-bubble{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#c7d2fe}
+    .msg.user .msg-bubble{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .msg-avatar{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;margin-top:1px}
+    .msg.ai   .msg-avatar{background:rgba(99,102,241,.2);color:#818cf8}
+    .msg.user .msg-avatar{background:rgba(255,255,255,.15);color:#fff}
+    .typing{display:flex;gap:4px;padding:10px 12px;align-items:center}
+    .typing span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:typingDot 1.2s infinite}
+    .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+    @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+    .chat-input-row{display:flex;gap:8px}
+    .chat-input-row input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+      background:var(--surface2);color:var(--text);font-size:.8rem;font-family:inherit}
+    .chat-input-row input::placeholder{color:var(--muted)}
+    .chat-input-row input:focus{outline:none;border-color:var(--accent)}
+    .openai-note{font-size:.68rem;color:var(--muted);margin-top:6px;text-align:center}
+    .openai-note a{color:#818cf8;text-decoration:none}
+
+    /* ── modals ── */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;
+      align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .overlay.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;
+      width:90%;max-width:500px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+    .modal-title{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+    .modal-actions{justify-content:flex-end;margin-top:12px;display:flex;gap:8px}
+    .setup-note{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px;
+      padding:10px 13px;font-size:.76rem;color:#a5b4fc;margin-bottom:14px;line-height:1.6}
+    .setup-note a{color:#818cf8;font-weight:600;text-decoration:none}
+    .token-row{display:flex;gap:7px;align-items:center}
+    .token-row input{flex:1}
+
+    /* ── toast ── */
+    .toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--border);
+      color:var(--text);padding:10px 18px;border-radius:10px;font-size:.78rem;font-weight:600;
+      opacity:0;transform:translateY(12px);transition:all .28s;z-index:999;pointer-events:none;
+      display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    /* ── Print / PDF Report ── */
+    @media print{
+      body{background:#fff !important;color:#000 !important}
+      header,.page>div:first-child,.right-col>.card:last-child,.toolbar,
+      .form-actions,.action-btns,.overlay,.toast,
+      .chart-controls,.legend-wrap,button{display:none !important}
+      .page{display:block !important}
+      .rpt{display:block !important}
+      .rpt-page{page-break-after:always;padding:20px}
+    }
+    .rpt{display:none}
+
+    /* ── Report Modal ── */
+    .rpt-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;
+      align-items:flex-start;justify-content:center;backdrop-filter:blur(4px);overflow-y:auto;padding:30px 16px}
+    .rpt-overlay.open{display:flex}
+    .rpt-box{background:#fff;color:#1e293b;border-radius:16px;width:100%;max-width:820px;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+    .rpt-toolbar{background:#1e293b;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .rpt-toolbar span{color:#e2e8f0;font-size:.85rem;font-weight:600}
+    .rpt-toolbar-btns{display:flex;gap:8px}
+    .rpt-body{padding:28px}
+
+    /* Report internals */
+    .rpt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e2e8f0}
+    .rpt-title{font-size:1.3rem;font-weight:700;color:#1e293b}
+    .rpt-subtitle{font-size:.8rem;color:#64748b;margin-top:3px}
+    .rpt-logo{font-size:1.8rem}
+    .rpt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+    .rpt-stat{background:#f8fafc;border-radius:10px;padding:14px;text-align:center;border:1px solid #e2e8f0}
+    .rpt-stat .rn{font-size:1.6rem;font-weight:700;color:#4f46e5}
+    .rpt-stat .rl{font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+    .rpt-section{margin-bottom:24px}
+    .rpt-section h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+    .rpt-table{width:100%;border-collapse:collapse;font-size:.8rem}
+    .rpt-table th{background:#f8fafc;color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;text-align:left;border-bottom:2px solid #e2e8f0}
+    .rpt-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .rpt-table tr:hover td{background:#f8fafc}
+    .rpt-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:600}
+    .rb-todo{background:#fef9c3;color:#a16207}
+    .rb-progress{background:#dbeafe;color:#1d4ed8}
+    .rb-review{background:#ede9fe;color:#6d28d9}
+    .rb-done{background:#dcfce7;color:#15803d}
+    .rb-blocked{background:#fee2e2;color:#b91c1c}
+    .rpt-emp-card{background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0}
+    .rpt-emp-name{font-weight:700;font-size:.9rem;color:#1e293b;margin-bottom:6px}
+    .rpt-emp-bar{height:6px;border-radius:3px;background:#e2e8f0;margin-bottom:8px;overflow:hidden}
+    .rpt-emp-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#4f46e5,#8b5cf6)}
+    .rpt-emp-meta{display:flex;gap:16px;font-size:.75rem;color:#64748b}
+    .rpt-emp-meta span strong{color:#1e293b}
+    .rpt-footer{margin-top:24px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:.72rem;color:#94a3b8;display:flex;justify-content:space-between}
+
+    /* ── glow pulse on stat cards ── */
+    @keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(99,102,241,.15)}}
+
+    /* ── Tab Nav ── */
+    .tab-nav{position:relative;z-index:1;display:flex;gap:4px;padding:0 28px;background:rgba(17,24,39,.8);border-bottom:1px solid var(--border)}
+    .tab-btn{padding:10px 18px;font-size:.78rem;font-weight:600;color:var(--muted);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:#a5b4fc;border-bottom-color:var(--accent)}
+    .tab-page{display:none}.tab-page.active{display:block}
+
+    /* ── Outlook Scraper page ── */
+    .scraper-page{max-width:1100px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start}
+    @media(max-width:860px){.scraper-page{grid-template-columns:1fr}}
+    .type-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+    .type-cr{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+    .type-pd{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+    .type-dm{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+    .type-unknown{background:rgba(100,116,139,.12);color:#94a3b8;border:1px solid rgba(100,116,139,.25)}
+    .scraper-textarea{width:100%;height:180px;padding:12px;border:1px solid var(--border);border-radius:10px;
+      background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit;resize:vertical;line-height:1.6}
+    .scraper-textarea::placeholder{color:var(--muted)}
+    .scraper-textarea:focus{outline:none;border-color:var(--accent)}
+    .preview-table{width:100%;border-collapse:collapse;font-size:.8rem}
+    .preview-table th{background:var(--surface2);color:var(--muted);font-size:.65rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0}
+    .preview-table td{padding:9px 11px;border-bottom:1px solid rgba(30,45,69,.5);vertical-align:middle}
+    .preview-table tr:hover td{background:rgba(99,102,241,.04)}
+    .preview-table input,.preview-table select{padding:5px 8px;border:1px solid var(--border);border-radius:6px;
+      background:var(--surface);color:var(--text);font-size:.78rem;font-family:inherit;width:100%}
+    .preview-table input:focus,.preview-table select:focus{outline:none;border-color:var(--accent)}
+    .preview-table select option{background:var(--surface)}
+    .preview-wrap{max-height:400px;overflow-y:auto}
+    .preview-wrap::-webkit-scrollbar{width:4px}
+    .preview-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .legend-box{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .import-summary{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;
+      padding:12px 16px;font-size:.8rem;color:#34d399;display:none;margin-top:12px}
+    .redmine-link{color:#818cf8;font-size:.72rem;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+    .redmine-link:hover{text-decoration:underline}
+    .redmine-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;
+      font-size:.68rem;font-weight:600;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+    .redmine-badge.created{background:rgba(16,185,129,.1);color:#34d399;border-color:rgba(16,185,129,.2)}
+    .outlook-connect-bar{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:10px;
+      padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+    .outlook-connect-bar .oc-info{font-size:.78rem;color:#67e8f9}
+    .outlook-connect-bar .oc-info strong{color:#fff}
+    .ms-btn{background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;padding:7px 16px;
+      border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;
+      display:flex;align-items:center;gap:6px;transition:all .2s}
+    .ms-btn:hover{box-shadow:0 4px 14px rgba(0,120,212,.4)}
+    .ms-btn:disabled{opacity:.5;cursor:not-allowed}
+    .sync-progress{font-size:.75rem;color:var(--muted);margin-top:6px}
+    .remove-row{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 6px;border-radius:4px}
+    .remove-row:hover{color:var(--red);background:rgba(239,68,68,.1)}
+
+    @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px}.stats-row{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hlogo">
+    <div class="hlogo-icon">⚡</div>
+    <div>
+      <h1>Easy Tracker</h1>
+      <div class="sub">AI Powered Dashboard</div>
+    </div>
+  </div>
+  <div class="hright">
+    <div class="gh-pill"><div class="dot" id="ghDot"></div><span id="ghLabel">Not connected</span></div>
+    <button class="btn-ghost" onclick="openSetup()">⚙ Setup</button>
+  </div>
+</header>
+
+<!-- Tab Navigation -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper</button>
+</nav>
+
+<!-- Dashboard Tab -->
+<div class="tab-page active" id="tab-dashboard">
+<div class="page">
+  <!-- Stats row -->
+  <div class="stats-row" id="stats"></div>
+
+  <!-- LEFT col -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+
+    <!-- Add Task -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot"></span>Add New Task</div>
+      <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
+      <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="3.5" min="0" step="0.5"/></div>
+      <div class="fg"><label>Status</label>
+        <select id="status"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option></select>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
+        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot" style="background:#10b981;box-shadow:0 0 6px #10b981"></span>AI Insights</div>
+      <div class="insights-list" id="insightsList"><div class="no-insights">Add tasks to see AI insights</div></div>
+    </div>
+
+    <!-- AI Chat -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Ask AI about your data</div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg ai">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">Hi! I can answer questions about your team's tasks. Try: <em>"Who worked the most?"</em> or <em>"Any blocked tasks?"</em><br/><br/>For deeper answers, add your OpenAI key in Setup.</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="Ask about your tasks…" onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+        </div>
+        <div class="openai-note">Powered by local logic · <a href="#" onclick="openSetup();return false">Add OpenAI key for GPT answers ↗</a></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT col -->
+  <div class="right-col">
+    <!-- Chart -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot"></span>Day-wise Hours — Side by Side</div>
+      <div class="chart-controls">
+        <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
+        <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
+        <button class="btn btn-secondary btn-sm" onclick="resetChartDates()">Reset</button>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="barChart"></canvas>
+        <div class="chart-empty" id="chartEmpty" style="display:none">📭 No data yet</div>
+      </div>
+      <div class="legend-wrap" id="chartLegend"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot"></span>All Tasks</div>
+      <div class="toolbar">
+        <input id="searchInput" placeholder="🔍  Search employee or task…" oninput="renderTable()"/>
+        <select id="filterStatus" onchange="renderTable()">
+          <option value="">All Statuses</option>
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+        </select>
+        <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openReport()">📄 Report</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th onclick="sortBy('empName')">Employee ⇅</th>
+            <th onclick="sortBy('taskName')">Task ⇅</th>
+            <th onclick="sortBy('startDate')">Date ⇅</th>
+            <th onclick="sortBy('timeSpent')">Hrs ⇅</th>
+            <th onclick="sortBy('status')">Status ⇅</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- end .page -->
+</div><!-- end #tab-dashboard -->
+
+<!-- Outlook Scraper Tab -->
+<div class="tab-page" id="tab-scraper">
+<div class="scraper-page">
+
+  <!-- LEFT: Paste + settings -->
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div class="card">
+      <div class="card-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Paste Outlook Subject Lines</div>
+
+      <!-- Outlook OAuth bar -->
+      <div class="outlook-connect-bar" id="outlookBar">
+        <div class="oc-info">
+          <strong>📧 Connect Outlook</strong> — auto-fetch CR/PD/DM emails from your inbox<br/>
+          <span id="outlookStatus">Click "Sign in with Microsoft" — no Client ID needed</span>
+        </div>
+        <button class="ms-btn" id="outlookBtn" onclick="connectOutlook()">
+          <svg width="16" height="16" viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+          Sign in with Microsoft
+        </button>
+      </div>
+      <!-- Manual token input -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">
+          Or paste Graph Explorer token directly
+          <a href="https://developer.microsoft.com/en-us/graph/graph-explorer" target="_blank" style="color:#818cf8;font-weight:600;margin-left:6px;text-decoration:none">Get token ↗</a>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input type="password" id="manualToken" placeholder="Paste token from Graph Explorer → Access token tab…"
+            style="flex:1;padding:8px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:.75rem;font-family:inherit"/>
+          <button class="btn btn-primary btn-sm" onclick="usePastedToken()" style="white-space:nowrap">📧 Fetch Emails</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('manualToken').type=document.getElementById('manualToken').type==='password'?'text':'password'">👁</button>
+        </div>
+        <div id="fetchProgress" style="font-size:.7rem;color:var(--muted);margin-top:5px"></div>
+      </div>
+
+      <div class="legend-box">
+        <span class="type-pill type-cr">CR — Feature</span>
+        <span class="type-pill type-pd">PD — Prod Defect</span>
+        <span class="type-pill type-dm">DM — Non-Prod Defect</span>
+      </div>
+      <textarea class="scraper-textarea" id="subjectInput" placeholder="Paste subject lines here, one per line:
+
+CR-101: Add user authentication
+PD - Payment gateway failing
+DM: Dashboard not loading in staging
+CR-202 Dark mode feature request
+[PD] API timeout on checkout"></textarea>
+      <div class="form-actions" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="parseSubjects()">🔍 Parse Subjects</button>
+        <button class="btn btn-secondary" onclick="clearScraper()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Global defaults -->
+    <div class="card">
+      <div class="card-title"><span class="ct-dot"></span>Default Values</div>
+      <div class="fg"><label>Assign To (Employee)</label><input id="scraperEmp" placeholder="e.g. Alice Johnson"/></div>
+      <div class="fg"><label>Redmine Assignee</label>
+        <select id="scraperAssignee">
+          ${REDMINE_MEMBERS.map(m=>`<option value="${m.id}"${m.id===727?' selected':''}>${m.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Start Date</label><input type="date" id="scraperDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="scraperHrs" placeholder="1" min="0" step="0.5" value="1"/></div>
+      <div class="fg"><label>Status</label>
+        <select id="scraperStatus">
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option>
+        </select>
+      </div>
+      <p style="font-size:.72rem;color:var(--muted);margin-top:4px">These are applied to all rows. You can override each row individually in the preview.</p>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="createRedmine" checked style="width:14px;height:14px;accent-color:var(--accent)"/>
+          Also create issue in Redmine
+        </label>
+        <span id="redmineSetupNote" style="font-size:.7rem;color:var(--muted)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Preview table -->
+  <div class="card">
+    <div class="card-title"><span class="ct-dot"></span>Parsed Tasks Preview <span id="previewCount" style="color:var(--muted);font-weight:400;font-size:.72rem;margin-left:6px"></span></div>
+    <div id="previewEmpty" style="text-align:center;padding:48px 20px;color:var(--muted)">
+      <div style="font-size:2rem;margin-bottom:8px">📋</div>
+      Paste subject lines and click Parse to see tasks here
+    </div>
+    <div class="preview-wrap" id="previewWrap" style="display:none">
+      <table class="preview-table">
+        <thead><tr>
+          <th>Type</th>
+          <th>Task Name</th>
+          <th>Employee</th>
+          <th>Date</th>
+          <th>Hrs</th>
+          <th>Status</th>
+          <th>Redmine</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+    <div id="importSummary" class="import-summary"></div>
+    <div class="form-actions" style="margin-top:14px" id="importActions" style="display:none">
+      <button class="btn btn-primary" id="importBtn" onclick="importParsed()" style="display:none">✅ Import to Tracker + Redmine</button>
+      <button class="btn btn-secondary btn-sm" onclick="applyDefaults()">↺ Re-apply Defaults</button>
+    </div>
+  </div>
+
+</div>
+</div><!-- end #tab-scraper -->
+
+<!-- Edit Modal -->
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Task</div>
+    <div class="modal-grid">
+      <div class="fg"><label>Employee Name</label><input id="editEmpName"/></div>
+      <div class="fg"><label>Task Name</label><input id="editTaskName"/></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="editStartDate"/></div>
+      <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="editTimeSpent" min="0" step="0.5"/></div>
+      <div class="fg" style="grid-column:span 2"><label>Status</label>
+        <select id="editStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Setup Modal -->
+<div class="overlay" id="setupModal">
+  <div class="modal">
+    <div class="modal-title">⚙️ Setup</div>
+    <div class="setup-note">
+      Data syncs to <strong>data.json</strong> in your GitHub repo via the GitHub API.<br/>
+      Need a token with <code>repo</code> scope →
+      <a href="https://github.com/settings/tokens/new?scopes=repo&description=EasyTracker" target="_blank">Create on GitHub ↗</a>
+    </div>
+    <div class="fg">
+      <label>GitHub Token</label>
+      <div class="token-row">
+        <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+        <button class="btn btn-secondary btn-sm" onclick="toggleTokenVis()">👁</button>
+      </div>
+    </div>
+    <div class="fg"><label>Repository (owner/repo)</label><input id="setupRepo" value="ishbhatia/bandwidthTracker"/></div>
+    <div class="fg"><label>Branch</label><input id="setupBranch" value="main"/></div>
+    <div class="fg"><label>Data file path</label><input id="setupPath" value="data.json"/></div>
+    <div class="fg"><label>OpenAI API Key (optional)</label><input type="password" id="setupOpenAI" placeholder="sk-…"/></div>
+    <div class="fg"><label>Redmine URL</label><input id="setupRedmineUrl" placeholder="http://svn.aps1aws.lumiq.int" value="http://svn.aps1aws.lumiq.int"/></div>
+    <div class="fg"><label>Redmine API Key</label>
+      <div class="token-row">
+        <input type="password" id="setupRedmineKey" placeholder="your-redmine-api-key"/>
+        <button class="btn btn-secondary btn-sm" onclick="toggleRedmineVis()">👁</button>
+      </div>
+    </div>
+    <div class="fg"><label>Redmine Project Identifier</label><input id="setupRedmineProject" placeholder="e.g. oktovia-recur-df" value="oktovia-recur-df"/></div>
+    <div class="fg"><label>Microsoft Client ID (for Outlook)</label><input id="setupMsClientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
+    <div class="fg"><label>Microsoft Tenant ID</label><input id="setupMsTenantId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('setupModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSetup()">Connect &amp; Load</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Report Modal -->
+<div class="rpt-overlay" id="rptOverlay">
+  <div class="rpt-box" id="rptBox">
+    <div class="rpt-toolbar">
+      <span id="rptPeriodLabel">📄 Summary Report</span>
+      <div class="rpt-toolbar-btns">
+        <select id="rptPeriod" onchange="buildReport()" style="padding:5px 10px;border-radius:7px;border:1px solid #334155;background:#334155;color:#e2e8f0;font-size:.78rem;cursor:pointer">
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="all">All Time</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Print / Save PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="closeReport()">✕ Close</button>
+      </div>
+    </div>
+    <div class="rpt-body" id="rptBody"></div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────
+const REPO_DEFAULT='ishbhatia/bandwidthTracker',BRANCH_DEFAULT='main',PATH_DEFAULT='data.json';
+const REDMINE_DEFAULT_URL='http://svn.aps1aws.lumiq.int';
+const REDMINE_DEFAULT_PROJECT='oktovia-recur-df';
+function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||REDMINE_DEFAULT_URL,redmineKey:localStorage.getItem('redmine_key')||'',redmineProject:localStorage.getItem('redmine_project')||REDMINE_DEFAULT_PROJECT,msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
+// ── State ─────────────────────────────────────────────────
+let tasks=[],fileSHA='',editIndex=null,sortKey='startDate',sortAsc=true;
+const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked'};
+const PALETTE=['#6366f1','#10b981','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#ef4444','#14b8a6','#f97316','#3b82f6'];
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ── GitHub status ─────────────────────────────────────────
+function setGhStatus(s,l){document.getElementById('ghDot').className='dot '+s;document.getElementById('ghLabel').textContent=l;}
+
+// ── GitHub API ────────────────────────────────────────────
+async function ghFetch(method,endpoint,body){
+  const{token}=getCfg();
+  const res=await fetch('https://api.github.com'+endpoint,{method,headers:{Authorization:'token '+token,'Content-Type':'application/json',Accept:'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||res.statusText);}
+  return res.json();
+}
+
+async function loadFromGitHub(){
+  const cfg=getCfg();if(!cfg.token){openSetup();return;}
+  setGhStatus('sync','Loading…');
+  try{
+    const d=await ghFetch('GET',`/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`);
+    fileSHA=d.sha;tasks=JSON.parse(atob(d.content.replace(/\n/g,'')));
+    if(!Array.isArray(tasks))tasks=[];
+    setGhStatus('ok','Synced');renderAll();showToast('🔄 Loaded from GitHub');
+  }catch(e){
+    if(e.message.includes('Not Found')||e.message.includes('404')){tasks=[];fileSHA='';setGhStatus('ok','Connected (empty)');renderAll();}
+    else{setGhStatus('err','Error');showToast('❌ '+e.message);}
+  }
+}
+
+async function saveToGitHub(msg){
+  const cfg=getCfg();if(!cfg.token){showToast('⚠️ Set up GitHub first');openSetup();return;}
+  setGhStatus('sync','Saving…');
+  try{
+    const body={message:msg||'Update tasks',content:btoa(unescape(encodeURIComponent(JSON.stringify(tasks,null,2)))),branch:cfg.branch};
+    if(fileSHA)body.sha=fileSHA;
+    const r=await ghFetch('PUT',`/repos/${cfg.repo}/contents/${cfg.path}`,body);
+    fileSHA=r.content.sha;setGhStatus('ok','Saved ✓');
+    showToast('✅ Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){setGhStatus('err','Save failed');showToast('❌ '+e.message);throw e;}
+}
+
+// ── Setup ─────────────────────────────────────────────────
+function openSetup(){const c=getCfg();document.getElementById('setupToken').value=c.token;document.getElementById('setupRepo').value=c.repo;document.getElementById('setupBranch').value=c.branch;document.getElementById('setupPath').value=c.path;document.getElementById('setupOpenAI').value=c.openai;document.getElementById('setupRedmineUrl').value=c.redmineUrl;document.getElementById('setupRedmineKey').value=c.redmineKey;document.getElementById('setupRedmineProject').value=c.redmineProject;document.getElementById('setupMsClientId').value=c.msClientId;document.getElementById('setupMsTenantId').value=c.msTenantId;document.getElementById('setupModal').classList.add('open');}
+function toggleTokenVis(){const i=document.getElementById('setupToken');i.type=i.type==='password'?'text':'password';}
+function toggleRedmineVis(){const i=document.getElementById('setupRedmineKey');i.type=i.type==='password'?'text':'password';}
+async function saveSetup(){
+  const token=document.getElementById('setupToken').value.trim(),repo=document.getElementById('setupRepo').value.trim(),branch=document.getElementById('setupBranch').value.trim()||'main',path=document.getElementById('setupPath').value.trim()||'data.json',openai=document.getElementById('setupOpenAI').value.trim();
+  const redmineUrl=document.getElementById('setupRedmineUrl').value.trim(),redmineKey=document.getElementById('setupRedmineKey').value.trim(),redmineProject=document.getElementById('setupRedmineProject').value.trim();
+  const msClientId=document.getElementById('setupMsClientId').value.trim(),msTenantId=document.getElementById('setupMsTenantId').value.trim();
+  if(!token||!repo){alert('Token and repository are required.');return;}
+  localStorage.setItem('gh_token',token);localStorage.setItem('gh_repo',repo);localStorage.setItem('gh_branch',branch);localStorage.setItem('gh_path',path);
+  if(openai)localStorage.setItem('openai_key',openai);
+  if(redmineUrl)localStorage.setItem('redmine_url',redmineUrl);
+  if(redmineKey)localStorage.setItem('redmine_key',redmineKey);
+  if(redmineProject)localStorage.setItem('redmine_project',redmineProject);
+  if(msClientId)localStorage.setItem('ms_client_id',msClientId);
+  if(msTenantId)localStorage.setItem('ms_tenant_id',msTenantId);
+  closeModal('setupModal');
+  updateRedmineNote();
+  await loadFromGitHub();
+}
+
+// ── CRUD ──────────────────────────────────────────────────
+async function addTask(){
+  const empName=document.getElementById('empName').value.trim(),taskName=document.getElementById('taskName').value.trim(),startDate=document.getElementById('startDate').value,timeSpent=parseFloat(document.getElementById('timeSpent').value),status=document.getElementById('status').value;
+  if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
+  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,status});
+  renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
+}
+function clearForm(){['empName','taskName','timeSpent'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';}
+async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
+function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editStatus').value=t.status;document.getElementById('editModal').classList.add('open');}
+async function saveEdit(){
+  const empName=document.getElementById('editEmpName').value.trim(),taskName=document.getElementById('editTaskName').value.trim(),startDate=document.getElementById('editStartDate').value,timeSpent=parseFloat(document.getElementById('editTimeSpent').value),status=document.getElementById('editStatus').value;
+  if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,status};
+  closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── Sort / Filter ─────────────────────────────────────────
+function sortBy(k){sortAsc=(sortKey===k)?!sortAsc:true;sortKey=k;renderTable();}
+function getSorted(l){return[...l].sort((a,b)=>{let va=a[sortKey],vb=b[sortKey];if(sortKey==='timeSpent'){va=+va;vb=+vb;}return va<vb?(sortAsc?-1:1):va>vb?(sortAsc?1:-1):0;});}
+function getFiltered(){const s=document.getElementById('searchInput').value.toLowerCase(),st=document.getElementById('filterStatus').value;return tasks.filter(t=>(!s||t.empName.toLowerCase().includes(s)||t.taskName.toLowerCase().includes(s))&&(!st||t.status===st));}
+
+// ── Table ─────────────────────────────────────────────────
+function renderTable(){
+  const rows=getSorted(getFiltered()),tb=document.getElementById('tableBody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state">📄 No tasks yet. Add one!</div></td></tr>';return;}
+  tb.innerHTML=rows.map(t=>{
+    const i=tasks.indexOf(t),bc=STATUS_BADGE[t.status]||'badge-todo';
+    const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+  }).join('');
+}
+
+// ── Stats ─────────────────────────────────────────────────
+function renderStats(){
+  const total=tasks.length,done=tasks.filter(t=>t.status==='Done').length,
+    inProg=tasks.filter(t=>t.status==='In Progress').length,blocked=tasks.filter(t=>t.status==='Blocked').length,
+    hrs=tasks.reduce((s,t)=>s+(+t.timeSpent||0),0),emps=new Set(tasks.map(t=>t.empName.trim().toLowerCase())).size;
+  document.getElementById('stats').innerHTML=[
+    {num:total,lbl:'Tasks',cls:''},{num:emps,lbl:'Employees',cls:'cyan'},
+    {num:inProg,lbl:'In Progress',cls:'yellow'},{num:done,lbl:'Done',cls:'green'},
+    {num:blocked,lbl:'Blocked',cls:'red'},{num:hrs.toFixed(1),lbl:'Total Hrs',cls:''},
+  ].map(s=>`<div class="stat-card"><div class="num ${s.cls}">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('');
+}
+
+// ── AI Insights (rule-based) ──────────────────────────────
+function renderInsights(){
+  const el=document.getElementById('insightsList');
+  if(!tasks.length){el.innerHTML='<div class="no-insights">Add tasks to see AI insights ✨</div>';return;}
+
+  const insights=[];
+  const emps=[...new Set(tasks.map(t=>t.empName.trim()))];
+  const today=new Date().toISOString().split('T')[0];
+  const week=new Date();week.setDate(week.getDate()-7);
+  const weekStr=week.toISOString().split('T')[0];
+  const recentTasks=tasks.filter(t=>t.startDate>=weekStr);
+
+  // Total hours per employee
+  const empHrs={};emps.forEach(e=>{empHrs[e]=tasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0);});
+  const maxEmp=emps.reduce((a,b)=>empHrs[a]>empHrs[b]?a:b,emps[0]);
+  const minEmp=emps.reduce((a,b)=>empHrs[a]<empHrs[b]?a:b,emps[0]);
+
+  if(emps.length>1){
+    insights.push({type:'info',icon:'🏆',text:`<strong>${maxEmp}</strong> has the highest hours this period (${empHrs[maxEmp]}h).`});
+    if(empHrs[minEmp]<empHrs[maxEmp]*0.4)insights.push({type:'warn',icon:'⚠️',text:`<strong>${minEmp}</strong> has significantly fewer hours (${empHrs[minEmp]}h) — consider checking workload balance.`});
+  }
+
+  // Blocked tasks
+  const blocked=tasks.filter(t=>t.status==='Blocked');
+  if(blocked.length>0){
+    const bEmps=[...new Set(blocked.map(t=>t.empName.trim()))].join(', ');
+    insights.push({type:'bad',icon:'🚫',text:`<strong>${blocked.length} task${blocked.length>1?'s':''} blocked</strong> — affecting: ${bEmps}. Needs immediate attention.`});
+  }
+
+  // Done rate
+  const doneRate=tasks.length?Math.round(tasks.filter(t=>t.status==='Done').length/tasks.length*100):0;
+  if(doneRate>=70)insights.push({type:'good',icon:'✅',text:`Team completion rate is <strong>${doneRate}%</strong> — great momentum!`});
+  else if(doneRate>0)insights.push({type:'warn',icon:'📊',text:`Team completion rate is <strong>${doneRate}%</strong> — ${100-doneRate}% of tasks still pending.`});
+
+  // Overloaded employee (>8h in a single day)
+  emps.forEach(emp=>{
+    const dayHrs={};tasks.filter(t=>t.empName.trim()===emp).forEach(t=>{dayHrs[t.startDate]=(dayHrs[t.startDate]||0)+(+t.timeSpent||0);});
+    Object.entries(dayHrs).forEach(([d,h])=>{
+      if(h>8)insights.push({type:'warn',icon:'🔥',text:`<strong>${emp}</strong> logged <strong>${h}h</strong> on ${new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})} — possible overload.`});
+    });
+  });
+
+  // No activity today
+  const todayWorkers=new Set(tasks.filter(t=>t.startDate===today).map(t=>t.empName.trim()));
+  const idle=emps.filter(e=>!todayWorkers.has(e));
+  if(idle.length&&emps.length>1)insights.push({type:'info',icon:'💤',text:`No tasks logged today for: <strong>${idle.join(', ')}</strong>.`});
+
+  // Velocity
+  const lastWeekHrs=recentTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+  insights.push({type:'info',icon:'📈',text:`Team logged <strong>${lastWeekHrs}h</strong> in the last 7 days across ${recentTasks.length} tasks.`});
+
+  if(!insights.length){el.innerHTML='<div class="no-insights">Everything looks good! 🎉</div>';return;}
+  el.innerHTML=insights.map(i=>`<div class="insight-item insight-${i.type}"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
+}
+
+function renderAll(){renderStats();renderTable();renderChart();renderInsights();}
+
+// ── Export CSV ────────────────────────────────────────────
+function exportCSV(){
+  if(!tasks.length){alert('No tasks to export.');return;}
+  const rows=tasks.map(t=>[t.empName,t.taskName,t.startDate,t.timeSpent,t.status].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const blob=new Blob([['Employee,Task,Date,Hrs,Status',...rows].join('\n')],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'tasks.csv'});
+  a.click();URL.revokeObjectURL(a.href);showToast('⬇️ CSV exported!');
+}
+
+// ── AI Chat ───────────────────────────────────────────────
+const chatHistory=[{role:'system',content:'You are an AI assistant for a team task tracker. Answer questions about employee tasks, hours, and productivity based on the data provided.'}];
+
+function addMsg(role,text){
+  const box=document.getElementById('chatMsgs');
+  const div=document.createElement('div');div.className='msg '+role;
+  div.innerHTML=`<div class="msg-avatar">${role==='ai'?'🤖':'👤'}</div><div class="msg-bubble">${text}</div>`;
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+}
+
+function localAnswer(q){
+  const lq=q.toLowerCase();
+  if(!tasks.length)return"No tasks yet. Add some tasks first!";
+  const emps=[...new Set(tasks.map(t=>t.empName.trim()))];
+  const empHrs={};emps.forEach(e=>{empHrs[e]=tasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0);});
+
+  if(lq.includes('most')||lq.includes('highest')||lq.includes('top')){
+    const top=emps.reduce((a,b)=>empHrs[a]>empHrs[b]?a:b);
+    return`🏆 <strong>${top}</strong> worked the most with <strong>${empHrs[top]}h</strong> total.`;
+  }
+  if(lq.includes('blocked')){
+    const b=tasks.filter(t=>t.status==='Blocked');
+    return b.length?`🚫 ${b.length} blocked task(s):\n${b.map(t=>`• ${t.taskName} (${t.empName})`).join('\n')}`:'✅ No blocked tasks!';
+  }
+  if(lq.includes('done')||lq.includes('complete')){
+    const d=tasks.filter(t=>t.status==='Done');
+    return`✅ ${d.length} task(s) done out of ${tasks.length} total (${Math.round(d.length/tasks.length*100)}% completion rate).`;
+  }
+  if(lq.includes('hour')||lq.includes('hrs')||lq.includes('time')){
+    const total=tasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+    const lines=emps.map(e=>`• ${e}: ${empHrs[e]}h`).join('\n');
+    return`⏱ Total hours logged: <strong>${total}h</strong>\n\n${lines}`;
+  }
+  if(lq.includes('summar')||lq.includes('overview')||lq.includes('status')){
+    const todo=tasks.filter(t=>t.status==='To Do').length;
+    const prog=tasks.filter(t=>t.status==='In Progress').length;
+    const done=tasks.filter(t=>t.status==='Done').length;
+    const blocked=tasks.filter(t=>t.status==='Blocked').length;
+    return`📊 Team Summary:\n• ${emps.length} employee(s)\n• ${tasks.length} total tasks\n• ${todo} To Do · ${prog} In Progress · ${done} Done · ${blocked} Blocked`;
+  }
+  if(lq.includes('who')||lq.includes('employee')||lq.includes('team')){
+    return`👥 Team members: ${emps.map(e=>`<strong>${e}</strong> (${empHrs[e]}h)`).join(', ')}`;
+  }
+  if(lq.includes('today')){
+    const today=new Date().toISOString().split('T')[0];
+    const t=tasks.filter(t=>t.startDate===today);
+    return t.length?`📅 ${t.length} task(s) today:\n${t.map(t=>`• ${t.empName}: ${t.taskName} (${t.timeSpent}h)`).join('\n')}`:'📅 No tasks logged for today.';
+  }
+  return null;
+}
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const q=input.value.trim();if(!q)return;
+  input.value='';addMsg('user',esc(q));
+
+  // Show typing
+  const box=document.getElementById('chatMsgs');
+  const typing=document.createElement('div');typing.className='msg ai';typing.id='typing';
+  typing.innerHTML='<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  box.appendChild(typing);box.scrollTop=box.scrollHeight;
+
+  // Try local answer first
+  const local=localAnswer(q);
+  if(local){setTimeout(()=>{typing.remove();addMsg('ai',local.replace(/\n/g,'<br/>'));},600);return;}
+
+  // Try OpenAI if key available
+  const{openai}=getCfg();
+  if(openai){
+    chatHistory.push({role:'user',content:`Task data: ${JSON.stringify(tasks)}\n\nQuestion: ${q}`});
+    try{
+      const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+openai,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',messages:chatHistory,max_tokens:300})});
+      const d=await res.json();
+      const answer=d.choices?.[0]?.message?.content||'Sorry, I could not get an answer.';
+      chatHistory.push({role:'assistant',content:answer});
+      typing.remove();addMsg('ai',esc(answer).replace(/\n/g,'<br/>'));
+    }catch(e){typing.remove();addMsg('ai','⚠️ OpenAI error: '+e.message);}
+  }else{
+    setTimeout(()=>{typing.remove();addMsg('ai','I\'m not sure about that. Try asking about <em>hours</em>, <em>blocked tasks</em>, <em>summary</em>, or <em>who worked the most</em>. Add an OpenAI key in Setup for smarter answers! 🤖');},700);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── Chart ─────────────────────────────────────────────────
+let chartInst=null;
+function resetChartDates(){document.getElementById('chartFrom').value='';document.getElementById('chartTo').value='';renderChart();}
+function renderChart(){
+  const from=document.getElementById('chartFrom').value,to=document.getElementById('chartTo').value;
+  const filt=tasks.filter(t=>t.startDate&&(!from||t.startDate>=from)&&(!to||t.startDate<=to));
+  const empty=document.getElementById('chartEmpty'),canvas=document.getElementById('barChart');
+  if(!filt.length){empty.style.display='flex';canvas.style.display='none';if(chartInst){chartInst.destroy();chartInst=null;}document.getElementById('chartLegend').innerHTML='';return;}
+  empty.style.display='none';canvas.style.display='block';
+  const dates=[...new Set(filt.map(t=>t.startDate))].sort();
+  const emps=[...new Set(filt.map(t=>t.empName.trim()))].sort();
+  const fmt=d=>new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const datasets=emps.map((emp,i)=>({label:emp,data:dates.map(d=>filt.filter(t=>t.startDate===d&&t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),backgroundColor:PALETTE[i%PALETTE.length]+'cc',borderColor:PALETTE[i%PALETTE.length],borderWidth:1,borderRadius:5,borderSkipped:false,barThickness:14}));
+  const cfg={type:'bar',data:{labels:dates.map(fmt),datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#111827',borderColor:'#1e2d45',borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}h`}}},scales:{x:{stacked:false,grid:{display:false,color:'#1e2d45'},ticks:{color:'#64748b',font:{size:10}}},y:{stacked:false,beginAtZero:true,grid:{color:'#1e2d45'},ticks:{color:'#64748b',callback:v=>v+'h'}}}}};
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(canvas,cfg);
+  document.getElementById('chartLegend').innerHTML=emps.map((e,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`).join('');
+}
+
+// ── Report ────────────────────────────────────────────────
+function openReport(){document.getElementById('rptOverlay').classList.add('open');buildReport();}
+function closeReport(){document.getElementById('rptOverlay').classList.remove('open');}
+document.getElementById('rptOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('rptOverlay'))closeReport();});
+
+function getReportTasks(){
+  const period=document.getElementById('rptPeriod').value;
+  const now=new Date();
+  let from='';
+  if(period==='week'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());from=d.toISOString().split('T')[0];}
+  else if(period==='month'){from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];}
+  return period==='all'?tasks:tasks.filter(t=>t.startDate>=from);
+}
+
+function buildReport(){
+  const period=document.getElementById('rptPeriod').value;
+  const periodLabel={'week':'This Week','month':'This Month','all':'All Time'}[period];
+  document.getElementById('rptPeriodLabel').textContent='📄 '+periodLabel+' Report';
+
+  const rTasks=getReportTasks();
+  const emps=[...new Set(rTasks.map(t=>t.empName.trim()))].sort();
+  const total=rTasks.length;
+  const done=rTasks.filter(t=>t.status==='Done').length;
+  const blocked=rTasks.filter(t=>t.status==='Blocked').length;
+  const hrs=rTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+  const doneRate=total?Math.round(done/total*100):0;
+
+  const now=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  const RBADGE={'To Do':'rb-todo','In Progress':'rb-progress','In Review':'rb-review','Done':'rb-done','Blocked':'rb-blocked'};
+
+  // Employee breakdown
+  const maxHrs=emps.reduce((mx,e)=>Math.max(mx,rTasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0)),0)||1;
+  const empCards=emps.map(emp=>{
+    const et=rTasks.filter(t=>t.empName.trim()===emp);
+    const eh=et.reduce((s,t)=>s+(+t.timeSpent||0),0);
+    const ed=et.filter(t=>t.status==='Done').length;
+    const eb=et.filter(t=>t.status==='Blocked').length;
+    const pct=Math.round(eh/maxHrs*100);
+    return`<div class="rpt-emp-card">
+      <div class="rpt-emp-name">${esc(emp)}</div>
+      <div class="rpt-emp-bar"><div class="rpt-emp-bar-fill" style="width:${pct}%"></div></div>
+      <div class="rpt-emp-meta">
+        <span>Tasks <strong>${et.length}</strong></span>
+        <span>Hours <strong>${eh}h</strong></span>
+        <span>Done <strong>${ed}</strong></span>
+        ${eb?`<span style="color:#ef4444">Blocked <strong>${eb}</strong></span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Task table
+  const taskRows=rTasks.length?rTasks.map(t=>{
+    const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
+    return`<tr>
+      <td><strong>${esc(t.empName)}</strong></td>
+      <td>${esc(t.taskName)}</td>
+      <td>${ds}</td>
+      <td>${t.timeSpent}h</td>
+      <td><span class="rpt-badge ${RBADGE[t.status]||'rb-todo'}">${esc(t.status)}</span></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">No tasks for this period</td></tr>';
+
+  document.getElementById('rptBody').innerHTML=`
+    <div class="rpt-header">
+      <div>
+        <div class="rpt-title">⚡ Easy Tracker — ${periodLabel} Report</div>
+        <div class="rpt-subtitle">Generated on ${now}</div>
+      </div>
+      <div class="rpt-logo">📊</div>
+    </div>
+
+    <div class="rpt-stats">
+      <div class="rpt-stat"><div class="rn">${total}</div><div class="rl">Total Tasks</div></div>
+      <div class="rpt-stat"><div class="rn" style="color:#10b981">${done}</div><div class="rl">Completed</div></div>
+      <div class="rpt-stat"><div class="rn" style="color:#f59e0b">${doneRate}%</div><div class="rl">Done Rate</div></div>
+      <div class="rpt-stat"><div class="rn" style="color:#06b6d4">${hrs.toFixed(1)}h</div><div class="rl">Total Hours</div></div>
+    </div>
+
+    ${emps.length?`<div class="rpt-section">
+      <h3>👥 Team Breakdown</h3>
+      ${empCards}
+    </div>`:''}
+
+    <div class="rpt-section">
+      <h3>📋 Task Details</h3>
+      <table class="rpt-table">
+        <thead><tr><th>Employee</th><th>Task</th><th>Date</th><th>Hrs</th><th>Status</th></tr></thead>
+        <tbody>${taskRows}</tbody>
+      </table>
+    </div>
+
+    <div class="rpt-footer">
+      <span>Easy Tracker · AI Dashboard</span>
+      <span>ishbhatia/bandwidthTracker</span>
+    </div>
+  `;
+}
+
+// ── Redmine Integration ───────────────────────────────────
+const TRACKER_MAP={'CR':75,'PD':1,'DM':1}; // CR→CR tracker, PD/DM→Bug tracker
+const PRIORITY_MAP={'CR':2,'PD':5,'DM':4}; // 2=Normal, 5=Urgent, 4=High
+const REDMINE_MEMBERS=[
+  {id:36,  name:'Shubham Jain'},
+  {id:254, name:'Radhika Karode'},
+  {id:259, name:'Shubh Sharma'},
+  {id:313, name:'Vijay Jaybhay'},
+  {id:363, name:'Bharat Sarda'},
+  {id:400, name:'Rajni Kumari'},
+  {id:459, name:'Suhel Khan'},
+  {id:479, name:'Harivansh Shukla'},
+  {id:487, name:'Puneet Srivastava'},
+  {id:531, name:'Priyanshi Gupta'},
+  {id:631, name:'Mohd Talha'},
+  {id:653, name:'Akash Kumar'},
+  {id:727, name:'Ishant Bhatia'},   // default assignee
+  {id:728, name:'Mohammad Saddam'},
+];
+const DEFAULT_ASSIGNEE_ID=727; // Ishant Bhatia
+
+function updateRedmineNote(){
+  const cfg=getCfg();
+  const el=document.getElementById('redmineSetupNote');
+  if(!el)return;
+  el.textContent=cfg.redmineKey?'✅ Redmine connected':'⚠️ Add Redmine API key in ⚙ Setup';
+  el.style.color=cfg.redmineKey?'#34d399':'#fbbf24';
+}
+
+async function createRedmineIssue(subject,typeKey,description,assigneeId){
+  const cfg=getCfg();
+  if(!cfg.redmineKey||!cfg.redmineProject)return null;
+  const trackerId=TRACKER_MAP[typeKey]||2;
+  const priorityId=PRIORITY_MAP[typeKey]||2;
+  const body={issue:{
+    project_id:cfg.redmineProject,
+    tracker_id:trackerId,
+    priority_id:priorityId,
+    subject:subject,
+    description:description||`Created from Easy Tracker\nType: ${typeKey}`,
+    assigned_to_id:assigneeId||DEFAULT_ASSIGNEE_ID
+  }};
+  try{
+    const res=await fetch(`${cfg.redmineUrl}/issues.json`,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.text();console.error('Redmine error:',e);return null;}
+    const data=await res.json();
+    return{id:data.issue.id,url:`${cfg.redmineUrl}/issues/${data.issue.id}`};
+  }catch(e){console.error('Redmine API error:',e);return null;}
+}
+
+// ── Outlook OAuth (Microsoft Graph) — PKCE flow ──────────
+let msalToken=null;
+
+// Generate PKCE code verifier + challenge
+async function generatePKCE(){
+  const verifier=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const encoder=new TextEncoder();
+  const data=encoder.encode(verifier);
+  const digest=await crypto.subtle.digest('SHA-256',data);
+  const challenge=btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return{verifier,challenge};
+}
+
+async function connectOutlook(){
+  const cfg=getCfg();
+  const clientId=cfg.msClientId||'de8bc8b5-d9f9-48b1-a8ad-b748da725064';
+  const tenantId=cfg.msTenantId||'common';
+  const redirectUri=window.location.href.split('?')[0].split('#')[0];
+  const scope='https://graph.microsoft.com/Mail.Read openid profile';
+
+  const {verifier,challenge}=await generatePKCE();
+  sessionStorage.setItem('pkce_verifier',verifier);
+  sessionStorage.setItem('oauth_redirect',redirectUri);
+
+  const params=new URLSearchParams({
+    client_id:clientId,
+    response_type:'code',
+    redirect_uri:redirectUri,
+    scope,
+    response_mode:'query',
+    code_challenge:challenge,
+    code_challenge_method:'S256',
+    state:'outlook_login'
+  });
+
+  const authUrl=`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?${params}`;
+  // Open popup
+  const popup=window.open(authUrl,'ms-auth','width=520,height=640,scrollbars=yes');
+
+  // Poll popup URL for the auth code
+  const timer=setInterval(async()=>{
+    try{
+      if(popup.closed){clearInterval(timer);document.getElementById('fetchProgress').textContent='⚠️ Popup closed before sign-in completed.';return;}
+      const url=popup.location.href;
+      if(url.includes('code=')&&url.includes('state=outlook_login')){
+        clearInterval(timer);popup.close();
+        const code=new URL(url).searchParams.get('code');
+        document.getElementById('fetchProgress').textContent='⏳ Exchanging code for token…';
+        await exchangeCodeForToken(code,clientId,tenantId,redirectUri);
+      }
+      if(url.includes('error=')){
+        clearInterval(timer);popup.close();
+        const err=new URL(url).searchParams.get('error_description')||'Auth failed';
+        document.getElementById('fetchProgress').textContent='❌ '+err;
+      }
+    }catch(e){/* cross-origin — still loading */}
+  },500);
+}
+
+async function exchangeCodeForToken(code,clientId,tenantId,redirectUri){
+  const verifier=sessionStorage.getItem('pkce_verifier');
+  const body=new URLSearchParams({
+    client_id:clientId,
+    grant_type:'authorization_code',
+    code,
+    redirect_uri:redirectUri,
+    code_verifier:verifier,
+    scope:'https://graph.microsoft.com/Mail.Read openid profile'
+  });
+  try{
+    const res=await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const data=await res.json();
+    if(data.access_token){
+      msalToken=data.access_token;
+      document.getElementById('outlookStatus').textContent='✅ Connected — fetching emails…';
+      document.getElementById('outlookBtn').textContent='🔄 Sync Inbox';
+      await fetchOutlookEmails();
+    }else{
+      document.getElementById('fetchProgress').textContent='❌ Token error: '+(data.error_description||data.error||'Unknown');
+    }
+  }catch(e){
+    document.getElementById('fetchProgress').textContent='❌ Token exchange failed: '+e.message;
+  }
+}
+
+async function usePastedToken(){
+  const token=document.getElementById('manualToken').value.trim();
+  if(!token){alert('Please paste your Graph Explorer token first.');return;}
+  msalToken=token;
+  document.getElementById('fetchProgress').textContent='⏳ Fetching emails from your inbox…';
+  await fetchOutlookEmails();
+}
+
+async function fetchOutlookEmails(){
+  if(!msalToken){connectOutlook();return;}
+  const btn=document.getElementById('outlookBtn');
+  btn.disabled=true;btn.textContent='⏳ Fetching…';
+  try{
+    // Fetch last 50 emails, filter those with CR/PD/DM in subject
+    const res=await fetch('https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=50&$select=subject,receivedDateTime&$orderby=receivedDateTime%20desc',{headers:{Authorization:'Bearer '+msalToken}});
+    if(!res.ok)throw new Error('Graph API error: '+res.status);
+    const data=await res.json();
+    const relevant=data.value.filter(m=>/\b(CR|PD|DM)\b/i.test(m.subject));
+    if(!relevant.length){showToast('No CR/PD/DM emails found in last 50 inbox emails.');btn.disabled=false;btn.textContent='🔄 Sync Inbox';return;}
+    // Pre-fill textarea
+    const subjects=relevant.map(m=>m.subject).join('\n');
+    document.getElementById('subjectInput').value=subjects;
+    document.getElementById('outlookStatus').textContent=`✅ Fetched ${relevant.length} relevant email(s) from inbox`;
+    btn.disabled=false;btn.textContent='🔄 Sync Inbox';
+    document.getElementById('fetchProgress').textContent=`✅ Found ${relevant.length} CR/PD/DM email(s). Click Parse Subjects!`;
+    showToast(`📧 Fetched ${relevant.length} CR/PD/DM emails. Click Parse!`);
+  }catch(e){
+    msalToken=null;
+    document.getElementById('outlookStatus').textContent='Session expired — please paste a new token';
+    document.getElementById('fetchProgress').textContent='❌ '+e.message+' — get a fresh token from Graph Explorer';
+    btn.disabled=false;btn.textContent='Sign in with Microsoft';
+    showToast('❌ Outlook error: '+e.message);
+  }
+}
+
+// ── Tab switching ─────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
+}
+
+// ── Outlook Scraper ───────────────────────────────────────
+let parsedRows=[];
+
+const TYPE_RULES=[
+  {key:'CR',  label:'CR',  fullLabel:'Change Request (Feature)', cls:'type-cr', status:'To Do'},
+  {key:'PD',  label:'PD',  fullLabel:'Production Defect',        cls:'type-pd', status:'To Do'},
+  {key:'DM',  label:'DM',  fullLabel:'Non-Prod Defect',          cls:'type-dm', status:'To Do'},
+];
+
+function detectType(subject){
+  const s=subject.toUpperCase();
+  for(const r of TYPE_RULES){
+    // match CR, CR-, CR:, [CR], (CR), CR123, CR-123 etc
+    if(new RegExp('(^|[^A-Z])'+r.key+'([^A-Z]|\\d|$)').test(s))return r;
+  }
+  return{key:'?',label:'Unknown',fullLabel:'Unknown',cls:'type-unknown',status:'To Do'};
+}
+
+function cleanTaskName(subject,typeKey){
+  // Remove type prefix patterns like CR-123:, [PD], (DM), PD -, CR:, etc.
+  return subject
+    .replace(/^\[.*?\]\s*/,'')
+    .replace(/^\(.*?\)\s*/,'')
+    .replace(new RegExp('^'+typeKey+'[-:_#\\s]*\\d*[-:_#\\s]*','i'),'')
+    .replace(/^[-:\s]+/,'')
+    .trim()||subject.trim();
+}
+
+function parseSubjects(){
+  const raw=document.getElementById('subjectInput').value;
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  if(!lines.length){alert('Please paste at least one subject line.');return;}
+
+  const emp=document.getElementById('scraperEmp').value.trim();
+  const assigneeId=parseInt(document.getElementById('scraperAssignee').value)||DEFAULT_ASSIGNEE_ID;
+  const date=document.getElementById('scraperDate').value;
+  const hrs=document.getElementById('scraperHrs').value||'1';
+  const status=document.getElementById('scraperStatus').value;
+
+  parsedRows=lines.map((line,i)=>{
+    const type=detectType(line);
+    return{id:i,originalSubject:line,type,taskName:cleanTaskName(line,type.key),emp,assigneeId,date,hrs,status};
+  });
+
+  renderPreview();
+  document.getElementById('previewEmpty').style.display='none';
+  document.getElementById('previewWrap').style.display='block';
+  document.getElementById('importBtn').style.display='inline-flex';
+  document.getElementById('importActions').style.display='flex';
+  document.getElementById('importSummary').style.display='none';
+  document.getElementById('previewCount').textContent=`(${parsedRows.length} task${parsedRows.length>1?'s':''} detected)`;
+}
+
+function renderPreview(){
+  const STATUS_OPTS=['To Do','In Progress','In Review','Done','Blocked'].map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('previewBody').innerHTML=parsedRows.map((r,i)=>`
+    <tr id="pr-${i}">
+      <td><span class="type-pill ${r.type.cls}" title="${r.type.fullLabel}">${r.type.label}</span></td>
+      <td><input value="${esc(r.taskName)}" onchange="parsedRows[${i}].taskName=this.value" style="min-width:160px"/></td>
+      <td><input value="${esc(r.emp)}" onchange="parsedRows[${i}].emp=this.value" placeholder="Employee"/></td>
+      <td><input type="date" value="${r.date}" onchange="parsedRows[${i}].date=this.value"/></td>
+      <td><input type="number" value="${r.hrs}" min="0" step="0.5" onchange="parsedRows[${i}].hrs=this.value" style="width:60px"/></td>
+      <td><select onchange="parsedRows[${i}].status=this.value">${STATUS_OPTS.replace(`<option>${r.status}</option>`,`<option selected>${r.status}</option>`)}</select></td>
+      <td>${r.redmineId?`<a class="redmine-link redmine-badge created" href="${r.redmineUrl}" target="_blank">🔗 #${r.redmineId}</a>`:`<span class="redmine-badge" id="rm-${i}">Pending</span>`}</td>
+      <td><button class="remove-row" onclick="removeRow(${i})" title="Remove">✕</button></td>
+    </tr>`).join('');
+}
+
+function removeRow(i){
+  parsedRows.splice(i,1);
+  if(!parsedRows.length){
+    document.getElementById('previewWrap').style.display='none';
+    document.getElementById('previewEmpty').style.display='block';
+    document.getElementById('importBtn').style.display='none';
+    document.getElementById('previewCount').textContent='';
+    return;
+  }
+  parsedRows.forEach((r,idx)=>r.id=idx);
+  renderPreview();
+  document.getElementById('previewCount').textContent=`(${parsedRows.length} task${parsedRows.length>1?'s':''} detected)`;
+}
+
+function applyDefaults(){
+  const emp=document.getElementById('scraperEmp').value.trim();
+  const date=document.getElementById('scraperDate').value;
+  const hrs=document.getElementById('scraperHrs').value||'1';
+  const status=document.getElementById('scraperStatus').value;
+  parsedRows.forEach(r=>{if(emp)r.emp=emp;if(date)r.date=date;r.hrs=hrs;r.status=status;});
+  renderPreview();
+}
+
+async function importParsed(){
+  const invalid=parsedRows.filter(r=>!r.emp||!r.date||!r.taskName);
+  if(invalid.length){alert(`${invalid.length} row(s) are missing Employee or Date. Please fill them in.`);return;}
+  const doRedmine=document.getElementById('createRedmine').checked;
+  const cfg=getCfg();
+  const summary=document.getElementById('importSummary');
+  summary.style.display='block';
+  summary.innerHTML='⏳ Creating tasks…';
+
+  // Create Redmine issues first if enabled
+  if(doRedmine&&cfg.redmineKey){
+    summary.innerHTML='🔗 Creating Redmine issues…';
+    for(let i=0;i<parsedRows.length;i++){
+      const r=parsedRows[i];
+      const el=document.getElementById(`rm-${i}`);
+      if(el)el.textContent='Creating…';
+      const issue=await createRedmineIssue(`[${r.type.label}] ${r.taskName}`,r.type.key,`Source: Outlook\nEmployee: ${r.emp}\nDate: ${r.date}`,r.assigneeId||DEFAULT_ASSIGNEE_ID);
+      if(issue){parsedRows[i].redmineId=issue.id;parsedRows[i].redmineUrl=issue.url;if(el){el.className='redmine-link redmine-badge created';el.innerHTML=`<a href="${issue.url}" target="_blank">🔗 #${issue.id}</a>`;}}
+      else{if(el)el.textContent='Failed';}
+    }
+  }
+
+  const newTasks=parsedRows.map(r=>({
+    id:Date.now()+Math.random(),
+    empName:r.emp,
+    taskName:`[${r.type.label}] ${r.taskName}`,
+    startDate:r.date,
+    timeSpent:parseFloat(r.hrs)||1,
+    status:r.status,
+    taskType:r.type.key,
+    redmineId:r.redmineId||null,
+    redmineUrl:r.redmineUrl||null
+  }));
+
+  tasks.push(...newTasks);
+  renderAll();
+
+  const cr=parsedRows.filter(r=>r.type.key==='CR').length;
+  const pd=parsedRows.filter(r=>r.type.key==='PD').length;
+  const dm=parsedRows.filter(r=>r.type.key==='DM').length;
+  const rmCreated=parsedRows.filter(r=>r.redmineId).length;
+  summary.innerHTML=`✅ ${newTasks.length} task(s) imported — CR:${cr} · PD:${pd} · DM:${dm}${doRedmine?' · Redmine issues: '+rmCreated:''}. Saving to GitHub…`;
+
+  await saveToGitHub(`Import ${newTasks.length} tasks from Outlook (CR:${cr} PD:${pd} DM:${dm})`);
+  summary.innerHTML=`✅ Done! ${newTasks.length} task(s) saved to GitHub${rmCreated?' + '+rmCreated+' Redmine issue(s) created':''}.`;
+  parsedRows=[];
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('previewEmpty').style.display='block';
+  document.getElementById('importBtn').style.display='none';
+  document.getElementById('previewCount').textContent='';
+  document.getElementById('subjectInput').value='';
+}
+
+function clearScraper(){
+  document.getElementById('subjectInput').value='';
+  parsedRows=[];
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('previewEmpty').style.display='block';
+  document.getElementById('importBtn').style.display='none';
+  document.getElementById('previewCount').textContent='';
+  document.getElementById('importSummary').style.display='none';
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.getElementById('startDate').valueAsDate=new Date();
+document.getElementById('scraperDate').valueAsDate=new Date();
+updateRedmineNote();
+(function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);document.getElementById('chartTo').valueAsDate=to;document.getElementById('chartFrom').valueAsDate=from;})();
+if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
+</script>
+</body>
+</html>
