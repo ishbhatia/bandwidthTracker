@@ -449,12 +449,26 @@
       <div class="outlook-connect-bar" id="outlookBar">
         <div class="oc-info">
           <strong>📧 Connect Outlook</strong> — auto-fetch CR/PD/DM emails from your inbox<br/>
-          <span id="outlookStatus">Not connected · Requires Azure Client ID in ⚙ Setup</span>
+          <span id="outlookStatus">Paste your Graph Explorer token below OR sign in with Microsoft Client ID</span>
         </div>
         <button class="ms-btn" id="outlookBtn" onclick="connectOutlook()">
           <svg width="16" height="16" viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
           Sign in with Microsoft
         </button>
+      </div>
+      <!-- Manual token input -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">
+          Or paste Graph Explorer token directly
+          <a href="https://developer.microsoft.com/en-us/graph/graph-explorer" target="_blank" style="color:#818cf8;font-weight:600;margin-left:6px;text-decoration:none">Get token ↗</a>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input type="password" id="manualToken" placeholder="Paste token from Graph Explorer → Access token tab…"
+            style="flex:1;padding:8px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:.75rem;font-family:inherit"/>
+          <button class="btn btn-primary btn-sm" onclick="usePastedToken()" style="white-space:nowrap">📧 Fetch Emails</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('manualToken').type=document.getElementById('manualToken').type==='password'?'text':'password'">👁</button>
+        </div>
+        <div id="fetchProgress" style="font-size:.7rem;color:var(--muted);margin-top:5px"></div>
       </div>
 
       <div class="legend-box">
@@ -1083,6 +1097,14 @@ function connectOutlook(){
   },500);
 }
 
+async function usePastedToken(){
+  const token=document.getElementById('manualToken').value.trim();
+  if(!token){alert('Please paste your Graph Explorer token first.');return;}
+  msalToken=token;
+  document.getElementById('fetchProgress').textContent='⏳ Fetching emails from your inbox…';
+  await fetchOutlookEmails();
+}
+
 async function fetchOutlookEmails(){
   if(!msalToken){connectOutlook();return;}
   const btn=document.getElementById('outlookBtn');
@@ -1099,10 +1121,12 @@ async function fetchOutlookEmails(){
     document.getElementById('subjectInput').value=subjects;
     document.getElementById('outlookStatus').textContent=`✅ Fetched ${relevant.length} relevant email(s) from inbox`;
     btn.disabled=false;btn.textContent='🔄 Sync Inbox';
+    document.getElementById('fetchProgress').textContent=`✅ Found ${relevant.length} CR/PD/DM email(s). Click Parse Subjects!`;
     showToast(`📧 Fetched ${relevant.length} CR/PD/DM emails. Click Parse!`);
   }catch(e){
     msalToken=null;
-    document.getElementById('outlookStatus').textContent='Session expired — please sign in again';
+    document.getElementById('outlookStatus').textContent='Session expired — please paste a new token';
+    document.getElementById('fetchProgress').textContent='❌ '+e.message+' — get a fresh token from Graph Explorer';
     btn.disabled=false;btn.textContent='Sign in with Microsoft';
     showToast('❌ Outlook error: '+e.message);
   }
