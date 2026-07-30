@@ -294,6 +294,21 @@
     .legend-box{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
     .import-summary{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;
       padding:12px 16px;font-size:.8rem;color:#34d399;display:none;margin-top:12px}
+    .redmine-link{color:#818cf8;font-size:.72rem;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+    .redmine-link:hover{text-decoration:underline}
+    .redmine-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;
+      font-size:.68rem;font-weight:600;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+    .redmine-badge.created{background:rgba(16,185,129,.1);color:#34d399;border-color:rgba(16,185,129,.2)}
+    .outlook-connect-bar{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:10px;
+      padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+    .outlook-connect-bar .oc-info{font-size:.78rem;color:#67e8f9}
+    .outlook-connect-bar .oc-info strong{color:#fff}
+    .ms-btn{background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;padding:7px 16px;
+      border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;
+      display:flex;align-items:center;gap:6px;transition:all .2s}
+    .ms-btn:hover{box-shadow:0 4px 14px rgba(0,120,212,.4)}
+    .ms-btn:disabled{opacity:.5;cursor:not-allowed}
+    .sync-progress{font-size:.75rem;color:var(--muted);margin-top:6px}
     .remove-row{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 6px;border-radius:4px}
     .remove-row:hover{color:var(--red);background:rgba(239,68,68,.1)}
 
@@ -429,6 +444,19 @@
   <div style="display:flex;flex-direction:column;gap:18px">
     <div class="card">
       <div class="card-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Paste Outlook Subject Lines</div>
+
+      <!-- Outlook OAuth bar -->
+      <div class="outlook-connect-bar" id="outlookBar">
+        <div class="oc-info">
+          <strong>📧 Connect Outlook</strong> — auto-fetch CR/PD/DM emails from your inbox<br/>
+          <span id="outlookStatus">Not connected · Requires Azure Client ID in ⚙ Setup</span>
+        </div>
+        <button class="ms-btn" id="outlookBtn" onclick="connectOutlook()">
+          <svg width="16" height="16" viewBox="0 0 23 23" fill="none"><rect width="11" height="11" fill="#f25022"/><rect x="12" width="11" height="11" fill="#7fba00"/><rect y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+          Sign in with Microsoft
+        </button>
+      </div>
+
       <div class="legend-box">
         <span class="type-pill type-cr">CR — Feature</span>
         <span class="type-pill type-pd">PD — Prod Defect</span>
@@ -459,6 +487,13 @@ CR-202 Dark mode feature request
         </select>
       </div>
       <p style="font-size:.72rem;color:var(--muted);margin-top:4px">These are applied to all rows. You can override each row individually in the preview.</p>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="createRedmine" checked style="width:14px;height:14px;accent-color:var(--accent)"/>
+          Also create issue in Redmine
+        </label>
+        <span id="redmineSetupNote" style="font-size:.7rem;color:var(--muted)"></span>
+      </div>
     </div>
   </div>
 
@@ -478,6 +513,7 @@ CR-202 Dark mode feature request
           <th>Date</th>
           <th>Hrs</th>
           <th>Status</th>
+          <th>Redmine</th>
           <th></th>
         </tr></thead>
         <tbody id="previewBody"></tbody>
@@ -485,7 +521,7 @@ CR-202 Dark mode feature request
     </div>
     <div id="importSummary" class="import-summary"></div>
     <div class="form-actions" style="margin-top:14px" id="importActions" style="display:none">
-      <button class="btn btn-primary" id="importBtn" onclick="importParsed()" style="display:none">✅ Import All to Tracker</button>
+      <button class="btn btn-primary" id="importBtn" onclick="importParsed()" style="display:none">✅ Import to Tracker + Redmine</button>
       <button class="btn btn-secondary btn-sm" onclick="applyDefaults()">↺ Re-apply Defaults</button>
     </div>
   </div>
@@ -533,6 +569,11 @@ CR-202 Dark mode feature request
     <div class="fg"><label>Branch</label><input id="setupBranch" value="main"/></div>
     <div class="fg"><label>Data file path</label><input id="setupPath" value="data.json"/></div>
     <div class="fg"><label>OpenAI API Key (optional)</label><input type="password" id="setupOpenAI" placeholder="sk-…"/></div>
+    <div class="fg"><label>Redmine URL</label><input id="setupRedmineUrl" placeholder="http://svn.aps1aws.lumiq.int" value="http://svn.aps1aws.lumiq.int"/></div>
+    <div class="fg"><label>Redmine API Key</label><input type="password" id="setupRedmineKey" placeholder="your-redmine-api-key"/></div>
+    <div class="fg"><label>Redmine Project Identifier</label><input id="setupRedmineProject" placeholder="e.g. oktovia-recur-df" value="oktovia-recur-df"/></div>
+    <div class="fg"><label>Microsoft Client ID (for Outlook)</label><input id="setupMsClientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
+    <div class="fg"><label>Microsoft Tenant ID</label><input id="setupMsTenantId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('setupModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSetup()">Connect &amp; Load</button>
@@ -564,8 +605,7 @@ CR-202 Dark mode feature request
 <script>
 // ── Config ────────────────────────────────────────────────
 const REPO_DEFAULT='ishbhatia/bandwidthTracker',BRANCH_DEFAULT='main',PATH_DEFAULT='data.json';
-function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||''};}
-
+function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||'http://svn.aps1aws.lumiq.int',redmineKey:localStorage.getItem('redmine_key')||'',redmineProject:localStorage.getItem('redmine_project')||'oktovia-recur-df',msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
 // ── State ─────────────────────────────────────────────────
 let tasks=[],fileSHA='',editIndex=null,sortKey='startDate',sortAsc=true;
 const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked'};
@@ -612,13 +652,23 @@ async function saveToGitHub(msg){
 }
 
 // ── Setup ─────────────────────────────────────────────────
-function openSetup(){const c=getCfg();document.getElementById('setupToken').value=c.token;document.getElementById('setupRepo').value=c.repo;document.getElementById('setupBranch').value=c.branch;document.getElementById('setupPath').value=c.path;document.getElementById('setupOpenAI').value=c.openai;document.getElementById('setupModal').classList.add('open');}
+function openSetup(){const c=getCfg();document.getElementById('setupToken').value=c.token;document.getElementById('setupRepo').value=c.repo;document.getElementById('setupBranch').value=c.branch;document.getElementById('setupPath').value=c.path;document.getElementById('setupOpenAI').value=c.openai;document.getElementById('setupRedmineUrl').value=c.redmineUrl;document.getElementById('setupRedmineKey').value=c.redmineKey;document.getElementById('setupRedmineProject').value=c.redmineProject;document.getElementById('setupMsClientId').value=c.msClientId;document.getElementById('setupMsTenantId').value=c.msTenantId;document.getElementById('setupModal').classList.add('open');}
 function toggleTokenVis(){const i=document.getElementById('setupToken');i.type=i.type==='password'?'text':'password';}
 async function saveSetup(){
   const token=document.getElementById('setupToken').value.trim(),repo=document.getElementById('setupRepo').value.trim(),branch=document.getElementById('setupBranch').value.trim()||'main',path=document.getElementById('setupPath').value.trim()||'data.json',openai=document.getElementById('setupOpenAI').value.trim();
+  const redmineUrl=document.getElementById('setupRedmineUrl').value.trim(),redmineKey=document.getElementById('setupRedmineKey').value.trim(),redmineProject=document.getElementById('setupRedmineProject').value.trim();
+  const msClientId=document.getElementById('setupMsClientId').value.trim(),msTenantId=document.getElementById('setupMsTenantId').value.trim();
   if(!token||!repo){alert('Token and repository are required.');return;}
-  localStorage.setItem('gh_token',token);localStorage.setItem('gh_repo',repo);localStorage.setItem('gh_branch',branch);localStorage.setItem('gh_path',path);if(openai)localStorage.setItem('openai_key',openai);
-  closeModal('setupModal');await loadFromGitHub();
+  localStorage.setItem('gh_token',token);localStorage.setItem('gh_repo',repo);localStorage.setItem('gh_branch',branch);localStorage.setItem('gh_path',path);
+  if(openai)localStorage.setItem('openai_key',openai);
+  if(redmineUrl)localStorage.setItem('redmine_url',redmineUrl);
+  if(redmineKey)localStorage.setItem('redmine_key',redmineKey);
+  if(redmineProject)localStorage.setItem('redmine_project',redmineProject);
+  if(msClientId)localStorage.setItem('ms_client_id',msClientId);
+  if(msTenantId)localStorage.setItem('ms_tenant_id',msTenantId);
+  closeModal('setupModal');
+  updateRedmineNote();
+  await loadFromGitHub();
 }
 
 // ── CRUD ──────────────────────────────────────────────────
@@ -654,7 +704,7 @@ function renderTable(){
   tb.innerHTML=rows.map(t=>{
     const i=tasks.indexOf(t),bc=STATUS_BADGE[t.status]||'badge-todo';
     const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
-    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
   }).join('');
 }
 
@@ -938,6 +988,89 @@ function buildReport(){
   `;
 }
 
+// ── Redmine Integration ───────────────────────────────────
+const TRACKER_MAP={'CR':75,'PD':1,'DM':1}; // CR→CR tracker, PD/DM→Bug tracker
+const PRIORITY_MAP={'CR':2,'PD':5,'DM':4}; // 2=Normal, 5=Urgent, 4=High
+
+function updateRedmineNote(){
+  const cfg=getCfg();
+  const el=document.getElementById('redmineSetupNote');
+  if(!el)return;
+  el.textContent=cfg.redmineKey?'✅ Redmine connected':'⚠️ Add Redmine API key in ⚙ Setup';
+  el.style.color=cfg.redmineKey?'#34d399':'#fbbf24';
+}
+
+async function createRedmineIssue(subject,typeKey,description){
+  const cfg=getCfg();
+  if(!cfg.redmineKey||!cfg.redmineProject)return null;
+  const trackerId=TRACKER_MAP[typeKey]||2;
+  const priorityId=PRIORITY_MAP[typeKey]||2;
+  const body={issue:{project_id:cfg.redmineProject,tracker_id:trackerId,priority_id:priorityId,subject:subject,description:description||`Created from Easy Tracker\nType: ${typeKey}`}};
+  try{
+    const res=await fetch(`${cfg.redmineUrl}/issues.json`,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.text();console.error('Redmine error:',e);return null;}
+    const data=await res.json();
+    return{id:data.issue.id,url:`${cfg.redmineUrl}/issues/${data.issue.id}`};
+  }catch(e){console.error('Redmine API error:',e);return null;}
+}
+
+// ── Outlook OAuth (Microsoft Graph) ──────────────────────
+let msalToken=null;
+
+function connectOutlook(){
+  const cfg=getCfg();
+  if(!cfg.msClientId){
+    alert('Please add your Microsoft Client ID in ⚙ Setup first.\n\nGet it from: portal.azure.com → App Registrations');
+    openSetup();return;
+  }
+  const tenantId=cfg.msTenantId||'common';
+  const redirectUri=encodeURIComponent(window.location.href.split('?')[0]);
+  const scope=encodeURIComponent('https://graph.microsoft.com/Mail.Read');
+  const authUrl=`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?client_id=${cfg.msClientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scope}&response_mode=fragment`;
+  // Open popup
+  const popup=window.open(authUrl,'ms-auth','width=500,height=600,scrollbars=yes');
+  // Listen for token in URL hash (implicit flow)
+  const timer=setInterval(()=>{
+    try{
+      if(popup.closed){clearInterval(timer);return;}
+      const hash=popup.location.hash;
+      if(hash&&hash.includes('access_token')){
+        clearInterval(timer);popup.close();
+        const params=new URLSearchParams(hash.substring(1));
+        msalToken=params.get('access_token');
+        document.getElementById('outlookStatus').textContent='✅ Connected to Outlook — fetching emails…';
+        document.getElementById('outlookBtn').textContent='🔄 Sync Inbox';
+        fetchOutlookEmails();
+      }
+    }catch(e){/* cross-origin, still loading */}
+  },500);
+}
+
+async function fetchOutlookEmails(){
+  if(!msalToken){connectOutlook();return;}
+  const btn=document.getElementById('outlookBtn');
+  btn.disabled=true;btn.textContent='⏳ Fetching…';
+  try{
+    // Fetch last 50 emails, filter those with CR/PD/DM in subject
+    const res=await fetch('https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=50&$select=subject,receivedDateTime&$orderby=receivedDateTime%20desc',{headers:{Authorization:'Bearer '+msalToken}});
+    if(!res.ok)throw new Error('Graph API error: '+res.status);
+    const data=await res.json();
+    const relevant=data.value.filter(m=>/\b(CR|PD|DM)\b/i.test(m.subject));
+    if(!relevant.length){showToast('No CR/PD/DM emails found in last 50 inbox emails.');btn.disabled=false;btn.textContent='🔄 Sync Inbox';return;}
+    // Pre-fill textarea
+    const subjects=relevant.map(m=>m.subject).join('\n');
+    document.getElementById('subjectInput').value=subjects;
+    document.getElementById('outlookStatus').textContent=`✅ Fetched ${relevant.length} relevant email(s) from inbox`;
+    btn.disabled=false;btn.textContent='🔄 Sync Inbox';
+    showToast(`📧 Fetched ${relevant.length} CR/PD/DM emails. Click Parse!`);
+  }catch(e){
+    msalToken=null;
+    document.getElementById('outlookStatus').textContent='Session expired — please sign in again';
+    btn.disabled=false;btn.textContent='Sign in with Microsoft';
+    showToast('❌ Outlook error: '+e.message);
+  }
+}
+
 // ── Tab switching ─────────────────────────────────────────
 function switchTab(name){
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
@@ -1008,6 +1141,7 @@ function renderPreview(){
       <td><input type="date" value="${r.date}" onchange="parsedRows[${i}].date=this.value"/></td>
       <td><input type="number" value="${r.hrs}" min="0" step="0.5" onchange="parsedRows[${i}].hrs=this.value" style="width:60px"/></td>
       <td><select onchange="parsedRows[${i}].status=this.value">${STATUS_OPTS.replace(`<option>${r.status}</option>`,`<option selected>${r.status}</option>`)}</select></td>
+      <td>${r.redmineId?`<a class="redmine-link redmine-badge created" href="${r.redmineUrl}" target="_blank">🔗 #${r.redmineId}</a>`:`<span class="redmine-badge" id="rm-${i}">Pending</span>`}</td>
       <td><button class="remove-row" onclick="removeRow(${i})" title="Remove">✕</button></td>
     </tr>`).join('');
 }
@@ -1038,6 +1172,24 @@ function applyDefaults(){
 async function importParsed(){
   const invalid=parsedRows.filter(r=>!r.emp||!r.date||!r.taskName);
   if(invalid.length){alert(`${invalid.length} row(s) are missing Employee or Date. Please fill them in.`);return;}
+  const doRedmine=document.getElementById('createRedmine').checked;
+  const cfg=getCfg();
+  const summary=document.getElementById('importSummary');
+  summary.style.display='block';
+  summary.innerHTML='⏳ Creating tasks…';
+
+  // Create Redmine issues first if enabled
+  if(doRedmine&&cfg.redmineKey){
+    summary.innerHTML='🔗 Creating Redmine issues…';
+    for(let i=0;i<parsedRows.length;i++){
+      const r=parsedRows[i];
+      const el=document.getElementById(`rm-${i}`);
+      if(el)el.textContent='Creating…';
+      const issue=await createRedmineIssue(`[${r.type.label}] ${r.taskName}`,r.type.key,`Source: Outlook\nEmployee: ${r.emp}\nDate: ${r.date}`);
+      if(issue){parsedRows[i].redmineId=issue.id;parsedRows[i].redmineUrl=issue.url;if(el){el.className='redmine-link redmine-badge created';el.innerHTML=`<a href="${issue.url}" target="_blank">🔗 #${issue.id}</a>`;}}
+      else{if(el)el.textContent='Failed';}
+    }
+  }
 
   const newTasks=parsedRows.map(r=>({
     id:Date.now()+Math.random(),
@@ -1046,21 +1198,22 @@ async function importParsed(){
     startDate:r.date,
     timeSpent:parseFloat(r.hrs)||1,
     status:r.status,
-    taskType:r.type.key
+    taskType:r.type.key,
+    redmineId:r.redmineId||null,
+    redmineUrl:r.redmineUrl||null
   }));
 
   tasks.push(...newTasks);
   renderAll();
 
-  const summary=document.getElementById('importSummary');
-  summary.style.display='block';
   const cr=parsedRows.filter(r=>r.type.key==='CR').length;
   const pd=parsedRows.filter(r=>r.type.key==='PD').length;
   const dm=parsedRows.filter(r=>r.type.key==='DM').length;
-  summary.innerHTML=`✅ Imported ${newTasks.length} task(s) — CR: ${cr} · PD: ${pd} · DM: ${dm}. Saving to GitHub…`;
+  const rmCreated=parsedRows.filter(r=>r.redmineId).length;
+  summary.innerHTML=`✅ ${newTasks.length} task(s) imported — CR:${cr} · PD:${pd} · DM:${dm}${doRedmine?' · Redmine issues: '+rmCreated:''}. Saving to GitHub…`;
 
   await saveToGitHub(`Import ${newTasks.length} tasks from Outlook (CR:${cr} PD:${pd} DM:${dm})`);
-  summary.innerHTML=`✅ ${newTasks.length} task(s) imported and saved to GitHub! Switch to Dashboard to see them.`;
+  summary.innerHTML=`✅ Done! ${newTasks.length} task(s) saved to GitHub${rmCreated?' + '+rmCreated+' Redmine issue(s) created':''}.`;
   parsedRows=[];
   document.getElementById('previewWrap').style.display='none';
   document.getElementById('previewEmpty').style.display='block';
@@ -1082,6 +1235,7 @@ function clearScraper(){
 // ── Init ──────────────────────────────────────────────────
 document.getElementById('startDate').valueAsDate=new Date();
 document.getElementById('scraperDate').valueAsDate=new Date();
+updateRedmineNote();
 (function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);document.getElementById('chartTo').valueAsDate=to;document.getElementById('chartFrom').valueAsDate=from;})();
 if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
