@@ -136,14 +136,6 @@
     "status": "In Progress"
   },
   {
-    "id": 1785388682178,
-    "empName": "Jatin",
-    "taskName": "1 Mail",
-    "startDate": "2026-07-30",
-    "timeSpent": 3,
-    "status": "To Do"
-  },
-  {
     "id": 1785389952765,
     "empName": "Akash",
     "taskName": "CR-18022||Case got stucked in data error queue",
