@@ -1063,34 +1063,89 @@ async function createRedmineIssue(subject,typeKey,description,assigneeId){
   }catch(e){console.error('Redmine API error:',e);return null;}
 }
 
-// ── Outlook OAuth (Microsoft Graph) ──────────────────────
+// ── Outlook OAuth (Microsoft Graph) — PKCE flow ──────────
 let msalToken=null;
 
-function connectOutlook(){
+// Generate PKCE code verifier + challenge
+async function generatePKCE(){
+  const verifier=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const encoder=new TextEncoder();
+  const data=encoder.encode(verifier);
+  const digest=await crypto.subtle.digest('SHA-256',data);
+  const challenge=btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return{verifier,challenge};
+}
+
+async function connectOutlook(){
   const cfg=getCfg();
-  // Use Graph Explorer's public client ID if no custom one configured
   const clientId=cfg.msClientId||'de8bc8b5-d9f9-48b1-a8ad-b748da725064';
   const tenantId=cfg.msTenantId||'common';
-  const redirectUri=encodeURIComponent(window.location.href.split('?')[0].split('#')[0]);
-  const scope=encodeURIComponent('https://graph.microsoft.com/Mail.Read');
-  const authUrl=`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scope}&response_mode=fragment`;
+  const redirectUri=window.location.href.split('?')[0].split('#')[0];
+  const scope='https://graph.microsoft.com/Mail.Read openid profile';
+
+  const {verifier,challenge}=await generatePKCE();
+  sessionStorage.setItem('pkce_verifier',verifier);
+  sessionStorage.setItem('oauth_redirect',redirectUri);
+
+  const params=new URLSearchParams({
+    client_id:clientId,
+    response_type:'code',
+    redirect_uri:redirectUri,
+    scope,
+    response_mode:'query',
+    code_challenge:challenge,
+    code_challenge_method:'S256',
+    state:'outlook_login'
+  });
+
+  const authUrl=`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?${params}`;
   // Open popup
-  const popup=window.open(authUrl,'ms-auth','width=500,height=600,scrollbars=yes');
-  // Listen for token in URL hash (implicit flow)
-  const timer=setInterval(()=>{
+  const popup=window.open(authUrl,'ms-auth','width=520,height=640,scrollbars=yes');
+
+  // Poll popup URL for the auth code
+  const timer=setInterval(async()=>{
     try{
-      if(popup.closed){clearInterval(timer);return;}
-      const hash=popup.location.hash;
-      if(hash&&hash.includes('access_token')){
+      if(popup.closed){clearInterval(timer);document.getElementById('fetchProgress').textContent='⚠️ Popup closed before sign-in completed.';return;}
+      const url=popup.location.href;
+      if(url.includes('code=')&&url.includes('state=outlook_login')){
         clearInterval(timer);popup.close();
-        const params=new URLSearchParams(hash.substring(1));
-        msalToken=params.get('access_token');
-        document.getElementById('outlookStatus').textContent='✅ Connected to Outlook — fetching emails…';
-        document.getElementById('outlookBtn').textContent='🔄 Sync Inbox';
-        fetchOutlookEmails();
+        const code=new URL(url).searchParams.get('code');
+        document.getElementById('fetchProgress').textContent='⏳ Exchanging code for token…';
+        await exchangeCodeForToken(code,clientId,tenantId,redirectUri);
       }
-    }catch(e){/* cross-origin, still loading */}
+      if(url.includes('error=')){
+        clearInterval(timer);popup.close();
+        const err=new URL(url).searchParams.get('error_description')||'Auth failed';
+        document.getElementById('fetchProgress').textContent='❌ '+err;
+      }
+    }catch(e){/* cross-origin — still loading */}
   },500);
+}
+
+async function exchangeCodeForToken(code,clientId,tenantId,redirectUri){
+  const verifier=sessionStorage.getItem('pkce_verifier');
+  const body=new URLSearchParams({
+    client_id:clientId,
+    grant_type:'authorization_code',
+    code,
+    redirect_uri:redirectUri,
+    code_verifier:verifier,
+    scope:'https://graph.microsoft.com/Mail.Read openid profile'
+  });
+  try{
+    const res=await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const data=await res.json();
+    if(data.access_token){
+      msalToken=data.access_token;
+      document.getElementById('outlookStatus').textContent='✅ Connected — fetching emails…';
+      document.getElementById('outlookBtn').textContent='🔄 Sync Inbox';
+      await fetchOutlookEmails();
+    }else{
+      document.getElementById('fetchProgress').textContent='❌ Token error: '+(data.error_description||data.error||'Unknown');
+    }
+  }catch(e){
+    document.getElementById('fetchProgress').textContent='❌ Token exchange failed: '+e.message;
+  }
 }
 
 async function usePastedToken(){
