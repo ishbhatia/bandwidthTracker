@@ -198,27 +198,5 @@
     "startDate": "2026-07-30",
     "timeSpent": 1,
     "status": "In Progress"
-  },
-  {
-    "id": 1785408428413.486,
-    "empName": "ishant",
-    "taskName": "[CR] Re: CR-18022||Case got stucked in data error queue",
-    "startDate": "2026-07-30",
-    "timeSpent": 1,
-    "status": "To Do",
-    "taskType": "CR",
-    "redmineId": null,
-    "redmineUrl": null
-  },
-  {
-    "id": 1785408428413.4297,
-    "empName": "ishant",
-    "taskName": "[PD] RE: PD-1215 || Need clarification - Confidential",
-    "startDate": "2026-07-30",
-    "timeSpent": 1,
-    "status": "To Do",
-    "taskType": "PD",
-    "redmineId": null,
-    "redmineUrl": null
   }
 ]
