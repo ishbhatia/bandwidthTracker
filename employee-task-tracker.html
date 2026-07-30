@@ -716,9 +716,7 @@ async function saveEdit(){
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-</script>
 
-<script>
 // ── Sort / Filter ─────────────────────────────────────────
 function sortBy(k){sortAsc=(sortKey===k)?!sortAsc:true;sortKey=k;renderTable();}
 function getSorted(l){return[...l].sort((a,b)=>{let va=a[sortKey],vb=b[sortKey];if(sortKey==='timeSpent'){va=+va;vb=+vb;}return va<vb?(sortAsc?-1:1):va>vb?(sortAsc?1:-1):0;});}
