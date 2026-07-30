@@ -192,17 +192,6 @@
     "status": "To Do"
   },
   {
-    "id": 1785404262374.4922,
-    "empName": "Ishant",
-    "taskName": "[CR] CR-101010",
-    "startDate": "2026-07-30",
-    "timeSpent": 1,
-    "status": "To Do",
-    "taskType": "CR",
-    "redmineId": null,
-    "redmineUrl": null
-  },
-  {
     "id": 1785406090873,
     "empName": "Vijay",
     "taskName": "CR-19559 || Dual Month",
