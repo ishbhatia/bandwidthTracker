@@ -36,8 +36,8 @@
     "empName": "Radhika",
     "taskName": "CR-46695 || Testing Observation || UAT",
     "startDate": "2026-07-30",
-    "timeSpent": 2,
-    "status": "In Progress"
+    "timeSpent": 1,
+    "status": "Done"
   },
   {
     "id": 1785387986261,
@@ -180,7 +180,7 @@
     "empName": "Radhika",
     "taskName": "CR-47961: Modification of IGFP Plus",
     "startDate": "2026-07-31",
-    "timeSpent": 7,
+    "timeSpent": 6,
     "status": "Done"
   },
   {
