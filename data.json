@@ -270,5 +270,13 @@
     "startDate": "2026-07-30",
     "timeSpent": 0,
     "status": "Blocked"
+  },
+  {
+    "id": 1785476569786,
+    "empName": "Akash",
+    "taskName": "MONGO EXCEPTION CASE STUCK IN COND QUEUE",
+    "startDate": "2026-07-31",
+    "timeSpent": 2,
+    "status": "To Do"
   }
 ]
