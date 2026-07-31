@@ -238,5 +238,13 @@
     "startDate": "2026-07-28",
     "timeSpent": 13,
     "status": "Done"
+  },
+  {
+    "id": 1785476258972,
+    "empName": "Priyansh",
+    "taskName": "Retail Equalizer issue -All documents are not reflecting on document view UI :",
+    "startDate": "2026-07-30",
+    "timeSpent": 5,
+    "status": "In Progress"
   }
 ]
