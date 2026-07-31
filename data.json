@@ -45,7 +45,7 @@
     "taskName": "DM 24015",
     "startDate": "2026-07-30",
     "timeSpent": 2,
-    "status": "In Progress"
+    "status": "Done"
   },
   {
     "id": 1785388035778,
@@ -180,7 +180,7 @@
     "empName": "Radhika",
     "taskName": "CR-47961: Modification of IGFP Plus",
     "startDate": "2026-07-31",
-    "timeSpent": 9,
+    "timeSpent": 7,
     "status": "Done"
   },
   {
