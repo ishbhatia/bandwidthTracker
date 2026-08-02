@@ -280,14 +280,6 @@
     "status": "In Progress"
   },
   {
-    "id": 1785523953479,
-    "empName": "Vijay",
-    "taskName": "DB2 SEARCH",
-    "startDate": "2026-08-01",
-    "timeSpent": 2,
-    "status": "Done"
-  },
-  {
     "id": 1785524019046,
     "empName": "Vijay",
     "taskName": "CR-19559 || Dual Month || 2nd deployment",
