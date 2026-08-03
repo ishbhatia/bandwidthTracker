@@ -211,7 +211,9 @@
     "taskName": "CR-19559 || Dual Month",
     "startDate": "2026-07-30",
     "timeSpent": 8,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "PROD"
   },
   {
     "id": 1785475078707,
