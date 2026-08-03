@@ -51,7 +51,9 @@
     "taskName": "DM 24015",
     "startDate": "2026-07-30",
     "timeSpent": 2,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785388035778,
