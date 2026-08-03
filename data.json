@@ -192,8 +192,10 @@
     "empName": "Harivansh",
     "taskName": "CR-24640 || BO and CP Integration",
     "startDate": "2026-08-04",
-    "timeSpent": 3,
-    "status": "Done"
+    "timeSpent": 4,
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": ""
   },
   {
     "id": 1785390500801,
