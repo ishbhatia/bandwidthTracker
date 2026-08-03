@@ -365,10 +365,9 @@
       </div>
       <div class="fg"><label>Environment</label>
         <select id="environment">
-          <option value="">— None —</option>
-          <option>DEV</option>
-          <option>UAT</option>
-          <option>PROD</option>
+          <option value="DEV">DEV</option>
+          <option value="UAT">UAT</option>
+          <option value="PROD">PROD</option>
         </select>
       </div>
       <div class="form-actions">
@@ -581,10 +580,9 @@ CR-202 Dark mode feature request
       </div>
       <div class="fg" style="grid-column:span 2"><label>Environment</label>
         <select id="editEnvironment">
-          <option value="">— None —</option>
-          <option>DEV</option>
-          <option>UAT</option>
-          <option>PROD</option>
+          <option value="DEV">DEV</option>
+          <option value="UAT">UAT</option>
+          <option value="PROD">PROD</option>
         </select>
       </div>
     </div>
@@ -734,7 +732,7 @@ async function addTask(){
   tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,status,environment});
   renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
 }
-function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='';}
+function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
 function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editExpectedHrs').value=t.expectedHrs||'';document.getElementById('editStatus').value=t.status;document.getElementById('editEnvironment').value=t.environment||'';document.getElementById('editModal').classList.add('open');}
 async function saveEdit(){
