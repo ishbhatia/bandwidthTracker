@@ -283,7 +283,9 @@
     "taskName": "PD-MERREPORT DATA FINDING",
     "startDate": "2026-07-31",
     "timeSpent": 9,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785491020373,
