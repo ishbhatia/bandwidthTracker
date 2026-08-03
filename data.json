@@ -117,7 +117,9 @@
     "taskName": "PRODUCT CR 47961 || UAT",
     "startDate": "2026-08-05",
     "timeSpent": 4,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785388456345,
