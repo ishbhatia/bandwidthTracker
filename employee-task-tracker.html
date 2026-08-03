@@ -129,6 +129,10 @@
     .badge-done{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)}
     .badge-blocked{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
     .badge-reopen{background:rgba(249,115,22,.1);color:#fb923c;border:1px solid rgba(249,115,22,.2)}
+    .env-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:700;letter-spacing:.04em}
+    .env-dev{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
+    .env-uat{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+    .env-prod{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.25)}
 
     /* ── chart ── */
     .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
@@ -359,6 +363,14 @@
       <div class="fg"><label>Status</label>
         <select id="status"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option></select>
       </div>
+      <div class="fg"><label>Environment</label>
+        <select id="environment">
+          <option value="">— None —</option>
+          <option>DEV</option>
+          <option>UAT</option>
+          <option>PROD</option>
+        </select>
+      </div>
       <div class="form-actions">
         <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
         <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
@@ -430,6 +442,7 @@
             <th onclick="sortBy('timeSpent')">Spent ⇅</th>
             <th onclick="sortBy('expectedHrs')">Expected ⇅</th>
             <th>Remaining</th>
+            <th onclick="sortBy('environment')">Env ⇅</th>
             <th onclick="sortBy('status')">Status ⇅</th>
             <th>Actions</th>
           </tr></thead>
@@ -565,6 +578,14 @@ CR-202 Dark mode feature request
       <div class="fg"><label>Expected Hours</label><input type="number" id="editExpectedHrs" min="0" step="0.5" placeholder="e.g. 8"/></div>
       <div class="fg" style="grid-column:span 2"><label>Status</label>
         <select id="editStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option></select>
+      </div>
+      <div class="fg" style="grid-column:span 2"><label>Environment</label>
+        <select id="editEnvironment">
+          <option value="">— None —</option>
+          <option>DEV</option>
+          <option>UAT</option>
+          <option>PROD</option>
+        </select>
       </div>
     </div>
     <div class="modal-actions">
@@ -708,18 +729,20 @@ async function saveSetup(){
 async function addTask(){
   const empName=document.getElementById('empName').value.trim(),taskName=document.getElementById('taskName').value.trim(),startDate=document.getElementById('startDate').value,timeSpent=parseFloat(document.getElementById('timeSpent').value),status=document.getElementById('status').value;
   const expectedHrs=parseFloat(document.getElementById('expectedHrs').value)||0;
+  const environment=document.getElementById('environment').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
-  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,status});
+  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,status,environment});
   renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
 }
-function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';}
+function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='';}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
-function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editExpectedHrs').value=t.expectedHrs||'';document.getElementById('editStatus').value=t.status;document.getElementById('editModal').classList.add('open');}
+function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editExpectedHrs').value=t.expectedHrs||'';document.getElementById('editStatus').value=t.status;document.getElementById('editEnvironment').value=t.environment||'';document.getElementById('editModal').classList.add('open');}
 async function saveEdit(){
   const empName=document.getElementById('editEmpName').value.trim(),taskName=document.getElementById('editTaskName').value.trim(),startDate=document.getElementById('editStartDate').value,timeSpent=parseFloat(document.getElementById('editTimeSpent').value),status=document.getElementById('editStatus').value;
   const expectedHrs=parseFloat(document.getElementById('editExpectedHrs').value)||0;
+  const environment=document.getElementById('editEnvironment').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
-  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status};
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment};
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
@@ -739,7 +762,9 @@ function renderTable(){
     const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
     const rem=t.expectedHrs?+(t.expectedHrs-t.timeSpent).toFixed(1):null;
     const remCell=rem===null?'—':`<span style="color:${rem<0?'#f87171':rem===0?'#34d399':'#94a3b8'};font-weight:600">${rem<0?Math.abs(rem)+'h over':rem+'h left'}</span>`;
-    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+    const envMap={'DEV':'env-dev','UAT':'env-uat','PROD':'env-prod'};
+    const envCell=t.environment?`<span class="env-badge ${envMap[t.environment]||'env-dev'}">${esc(t.environment)}</span>`:'—';
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
   }).join('');
 }
 
