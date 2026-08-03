@@ -78,10 +78,12 @@
   {
     "id": 1785388122861,
     "empName": "Akash",
-    "taskName": "1893",
+    "taskName": "PD-1893 & PD-1596",
     "startDate": "2026-07-30",
     "timeSpent": 2,
-    "status": "Blocked"
+    "status": "Blocked",
+    "expectedHrs": 0,
+    "environment": "DEV"
   },
   {
     "id": 1785388175078,
