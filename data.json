@@ -290,8 +290,10 @@
     "empName": "Rajni",
     "taskName": "Automation Product CR",
     "startDate": "2026-07-31",
-    "timeSpent": 1,
-    "status": "Done"
+    "timeSpent": 2,
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785524019046,
