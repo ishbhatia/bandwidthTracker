@@ -41,7 +41,9 @@
     "taskName": "CR-46695 || Testing Observation || UAT",
     "startDate": "2026-07-30",
     "timeSpent": 1,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785387986261,
