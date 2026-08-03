@@ -88,8 +88,10 @@
     "empName": "Harivansh",
     "taskName": "INDEXING",
     "startDate": "2026-07-31",
-    "timeSpent": 2,
-    "status": "Done"
+    "timeSpent": 4,
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "PROD"
   },
   {
     "id": 1785388281578,
