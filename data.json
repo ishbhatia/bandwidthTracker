@@ -15,7 +15,9 @@
     "taskName": "TRC UAT || deployment done",
     "startDate": "2026-07-30",
     "timeSpent": 13,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785387856061,
