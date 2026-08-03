@@ -135,7 +135,9 @@
     "taskName": "Counter Offer (CO) Letter Not Received in Unified -",
     "startDate": "2026-07-30",
     "timeSpent": 6,
-    "status": "In Progress"
+    "status": "In Progress",
+    "expectedHrs": 0,
+    "environment": "DEV"
   },
   {
     "id": 1785388646911,
