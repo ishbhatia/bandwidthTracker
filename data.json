@@ -128,7 +128,7 @@
     "empName": "Talha",
     "taskName": "PRODUCT CR 47961 || UAT",
     "startDate": "2026-08-05",
-    "timeSpent": 4,
+    "timeSpent": 4.5,
     "status": "Done",
     "expectedHrs": 0,
     "environment": "UAT"
