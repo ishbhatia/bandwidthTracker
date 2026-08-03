@@ -235,7 +235,9 @@
     "taskName": "RCA BAV PFR (Req 1567) Remaining in ORD Despite Successful Bank Validation || open issue",
     "startDate": "2026-07-28",
     "timeSpent": 13,
-    "status": "Reopen"
+    "status": "Reopen",
+    "expectedHrs": 0,
+    "environment": "PROD"
   },
   {
     "id": 1785476258972,
