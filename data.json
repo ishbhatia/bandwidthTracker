@@ -396,7 +396,7 @@
     "empName": "Akash",
     "taskName": "Ageing Analysis",
     "startDate": "2026-08-03",
-    "timeSpent": 0.5,
+    "timeSpent": 0.3,
     "expectedHrs": 0,
     "status": "Done",
     "environment": "PROD"
