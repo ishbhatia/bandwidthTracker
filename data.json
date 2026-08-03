@@ -299,7 +299,9 @@
     "taskName": "CR-19559 || Dual Month || 2nd deployment",
     "startDate": "2026-07-30",
     "timeSpent": 9,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "PROD"
   },
   {
     "id": 1785659920282,
