@@ -138,8 +138,10 @@
     "empName": "Harivansh",
     "taskName": "Sceenza",
     "startDate": "2026-08-06",
-    "timeSpent": 18,
-    "status": "To Do"
+    "timeSpent": 0,
+    "status": "To Do",
+    "expectedHrs": 0,
+    "environment": ""
   },
   {
     "id": 1785388557045,
