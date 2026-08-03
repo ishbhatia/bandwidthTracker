@@ -109,7 +109,9 @@
     "taskName": "PD 1215",
     "startDate": "2026-07-30",
     "timeSpent": 6,
-    "status": "Blocked"
+    "status": "Blocked",
+    "expectedHrs": 0,
+    "environment": ""
   },
   {
     "id": 1785388310728,
