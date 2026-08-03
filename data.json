@@ -195,7 +195,9 @@
     "taskName": "CR-47961: Modification of IGFP Plus",
     "startDate": "2026-07-31",
     "timeSpent": 6,
-    "status": "Done"
+    "status": "Done",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785396447995,
