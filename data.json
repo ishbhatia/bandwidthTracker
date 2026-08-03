@@ -267,7 +267,9 @@
     "taskName": "MONGO EXCEPTION CASE STUCK IN COND QUEUE",
     "startDate": "2026-07-31",
     "timeSpent": 2,
-    "status": "In Progress"
+    "status": "In Progress",
+    "expectedHrs": 0,
+    "environment": "UAT"
   },
   {
     "id": 1785481741775,
