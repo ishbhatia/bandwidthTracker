@@ -117,7 +117,9 @@
     "taskName": "CR-41198",
     "startDate": "2026-07-30",
     "timeSpent": 36,
-    "status": "In Progress"
+    "status": "In Progress",
+    "expectedHrs": 0,
+    "environment": "DEV"
   },
   {
     "id": 1785388378862,
