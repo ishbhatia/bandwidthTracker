@@ -129,6 +129,8 @@
     .badge-done{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)}
     .badge-blocked{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
     .badge-reopen{background:rgba(249,115,22,.1);color:#fb923c;border:1px solid rgba(249,115,22,.2)}
+    .badge-reopen-qa{background:rgba(236,72,153,.1);color:#f472b6;border:1px solid rgba(236,72,153,.2)}
+    .badge-reopen-dev{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
     .env-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:700;letter-spacing:.04em}
     .env-dev{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
     .env-uat{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
@@ -255,6 +257,8 @@
     .rb-done{background:#dcfce7;color:#15803d}
     .rb-blocked{background:#fee2e2;color:#b91c1c}
     .rb-reopen{background:#ffedd5;color:#c2410c}
+    .rb-reopen-qa{background:#fce7f3;color:#be185d}
+    .rb-reopen-dev{background:#ede9fe;color:#6d28d9}
     .rpt-emp-card{background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0}
     .rpt-emp-name{font-weight:700;font-size:.9rem;color:#1e293b;margin-bottom:6px}
     .rpt-emp-bar{height:6px;border-radius:3px;background:#e2e8f0;margin-bottom:8px;overflow:hidden}
@@ -361,7 +365,7 @@
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="3.5" min="0" step="0.5"/></div>
       <div class="fg"><label>Expected Hours</label><input type="number" id="expectedHrs" placeholder="e.g. 8" min="0" step="0.5"/></div>
       <div class="fg"><label>Status</label>
-        <select id="status"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option></select>
+        <select id="status"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option></select>
       </div>
       <div class="fg"><label>Environment</label>
         <select id="environment">
@@ -426,7 +430,7 @@
         <input id="searchInput" placeholder="🔍  Search employee or task…" oninput="renderTable()"/>
         <select id="filterStatus" onchange="renderTable()">
           <option value="">All Statuses</option>
-          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option>
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option>
         </select>
         <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
@@ -519,7 +523,7 @@ CR-202 Dark mode feature request
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="scraperHrs" placeholder="1" min="0" step="0.5" value="1"/></div>
       <div class="fg"><label>Status</label>
         <select id="scraperStatus">
-          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option>
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option>
         </select>
       </div>
       <p style="font-size:.72rem;color:var(--muted);margin-top:4px">These are applied to all rows. You can override each row individually in the preview.</p>
@@ -576,7 +580,7 @@ CR-202 Dark mode feature request
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="editTimeSpent" min="0" step="0.5"/></div>
       <div class="fg"><label>Expected Hours</label><input type="number" id="editExpectedHrs" min="0" step="0.5" placeholder="e.g. 8"/></div>
       <div class="fg" style="grid-column:span 2"><label>Status</label>
-        <select id="editStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option></select>
+        <select id="editStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option></select>
       </div>
       <div class="fg" style="grid-column:span 2"><label>Environment</label>
         <select id="editEnvironment">
@@ -659,7 +663,7 @@ const REDMINE_DEFAULT_PROJECT='oktovia-recur-df';
 function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||REDMINE_DEFAULT_URL,redmineKey:localStorage.getItem('redmine_key')||'',redmineProject:localStorage.getItem('redmine_project')||REDMINE_DEFAULT_PROJECT,msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
 // ── State ─────────────────────────────────────────────────
 let tasks=[],fileSHA='',editIndex=null,sortKey='startDate',sortAsc=true;
-const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked','Reopen':'badge-reopen'};
+const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked','Reopen':'badge-reopen','Reopen (QA)':'badge-reopen-qa','Reopen (Dev)':'badge-reopen-dev'};
 const PALETTE=['#6366f1','#10b981','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#ef4444','#14b8a6','#f97316','#3b82f6'];
 
 // ── Toast ─────────────────────────────────────────────────
@@ -976,7 +980,7 @@ function buildReport(){
   const doneRate=total?Math.round(done/total*100):0;
 
   const now=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
-  const RBADGE={'To Do':'rb-todo','In Progress':'rb-progress','In Review':'rb-review','Done':'rb-done','Blocked':'rb-blocked','Reopen':'rb-reopen'};
+  const RBADGE={'To Do':'rb-todo','In Progress':'rb-progress','In Review':'rb-review','Done':'rb-done','Blocked':'rb-blocked','Reopen':'rb-reopen','Reopen (QA)':'rb-reopen-qa','Reopen (Dev)':'rb-reopen-dev'};
 
   // Employee breakdown
   const maxHrs=emps.reduce((mx,e)=>Math.max(mx,rTasks.filter(t=>t.empName.trim()===e).reduce((s,t)=>s+(+t.timeSpent||0),0)),0)||1;
@@ -1278,7 +1282,7 @@ function parseSubjects(){
 }
 
 function renderPreview(){
-  const STATUS_OPTS=['To Do','In Progress','In Review','Done','Blocked','Reopen'].map(s=>`<option>${s}</option>`).join('');
+  const STATUS_OPTS=['To Do','In Progress','In Review','Done','Blocked','Reopen','Reopen (QA)','Reopen (Dev)'].map(s=>`<option>${s}</option>`).join('');
   document.getElementById('previewBody').innerHTML=parsedRows.map((r,i)=>`
     <tr id="pr-${i}">
       <td><span class="type-pill ${r.type.cls}" title="${r.type.fullLabel}">${r.type.label}</span></td>
