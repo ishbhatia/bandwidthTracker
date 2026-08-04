@@ -473,11 +473,6 @@
         "name": "OK1",
         "hrs": 3,
         "done": false
-      },
-      {
-        "name": "OK101",
-        "hrs": 2,
-        "done": true
       }
     ],
     "prevStatus": "In Progress",
