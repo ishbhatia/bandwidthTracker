@@ -466,6 +466,7 @@
           <thead><tr>
             <th onclick="sortBy('empName')">Employee ⇅</th>
             <th onclick="sortBy('taskName')">Task ⇅</th>
+            <th>Subtasks</th>
             <th onclick="sortBy('startDate')">Date ⇅</th>
             <th onclick="sortBy('timeSpent')">Spent ⇅</th>
             <th onclick="sortBy('expectedHrs')">Expected ⇅</th>
@@ -474,7 +475,6 @@
             <th>Prev Status</th>
             <th onclick="sortBy('status')">Status ⇅</th>
             <th onclick="sortBy('reopenCount')">Reopens ⇅</th>
-            <th>Subtasks</th>
             <th>Actions</th>
           </tr></thead>
           <tbody id="tableBody"></tbody>
@@ -818,7 +818,7 @@ function getFiltered(){const s=document.getElementById('searchInput').value.toLo
 // ── Table ─────────────────────────────────────────────────
 function renderTable(){
   const rows=getSorted(getFiltered()),tb=document.getElementById('tableBody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state">📄 No tasks yet. Add one!</div></td></tr>';return;}
+  if(!rows.length){tb.innerHTML='<tr><td colspan="12"><div class="empty-state">📄 No tasks yet. Add one!</div></td></tr>';return;}
   tb.innerHTML=rows.map(t=>{
     const i=tasks.indexOf(t),bc=STATUS_BADGE[t.status]||'badge-todo';
     const ds=t.startDate?new Date(t.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
@@ -829,26 +829,49 @@ function renderTable(){
     const prevBc=STATUS_BADGE[t.prevStatus]||'badge-todo';
     const prevCell=t.prevStatus&&t.prevStatus!==t.status?`<span class="badge ${prevBc}" style="opacity:.7">${esc(t.prevStatus)}</span>`:'—';
     const reopenCell=t.reopenCount>0?`<span style="color:#f87171;font-weight:700;font-size:.82rem">${t.reopenCount}x</span>`:'—';
-    // Subtask cell
     const subs=t.subtasks&&t.subtasks.length?t.subtasks:[];
+    const subDone=subs.filter(s=>s.done).length;
     const subHrs=subs.reduce((s,st)=>s+(+st.hrs||0),0);
-    const subDone=subs.filter(st=>st.done).length;
-    const subPct=subs.length?Math.round(subDone/subs.length*100):0;
-    const subCell=subs.length?`
-      <div>
-        <button class="subtask-expand" onclick="toggleSub(${i})">${subs.length} subtask${subs.length>1?'s':''} · ${subHrs}h</button>
-        <div class="st-progress"><div class="st-progress-fill" style="width:${subPct}%"></div></div>
-        <div id="sub-${i}" style="display:none" class="subtask-detail">
-          ${subs.map((st,si)=>`<div class="st-item">
-            <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
-              <input type="checkbox" ${st.done?'checked':''} onchange="toggleSubDone(${i},${si})" style="accent-color:var(--accent)"/>
-              <span style="${st.done?'text-decoration:line-through;opacity:.5':''}">${esc(st.name)}</span>
-            </label>
-            <span style="color:#818cf8;font-weight:600;flex-shrink:0">${st.hrs||0}h</span>
-          </div>`).join('')}
-        </div>
-      </div>`:'—';
-    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td>${prevCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td>${reopenCell}</td><td>${subCell}</td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+    const subCell=subs.length
+      ?`<button class="subtask-expand" onclick="toggleSub(${i})" title="Click to expand">${subDone}/${subs.length} · ${subHrs}h ▾</button>`
+      :'—';
+
+    // Parent row
+    const parentRow=`<tr style="border-left:3px solid transparent">
+      <td><span class="emp-name">${esc(t.empName)}</span></td>
+      <td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td>
+      <td>${subCell}</td>
+      <td>${ds}</td><td>${t.timeSpent}h</td>
+      <td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td>
+      <td>${remCell}</td><td>${envCell}</td>
+      <td>${prevCell}</td>
+      <td><span class="badge ${bc}">${esc(t.status)}</span></td>
+      <td>${reopenCell}</td>
+      <td><div class="action-btns">
+        <button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button>
+      </div></td>
+    </tr>`;
+
+    // Subtask rows — hidden, expand on click, same columns
+    const subtaskRows=subs.map((st,si)=>`
+      <tr class="sub-row-${i}" style="display:none;background:rgba(99,102,241,.05);border-left:3px solid #4f46e5">
+        <td style="padding-left:22px;color:#94a3b8;font-size:.75rem">↳ ${esc(t.empName)}</td>
+        <td>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;color:#cbd5e1">
+            <input type="checkbox" ${st.done?'checked':''} onchange="toggleSubDone(${i},${si})" style="accent-color:#6366f1"/>
+            <span style="${st.done?'text-decoration:line-through;opacity:.4':''}">${esc(st.name)}</span>
+          </label>
+        </td>
+        <td>—</td>
+        <td style="color:#94a3b8;font-size:.75rem">${ds}</td>
+        <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
+        <td>—</td><td>—</td><td>—</td><td>—</td>
+        <td><span class="badge ${bc}" style="opacity:.5">${esc(t.status)}</span></td>
+        <td>—</td><td>—</td>
+      </tr>`).join('');
+
+    return parentRow+subtaskRows;
   }).join('');
 }
 
@@ -1548,8 +1571,9 @@ function getSubtasksFromForm(listId){
   }).filter(s=>s.name);
 }
 function toggleSub(idx){
-  const el=document.getElementById('sub-'+idx);
-  el.style.display=el.style.display==='none'?'block':'none';
+  const rows=document.querySelectorAll(`.sub-row-${idx}`);
+  const isHidden=rows[0]&&rows[0].style.display==='none';
+  rows.forEach(r=>r.style.display=isHidden?'table-row':'none');
 }
 async function toggleSubDone(taskIdx,subIdx){
   tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
