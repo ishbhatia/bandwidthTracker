@@ -468,6 +468,19 @@
     "expectedHrs": 0,
     "status": "To Do",
     "environment": "DEV",
-    "subtasks": []
+    "subtasks": [
+      {
+        "name": "OK1",
+        "hrs": 3,
+        "done": false
+      },
+      {
+        "name": "OK101",
+        "hrs": 2,
+        "done": false
+      }
+    ],
+    "prevStatus": "To Do",
+    "reopenCount": 0
   }
 ]
