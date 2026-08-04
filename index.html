@@ -871,11 +871,21 @@ function renderTable(){
       </div></td>
     </tr>`;
 
-    // Subtask rows — hidden, expand on click, same columns
+    // Subtask rows — hidden, expand on click, columns synced with parent
     const subtaskRows=subs.map((st,si)=>{
-      const stStatusOpts=ALL_STATUS.map(s=>`<option${s===(st.status||'To Do')?' selected':''}>${s}</option>`).join('');
-      const stPrevOpts=['','To Do','In Progress','In Review','Done','Blocked','Reopen','Reopen (QA)','Reopen (Dev)'].map(s=>`<option${s===(st.prevStatus||'')?' selected':''}>${s}</option>`).join('');
-      const stEnvOpts=['DEV','UAT','PROD'].map(s=>`<option${s===(st.environment||'DEV')?' selected':''}>${s}</option>`).join('');
+      // Inherit parent values if subtask doesn't have its own
+      const stEnv=st.environment||t.environment||'DEV';
+      const stStatus=st.status||t.status||'To Do';
+      const stPrevStatus=st.prevStatus||t.prevStatus||'';
+      const stDevEnd=st.devEndDate||t.devEndDate||'';
+      const stDate=st.startDate||t.startDate||'';
+      const stDateFmt=stDate?new Date(stDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
+      const isOverdue=stDevEnd&&stDevEnd<new Date().toISOString().split('T')[0]&&stStatus!=='Done';
+
+      const stStatusOpts=ALL_STATUS.map(s=>`<option${s===stStatus?' selected':''}>${s}</option>`).join('');
+      const stPrevOpts=['','To Do','In Progress','In Review','Done','Blocked','Reopen','Reopen (QA)','Reopen (Dev)'].map(s=>`<option${s===stPrevStatus?' selected':''}>${s}</option>`).join('');
+      const stEnvOpts=['DEV','UAT','PROD'].map(s=>`<option${s===stEnv?' selected':''}>${s}</option>`).join('');
+
       return`<tr class="sub-row-${i}" style="display:none;background:rgba(99,102,241,.05);border-left:3px solid #4f46e5">
         <td style="padding-left:22px;color:#94a3b8;font-size:.75rem">↳ ${esc(t.empName)}</td>
         <td>
@@ -885,9 +895,10 @@ function renderTable(){
           </label>
         </td>
         <td>—</td>
-        <td style="color:#94a3b8;font-size:.75rem">${ds}</td>
+        <td style="color:#94a3b8;font-size:.75rem">${stDateFmt}</td>
         <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
-        <td>—</td><td>—</td>
+        <td>—</td>
+        <td><input type="date" class="inline-sel" value="${stDevEnd}" onchange="inlineSubUpdate(${i},${si},'devEndDate',this.value)" style="${isOverdue?'border-color:#f87171;color:#f87171':''}"/></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'environment',this.value)">${stEnvOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'prevStatus',this.value)">${stPrevOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'status',this.value)">${stStatusOpts}</select></td>
