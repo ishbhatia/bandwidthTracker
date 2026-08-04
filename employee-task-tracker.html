@@ -1035,6 +1035,60 @@ function buildReport(){
     </tr>`;
   }).join(''):'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">No tasks for this period</td></tr>';
 
+  // ── CR/PD/DM Analysis ──────────────────────────────────
+  // Group tasks by their CR/PD/DM prefix
+  function extractTicket(name){
+    const m=name.match(/\b(CR|PD|DM)[-\s#]?(\d+)/i);
+    return m?m[0].toUpperCase().replace(/\s/,'-'):null;
+  }
+  const ticketMap={};
+  rTasks.forEach(t=>{
+    const ticket=extractTicket(t.taskName);
+    if(!ticket)return;
+    if(!ticketMap[ticket])ticketMap[ticket]={ticket,tasks:[],type:ticket.startsWith('CR')?'CR':ticket.startsWith('PD')?'PD':'DM'};
+    ticketMap[ticket].tasks.push(t);
+  });
+
+  const ticketRows=Object.values(ticketMap).map(g=>{
+    const allDates=g.tasks.map(t=>t.startDate).filter(Boolean).sort();
+    const firstDate=allDates[0];
+    const lastDate=allDates[allDates.length-1];
+    const daysTaken=firstDate&&lastDate?(Math.round((new Date(lastDate)-new Date(firstDate))/(1000*60*60*24))+1):1;
+    const totalHrs=g.tasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+    const people=[...new Set(g.tasks.map(t=>t.empName.trim()))].join(', ');
+    const statuses=[...new Set(g.tasks.map(t=>t.status))];
+    const isDone=statuses.every(s=>s==='Done');
+    const isBlocked=statuses.some(s=>s==='Blocked'||s.startsWith('Reopen'));
+    const statusColor=isDone?'#15803d':isBlocked?'#b91c1c':'#1d4ed8';
+    const statusLabel=isDone?'✅ Done':isBlocked?'⚠️ Issue':' In Progress';
+    const reopens=g.tasks.reduce((s,t)=>s+(t.reopenCount||0),0);
+    const typeColor=g.type==='CR'?'#818cf8':g.type==='PD'?'#f87171':'#fbbf24';
+    const fmtDate=d=>d?new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}): '—';
+    return`<tr>
+      <td><span style="font-weight:700;color:${typeColor}">${esc(g.ticket)}</span></td>
+      <td>${g.type==='CR'?'Feature':g.type==='PD'?'Prod Defect':'Non-Prod Defect'}</td>
+      <td>${fmtDate(firstDate)}</td>
+      <td>${fmtDate(lastDate)}</td>
+      <td style="font-weight:700;color:${daysTaken>7?'#f87171':daysTaken>3?'#f59e0b':'#34d399'}">${daysTaken}d</td>
+      <td>${totalHrs}h</td>
+      <td>${esc(people)}</td>
+      <td style="color:${statusColor};font-weight:600">${statusLabel}</td>
+      <td>${reopens>0?`<span style="color:#f87171;font-weight:700">${reopens}x</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const ticketSection=Object.keys(ticketMap).length?`
+    <div class="rpt-section">
+      <h3>🎫 CR / PD / DM Analysis</h3>
+      <table class="rpt-table">
+        <thead><tr>
+          <th>Ticket</th><th>Type</th><th>Start</th><th>Last Update</th>
+          <th>Days</th><th>Hrs</th><th>Team</th><th>Status</th><th>Reopens</th>
+        </tr></thead>
+        <tbody>${ticketRows}</tbody>
+      </table>
+    </div>`:'';
+
   document.getElementById('rptBody').innerHTML=`
     <div class="rpt-header">
       <div>
@@ -1055,6 +1109,8 @@ function buildReport(){
       <h3>👥 Team Breakdown</h3>
       ${empCards}
     </div>`:''}
+
+    ${ticketSection}
 
     <div class="rpt-section">
       <h3>📋 Task Details</h3>
