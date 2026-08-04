@@ -446,6 +446,7 @@
             <th onclick="sortBy('expectedHrs')">Expected ⇅</th>
             <th>Remaining</th>
             <th onclick="sortBy('environment')">Env ⇅</th>
+            <th>Prev Status</th>
             <th onclick="sortBy('status')">Status ⇅</th>
             <th>Actions</th>
           </tr></thead>
@@ -744,7 +745,8 @@ async function saveEdit(){
   const expectedHrs=parseFloat(document.getElementById('editExpectedHrs').value)||0;
   const environment=document.getElementById('editEnvironment').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
-  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment};
+  const prevStatus=tasks[editIndex].status||'';
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus};
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
@@ -766,7 +768,9 @@ function renderTable(){
     const remCell=rem===null?'—':`<span style="color:${rem<0?'#f87171':rem===0?'#34d399':'#94a3b8'};font-weight:600">${rem<0?Math.abs(rem)+'h over':rem+'h left'}</span>`;
     const envMap={'DEV':'env-dev','UAT':'env-uat','PROD':'env-prod'};
     const envCell=t.environment?`<span class="env-badge ${envMap[t.environment]||'env-dev'}">${esc(t.environment)}</span>`:'—';
-    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+    const prevBc=STATUS_BADGE[t.prevStatus]||'badge-todo';
+    const prevCell=t.prevStatus&&t.prevStatus!==t.status?`<span class="badge ${prevBc}" style="opacity:.7">${esc(t.prevStatus)}</span>`:'—';
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td>${prevCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
   }).join('');
 }
 
