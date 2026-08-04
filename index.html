@@ -46,12 +46,12 @@
     .btn-ghost:hover{background:rgba(99,102,241,.22);box-shadow:0 0 12px rgba(99,102,241,.2)}
 
     /* ── layout ── */
-    .page{position:relative;z-index:1;max-width:1220px;margin:22px auto;padding:0 20px;
-      display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+    .page{position:relative;z-index:1;max-width:100%;margin:22px 0;padding:0 20px;
+      display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start;overflow-x:hidden;box-sizing:border-box}
     @media(max-width:900px){.page{grid-template-columns:1fr}}
 
     /* ── stat row ── */
-    .stats-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+    .stats-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;min-width:0}
     @media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr)}}
     .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
       padding:14px 16px;text-align:center;position:relative;overflow:hidden;transition:border-color .2s}
@@ -90,7 +90,7 @@
     .btn-sm{padding:4px 10px;font-size:.72rem;border-radius:6px}
 
     /* ── right col ── */
-    .right-col{display:flex;flex-direction:column;gap:18px}
+    .right-col{display:flex;flex-direction:column;gap:18px;min-width:0;overflow:hidden}
 
     /* ── toolbar ── */
     .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
