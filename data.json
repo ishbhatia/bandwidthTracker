@@ -464,7 +464,7 @@
     "empName": "Ishant",
     "taskName": "CR-TEST",
     "startDate": "2026-08-03",
-    "timeSpent": 0,
+    "timeSpent": 2,
     "expectedHrs": 2,
     "devEndDate": "2026-08-04",
     "status": "Done",
