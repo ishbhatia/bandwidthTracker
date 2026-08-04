@@ -458,19 +458,5 @@
     "environment": "PROD",
     "prevStatus": "Done",
     "reopenCount": 0
-  },
-  {
-    "id": 1785867681765,
-    "empName": "Ishant",
-    "taskName": "CR-10101",
-    "startDate": "2026-08-04",
-    "timeSpent": 0,
-    "expectedHrs": 0,
-    "status": "In Progress",
-    "environment": "DEV",
-    "subtasks": [],
-    "prevStatus": "In Progress",
-    "reopenCount": 1,
-    "devEndDate": ""
   }
 ]
