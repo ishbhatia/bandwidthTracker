@@ -420,5 +420,15 @@
     "expectedHrs": 0,
     "status": "In Progress",
     "environment": "DEV"
+  },
+  {
+    "id": 1785823819316,
+    "empName": "Akash",
+    "taskName": "Cae stuck Data ErrorQueue",
+    "startDate": "2026-08-03",
+    "timeSpent": 1,
+    "expectedHrs": 0,
+    "status": "Done",
+    "environment": "UAT"
   }
 ]
