@@ -265,7 +265,7 @@
     "timeSpent": 15,
     "status": "Reopen (QA)",
     "expectedHrs": 0,
-    "environment": "PROD",
+    "environment": "UAT",
     "prevStatus": "Reopen (QA)",
     "reopenCount": 1
   },
