@@ -457,6 +457,10 @@
           <option value="">All Statuses</option>
           <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option>
         </select>
+        <select id="filterPrevStatus" onchange="renderTable()">
+          <option value="">All Prev Statuses</option>
+          <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option>
+        </select>
         <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
         <button class="btn btn-primary btn-sm" onclick="openReport()">📄 Report</button>
@@ -813,7 +817,7 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
 // ── Sort / Filter ─────────────────────────────────────────
 function sortBy(k){sortAsc=(sortKey===k)?!sortAsc:true;sortKey=k;renderTable();}
 function getSorted(l){return[...l].sort((a,b)=>{let va=a[sortKey],vb=b[sortKey];if(sortKey==='timeSpent'){va=+va;vb=+vb;}return va<vb?(sortAsc?-1:1):va>vb?(sortAsc?1:-1):0;});}
-function getFiltered(){const s=document.getElementById('searchInput').value.toLowerCase(),st=document.getElementById('filterStatus').value;return tasks.filter(t=>(!s||t.empName.toLowerCase().includes(s)||t.taskName.toLowerCase().includes(s))&&(!st||t.status===st));}
+function getFiltered(){const s=document.getElementById('searchInput').value.toLowerCase(),st=document.getElementById('filterStatus').value,pst=document.getElementById('filterPrevStatus').value;return tasks.filter(t=>(!s||t.empName.toLowerCase().includes(s)||t.taskName.toLowerCase().includes(s))&&(!st||t.status===st)&&(!pst||(t.prevStatus||'')=== pst));}
 
 // ── Table ─────────────────────────────────────────────────
 function renderTable(){
