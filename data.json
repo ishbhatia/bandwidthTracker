@@ -466,7 +466,7 @@
     "startDate": "2026-08-04",
     "timeSpent": 0,
     "expectedHrs": 0,
-    "status": "To Do",
+    "status": "In Progress",
     "environment": "DEV",
     "subtasks": [
       {
