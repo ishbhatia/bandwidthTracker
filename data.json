@@ -377,7 +377,7 @@
     "taskName": "MRTA API Not Getting Triggered",
     "startDate": "2026-08-03",
     "timeSpent": 0,
-    "expectedHrs": 2,
+    "expectedHrs": 6,
     "status": "In Progress",
     "environment": ""
   },
