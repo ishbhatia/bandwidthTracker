@@ -460,31 +460,6 @@
     "reopenCount": 0
   },
   {
-    "id": 1785869983813,
-    "empName": "Ishant",
-    "taskName": "cr-1",
-    "startDate": "2026-08-04",
-    "timeSpent": 1,
-    "expectedHrs": 4,
-    "devEndDate": "2026-08-06",
-    "status": "To Do",
-    "environment": "DEV",
-    "subtasks": [
-      {
-        "name": "cr-11",
-        "hrs": 2,
-        "done": false
-      },
-      {
-        "name": "cr-111",
-        "hrs": 2,
-        "done": false
-      }
-    ],
-    "prevStatus": "To Do",
-    "reopenCount": 0
-  },
-  {
     "id": 1785870286334,
     "empName": "Ishant",
     "taskName": "CR-TEST",
