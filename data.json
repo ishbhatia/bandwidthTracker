@@ -473,7 +473,8 @@
       {
         "name": "1010",
         "hrs": 2,
-        "done": false
+        "done": false,
+        "environment": "UAT"
       },
       {
         "name": "1011",
