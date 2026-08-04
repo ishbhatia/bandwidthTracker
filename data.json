@@ -468,13 +468,7 @@
     "expectedHrs": 0,
     "status": "In Progress",
     "environment": "DEV",
-    "subtasks": [
-      {
-        "name": "OK1",
-        "hrs": 3,
-        "done": false
-      }
-    ],
+    "subtasks": [],
     "prevStatus": "In Progress",
     "reopenCount": 1,
     "devEndDate": ""
