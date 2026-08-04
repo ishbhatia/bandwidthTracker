@@ -898,14 +898,13 @@ function renderTable(){
         <td style="color:#94a3b8;font-size:.75rem">${stDateFmt}</td>
         <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
         <td>—</td>
+        <td>—</td>
         <td><input type="date" class="inline-sel" value="${stDevEnd}" onchange="inlineSubUpdate(${i},${si},'devEndDate',this.value)" style="${isOverdue?'border-color:#f87171;color:#f87171':''}"/></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'environment',this.value)">${stEnvOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'prevStatus',this.value)">${stPrevOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'status',this.value)">${stStatusOpts}</select></td>
         <td>—</td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="deleteSubtask(${i},${si})">Delete</button>
-        </td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteSubtask(${i},${si})">Delete</button></td>
       </tr>`;
     }).join('');
 
