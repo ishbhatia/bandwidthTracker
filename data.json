@@ -265,7 +265,9 @@
     "timeSpent": 15,
     "status": "Reopen (QA)",
     "expectedHrs": 0,
-    "environment": "PROD"
+    "environment": "PROD",
+    "prevStatus": "Reopen (QA)",
+    "reopenCount": 1
   },
   {
     "id": 1785476258972,
