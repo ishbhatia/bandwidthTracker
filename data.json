@@ -467,7 +467,7 @@
     "timeSpent": 0,
     "expectedHrs": 2,
     "devEndDate": "2026-08-05",
-    "status": "To Do",
+    "status": "Done",
     "environment": "DEV",
     "subtasks": [
       {
