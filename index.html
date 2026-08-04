@@ -135,6 +135,23 @@
     .env-dev{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
     .env-uat{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
     .env-prod{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+    /* Subtasks */
+    .subtask-list{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+    .subtask-row{display:flex;gap:6px;align-items:center}
+    .subtask-row input{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.75rem;font-family:inherit}
+    .subtask-row input:focus{outline:none;border-color:var(--accent)}
+    .subtask-row .st-hrs{width:64px;flex-shrink:0}
+    .subtask-row .st-del{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 5px;border-radius:4px}
+    .subtask-row .st-del:hover{color:var(--red);background:rgba(239,68,68,.1)}
+    .st-add-btn{font-size:.72rem;padding:4px 10px;margin-top:4px}
+    .subtask-chip{display:inline-flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:2px 8px;font-size:.68rem;color:#94a3b8;cursor:pointer;transition:all .15s}
+    .subtask-chip:hover{border-color:var(--accent);color:#a5b4fc}
+    .subtask-expand{background:none;border:none;color:#818cf8;font-size:.72rem;cursor:pointer;padding:0;font-family:inherit;white-space:nowrap}
+    .subtask-detail{font-size:.75rem;color:#94a3b8;padding:6px 0 0 4px}
+    .subtask-detail .st-item{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(30,45,69,.4)}
+    .subtask-detail .st-item:last-child{border-bottom:none}
+    .st-progress{height:3px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden}
+    .st-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),#8b5cf6);transition:width .3s}
 
     /* ── chart ── */
     .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
@@ -378,6 +395,14 @@
         <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
         <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
       </div>
+      <!-- Subtasks -->
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+          Subtasks <span style="opacity:.5;font-weight:400">(optional)</span>
+        </div>
+        <div class="subtask-list" id="subtaskList"></div>
+        <button class="btn btn-secondary btn-sm st-add-btn" onclick="addSubtaskRow()">＋ Add Subtask</button>
+      </div>
     </div>
 
     <!-- AI Insights -->
@@ -449,6 +474,7 @@
             <th>Prev Status</th>
             <th onclick="sortBy('status')">Status ⇅</th>
             <th onclick="sortBy('reopenCount')">Reopens ⇅</th>
+            <th>Subtasks</th>
             <th>Actions</th>
           </tr></thead>
           <tbody id="tableBody"></tbody>
@@ -595,6 +621,12 @@ CR-202 Dark mode feature request
         <input type="number" id="editReopenCount" min="0" step="1" placeholder="0"/>
       </div>
     </div>
+    <!-- Edit Subtasks -->
+    <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Subtasks</div>
+      <div class="subtask-list" id="editSubtaskList"></div>
+      <button class="btn btn-secondary btn-sm st-add-btn" onclick="addEditSubtaskRow()">＋ Add Subtask</button>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
@@ -738,12 +770,28 @@ async function addTask(){
   const expectedHrs=parseFloat(document.getElementById('expectedHrs').value)||0;
   const environment=document.getElementById('environment').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
-  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,status,environment});
+  const subtasks=getSubtasksFromForm('subtaskList');
+  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,status,environment,subtasks});
   renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
 }
-function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';}
+function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';document.getElementById('subtaskList').innerHTML='';}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
-function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editExpectedHrs').value=t.expectedHrs||'';document.getElementById('editStatus').value=t.status;document.getElementById('editEnvironment').value=t.environment||'DEV';document.getElementById('editReopenCount').value=t.reopenCount||0;document.getElementById('editModal').classList.add('open');}
+function openEdit(idx){
+  editIndex=idx;const t=tasks[idx];
+  document.getElementById('editEmpName').value=t.empName;
+  document.getElementById('editTaskName').value=t.taskName;
+  document.getElementById('editStartDate').value=t.startDate;
+  document.getElementById('editTimeSpent').value=t.timeSpent;
+  document.getElementById('editExpectedHrs').value=t.expectedHrs||'';
+  document.getElementById('editStatus').value=t.status;
+  document.getElementById('editEnvironment').value=t.environment||'DEV';
+  document.getElementById('editReopenCount').value=t.reopenCount||0;
+  // populate subtasks
+  const list=document.getElementById('editSubtaskList');
+  list.innerHTML='';
+  (t.subtasks||[]).forEach(s=>addEditSubtaskRow(s.name,s.hrs,s.done));
+  document.getElementById('editModal').classList.add('open');
+}
 async function saveEdit(){
   const empName=document.getElementById('editEmpName').value.trim(),taskName=document.getElementById('editTaskName').value.trim(),startDate=document.getElementById('editStartDate').value,timeSpent=parseFloat(document.getElementById('editTimeSpent').value),status=document.getElementById('editStatus').value;
   const expectedHrs=parseFloat(document.getElementById('editExpectedHrs').value)||0;
@@ -752,9 +800,11 @@ async function saveEdit(){
   const prevStatus=tasks[editIndex].status||'';
   const isReopen=status.startsWith('Reopen');
   const manualCount=parseInt(document.getElementById('editReopenCount').value)||0;
-  // Use manual value; if status just changed to a Reopen variant, ensure count is at least 1
   const reopenCount=isReopen&&prevStatus!==status?Math.max(manualCount,(tasks[editIndex].reopenCount||0)+1):manualCount;
-  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus,reopenCount};
+  const subtasks=getSubtasksFromForm('editSubtaskList');
+  const oldSubs=tasks[editIndex].subtasks||[];
+  subtasks.forEach(s=>{const old=oldSubs.find(o=>o.name===s.name);if(old)s.done=old.done;});
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus,reopenCount,subtasks};
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
@@ -779,7 +829,26 @@ function renderTable(){
     const prevBc=STATUS_BADGE[t.prevStatus]||'badge-todo';
     const prevCell=t.prevStatus&&t.prevStatus!==t.status?`<span class="badge ${prevBc}" style="opacity:.7">${esc(t.prevStatus)}</span>`:'—';
     const reopenCell=t.reopenCount>0?`<span style="color:#f87171;font-weight:700;font-size:.82rem">${t.reopenCount}x</span>`:'—';
-    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td>${prevCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td>${reopenCell}</td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+    // Subtask cell
+    const subs=t.subtasks&&t.subtasks.length?t.subtasks:[];
+    const subHrs=subs.reduce((s,st)=>s+(+st.hrs||0),0);
+    const subDone=subs.filter(st=>st.done).length;
+    const subPct=subs.length?Math.round(subDone/subs.length*100):0;
+    const subCell=subs.length?`
+      <div>
+        <button class="subtask-expand" onclick="toggleSub(${i})">${subs.length} subtask${subs.length>1?'s':''} · ${subHrs}h</button>
+        <div class="st-progress"><div class="st-progress-fill" style="width:${subPct}%"></div></div>
+        <div id="sub-${i}" style="display:none" class="subtask-detail">
+          ${subs.map((st,si)=>`<div class="st-item">
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+              <input type="checkbox" ${st.done?'checked':''} onchange="toggleSubDone(${i},${si})" style="accent-color:var(--accent)"/>
+              <span style="${st.done?'text-decoration:line-through;opacity:.5':''}">${esc(st.name)}</span>
+            </label>
+            <span style="color:#818cf8;font-weight:600;flex-shrink:0">${st.hrs||0}h</span>
+          </div>`).join('')}
+        </div>
+      </div>`:'—';
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td>${prevCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td>${reopenCell}</td><td>${subCell}</td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
   }).join('');
 }
 
@@ -1457,6 +1526,35 @@ function clearScraper(){
   document.getElementById('importBtn').style.display='none';
   document.getElementById('previewCount').textContent='';
   document.getElementById('importSummary').style.display='none';
+}
+
+// ── Subtasks ──────────────────────────────────────────────
+function addSubtaskRow(name='',hrs=''){
+  const list=document.getElementById('subtaskList');
+  const div=document.createElement('div');div.className='subtask-row';
+  div.innerHTML=`<input placeholder="Subtask name…" value="${esc(name)}"/><input class="st-hrs" type="number" placeholder="hrs" min="0" step="0.5" value="${hrs}"/><button class="st-del" onclick="this.parentNode.remove()">✕</button>`;
+  list.appendChild(div);
+}
+function addEditSubtaskRow(name='',hrs='',done=false){
+  const list=document.getElementById('editSubtaskList');
+  const div=document.createElement('div');div.className='subtask-row';
+  div.innerHTML=`<input placeholder="Subtask name…" value="${esc(name)}"/><input class="st-hrs" type="number" placeholder="hrs" min="0" step="0.5" value="${hrs}"/><button class="st-del" onclick="this.parentNode.remove()">✕</button>`;
+  list.appendChild(div);
+}
+function getSubtasksFromForm(listId){
+  return [...document.querySelectorAll(`#${listId} .subtask-row`)].map(row=>{
+    const inputs=row.querySelectorAll('input');
+    return{name:inputs[0].value.trim(),hrs:parseFloat(inputs[1].value)||0,done:false};
+  }).filter(s=>s.name);
+}
+function toggleSub(idx){
+  const el=document.getElementById('sub-'+idx);
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+async function toggleSubDone(taskIdx,subIdx){
+  tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
+  renderAll();
+  await saveToGitHub(`Update subtask: ${tasks[taskIdx].subtasks[subIdx].name}`);
 }
 
 // ── Init ──────────────────────────────────────────────────
