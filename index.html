@@ -385,6 +385,7 @@
       <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="timeSpent" placeholder="3.5" min="0" step="0.5"/></div>
       <div class="fg"><label>Expected Hours</label><input type="number" id="expectedHrs" placeholder="e.g. 8" min="0" step="0.5"/></div>
+      <div class="fg"><label>Dev End Date</label><input type="date" id="devEndDate"/></div>
       <div class="fg"><label>Status</label>
         <select id="status"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option></select>
       </div>
@@ -479,6 +480,7 @@
             <th onclick="sortBy('timeSpent')">Spent ⇅</th>
             <th onclick="sortBy('expectedHrs')">Expected ⇅</th>
             <th>Remaining</th>
+            <th onclick="sortBy('devEndDate')">Dev End ⇅</th>
             <th onclick="sortBy('environment')">Env ⇅</th>
             <th>Prev Status</th>
             <th onclick="sortBy('status')">Status ⇅</th>
@@ -615,6 +617,7 @@ CR-202 Dark mode feature request
       <div class="fg"><label>Start Date</label><input type="date" id="editStartDate"/></div>
       <div class="fg"><label>Time Spent (hrs)</label><input type="number" id="editTimeSpent" min="0" step="0.5"/></div>
       <div class="fg"><label>Expected Hours</label><input type="number" id="editExpectedHrs" min="0" step="0.5" placeholder="e.g. 8"/></div>
+      <div class="fg"><label>Dev End Date</label><input type="date" id="editDevEndDate"/></div>
       <div class="fg" style="grid-column:span 2"><label>Status</label>
         <select id="editStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option></select>
       </div>
@@ -777,12 +780,13 @@ async function addTask(){
   const empName=document.getElementById('empName').value.trim(),taskName=document.getElementById('taskName').value.trim(),startDate=document.getElementById('startDate').value,timeSpent=parseFloat(document.getElementById('timeSpent').value),status=document.getElementById('status').value;
   const expectedHrs=parseFloat(document.getElementById('expectedHrs').value)||0;
   const environment=document.getElementById('environment').value;
+  const devEndDate=document.getElementById('devEndDate').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
   const subtasks=getSubtasksFromForm('subtaskList');
-  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,status,environment,subtasks});
+  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,devEndDate,status,environment,subtasks});
   renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
 }
-function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';document.getElementById('subtaskList').innerHTML='';}
+function clearForm(){['empName','taskName','timeSpent','expectedHrs','devEndDate'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';document.getElementById('subtaskList').innerHTML='';}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
 function openEdit(idx){
   editIndex=idx;const t=tasks[idx];
@@ -791,6 +795,7 @@ function openEdit(idx){
   document.getElementById('editStartDate').value=t.startDate;
   document.getElementById('editTimeSpent').value=t.timeSpent;
   document.getElementById('editExpectedHrs').value=t.expectedHrs||'';
+  document.getElementById('editDevEndDate').value=t.devEndDate||'';
   document.getElementById('editStatus').value=t.status;
   document.getElementById('editEnvironment').value=t.environment||'DEV';
   document.getElementById('editReopenCount').value=t.reopenCount||0;
@@ -803,6 +808,7 @@ function openEdit(idx){
 async function saveEdit(){
   const empName=document.getElementById('editEmpName').value.trim(),taskName=document.getElementById('editTaskName').value.trim(),startDate=document.getElementById('editStartDate').value,timeSpent=parseFloat(document.getElementById('editTimeSpent').value),status=document.getElementById('editStatus').value;
   const expectedHrs=parseFloat(document.getElementById('editExpectedHrs').value)||0;
+  const devEndDate=document.getElementById('editDevEndDate').value;
   const environment=document.getElementById('editEnvironment').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
   const prevStatus=tasks[editIndex].status||'';
@@ -812,7 +818,7 @@ async function saveEdit(){
   const subtasks=getSubtasksFromForm('editSubtaskList');
   const oldSubs=tasks[editIndex].subtasks||[];
   subtasks.forEach(s=>{const old=oldSubs.find(o=>o.name===s.name);if(old)s.done=old.done;});
-  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus,reopenCount,subtasks};
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,devEndDate,status,environment,prevStatus,reopenCount,subtasks};
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
@@ -854,7 +860,8 @@ function renderTable(){
       <td>${subCell}</td>
       <td>${ds}</td><td>${t.timeSpent}h</td>
       <td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td>
-      <td>${remCell}</td><td>${envCell}</td>
+      <td>${remCell}</td>
+      <td><input type="date" class="inline-sel" value="${t.devEndDate||''}" onchange="inlineUpdate(${i},'devEndDate',this.value)" title="Dev End Date" style="${t.devEndDate&&t.devEndDate<new Date().toISOString().split('T')[0]&&t.status!=='Done'?'border-color:#f87171;color:#f87171':''}"/></td><td>${envCell}</td>
       <td>${prevCell}</td>
       <td>${statusCell}</td>
       <td>${reopenCell}</td>
@@ -880,7 +887,7 @@ function renderTable(){
         <td>—</td>
         <td style="color:#94a3b8;font-size:.75rem">${ds}</td>
         <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
-        <td>—</td>
+        <td>—</td><td>—</td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'environment',this.value)">${stEnvOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'prevStatus',this.value)">${stPrevOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'status',this.value)">${stStatusOpts}</select></td>
