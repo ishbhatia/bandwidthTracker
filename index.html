@@ -865,8 +865,11 @@ function renderTable(){
     </tr>`;
 
     // Subtask rows — hidden, expand on click, same columns
-    const subtaskRows=subs.map((st,si)=>`
-      <tr class="sub-row-${i}" style="display:none;background:rgba(99,102,241,.05);border-left:3px solid #4f46e5">
+    const subtaskRows=subs.map((st,si)=>{
+      const stStatusOpts=ALL_STATUS.map(s=>`<option${s===(st.status||'To Do')?' selected':''}>${s}</option>`).join('');
+      const stPrevOpts=['','To Do','In Progress','In Review','Done','Blocked','Reopen','Reopen (QA)','Reopen (Dev)'].map(s=>`<option${s===(st.prevStatus||'')?' selected':''}>${s}</option>`).join('');
+      const stEnvOpts=['DEV','UAT','PROD'].map(s=>`<option${s===(st.environment||'DEV')?' selected':''}>${s}</option>`).join('');
+      return`<tr class="sub-row-${i}" style="display:none;background:rgba(99,102,241,.05);border-left:3px solid #4f46e5">
         <td style="padding-left:22px;color:#94a3b8;font-size:.75rem">↳ ${esc(t.empName)}</td>
         <td>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;color:#cbd5e1">
@@ -877,10 +880,16 @@ function renderTable(){
         <td>—</td>
         <td style="color:#94a3b8;font-size:.75rem">${ds}</td>
         <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
-        <td>—</td><td>—</td><td>—</td><td>—</td>
-        <td><span class="badge ${bc}" style="opacity:.5">${esc(t.status)}</span></td>
-        <td>—</td><td>—</td>
-      </tr>`).join('');
+        <td>—</td>
+        <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'environment',this.value)">${stEnvOpts}</select></td>
+        <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'prevStatus',this.value)">${stPrevOpts}</select></td>
+        <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'status',this.value)">${stStatusOpts}</select></td>
+        <td>—</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="deleteSubtask(${i},${si})">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
 
     return parentRow+subtaskRows;
   }).join('');
@@ -1572,6 +1581,23 @@ async function inlineUpdate(idx,field,val){
   tasks[idx][field]=val;
   renderAll();
   await saveToGitHub(`Update ${field}: ${tasks[idx].taskName} (${tasks[idx].empName})`);
+}
+
+async function inlineSubUpdate(taskIdx,subIdx,field,val){
+  if(!tasks[taskIdx].subtasks)return;
+  if(field==='status'){
+    tasks[taskIdx].subtasks[subIdx].prevStatus=tasks[taskIdx].subtasks[subIdx].status||'To Do';
+  }
+  tasks[taskIdx].subtasks[subIdx][field]=val;
+  renderAll();
+  await saveToGitHub(`Update subtask ${field}: ${tasks[taskIdx].subtasks[subIdx].name}`);
+}
+
+async function deleteSubtask(taskIdx,subIdx){
+  if(!confirm('Delete this subtask?'))return;
+  tasks[taskIdx].subtasks.splice(subIdx,1);
+  renderAll();
+  await saveToGitHub(`Delete subtask from: ${tasks[taskIdx].taskName}`);
 }
 
 // ── Subtasks ──────────────────────────────────────────────
