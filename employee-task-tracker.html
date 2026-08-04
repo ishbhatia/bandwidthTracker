@@ -591,6 +591,9 @@ CR-202 Dark mode feature request
           <option value="PROD">PROD</option>
         </select>
       </div>
+      <div class="fg"><label>Reopen Count</label>
+        <input type="number" id="editReopenCount" min="0" step="1" placeholder="0"/>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
@@ -740,7 +743,7 @@ async function addTask(){
 }
 function clearForm(){['empName','taskName','timeSpent','expectedHrs'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
-function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editExpectedHrs').value=t.expectedHrs||'';document.getElementById('editStatus').value=t.status;document.getElementById('editEnvironment').value=t.environment||'';document.getElementById('editModal').classList.add('open');}
+function openEdit(idx){editIndex=idx;const t=tasks[idx];document.getElementById('editEmpName').value=t.empName;document.getElementById('editTaskName').value=t.taskName;document.getElementById('editStartDate').value=t.startDate;document.getElementById('editTimeSpent').value=t.timeSpent;document.getElementById('editExpectedHrs').value=t.expectedHrs||'';document.getElementById('editStatus').value=t.status;document.getElementById('editEnvironment').value=t.environment||'DEV';document.getElementById('editReopenCount').value=t.reopenCount||0;document.getElementById('editModal').classList.add('open');}
 async function saveEdit(){
   const empName=document.getElementById('editEmpName').value.trim(),taskName=document.getElementById('editTaskName').value.trim(),startDate=document.getElementById('editStartDate').value,timeSpent=parseFloat(document.getElementById('editTimeSpent').value),status=document.getElementById('editStatus').value;
   const expectedHrs=parseFloat(document.getElementById('editExpectedHrs').value)||0;
@@ -748,7 +751,9 @@ async function saveEdit(){
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
   const prevStatus=tasks[editIndex].status||'';
   const isReopen=status.startsWith('Reopen');
-  const reopenCount=(tasks[editIndex].reopenCount||0)+(isReopen&&prevStatus!==status?1:0);
+  const manualCount=parseInt(document.getElementById('editReopenCount').value)||0;
+  // Use manual value; if status just changed to a Reopen variant, ensure count is at least 1
+  const reopenCount=isReopen&&prevStatus!==status?Math.max(manualCount,(tasks[editIndex].reopenCount||0)+1):manualCount;
   tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus,reopenCount};
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
