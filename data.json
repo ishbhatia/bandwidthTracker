@@ -463,23 +463,25 @@
     "id": 1785870286334,
     "empName": "Ishant",
     "taskName": "CR-TEST",
-    "startDate": "2026-08-05",
+    "startDate": "2026-08-04",
     "timeSpent": 0,
-    "expectedHrs": 18,
-    "devEndDate": "2026-08-06",
+    "expectedHrs": 2,
+    "devEndDate": "2026-08-05",
     "status": "To Do",
     "environment": "DEV",
     "subtasks": [
       {
         "name": "TEST1",
-        "hrs": 4,
+        "hrs": 1,
         "done": false
       },
       {
         "name": "TEST2",
-        "hrs": 4,
+        "hrs": 1,
         "done": false
       }
-    ]
+    ],
+    "prevStatus": "To Do",
+    "reopenCount": 0
   }
 ]
