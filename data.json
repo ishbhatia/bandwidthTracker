@@ -474,7 +474,9 @@
         "name": "1010",
         "hrs": 2,
         "done": false,
-        "environment": "UAT"
+        "environment": "UAT",
+        "prevStatus": "To Do",
+        "status": "In Review"
       },
       {
         "name": "1011",
