@@ -477,12 +477,6 @@
         "environment": "UAT",
         "prevStatus": "To Do",
         "status": "In Review"
-      },
-      {
-        "name": "1011",
-        "hrs": 2,
-        "done": false,
-        "environment": "PROD"
       }
     ]
   }
