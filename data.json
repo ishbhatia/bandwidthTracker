@@ -473,7 +473,7 @@
       {
         "name": "TEST1",
         "hrs": 1,
-        "done": false
+        "done": true
       },
       {
         "name": "TEST2",
