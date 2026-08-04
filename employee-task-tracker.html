@@ -448,6 +448,7 @@
             <th onclick="sortBy('environment')">Env ⇅</th>
             <th>Prev Status</th>
             <th onclick="sortBy('status')">Status ⇅</th>
+            <th onclick="sortBy('reopenCount')">Reopens ⇅</th>
             <th>Actions</th>
           </tr></thead>
           <tbody id="tableBody"></tbody>
@@ -746,7 +747,9 @@ async function saveEdit(){
   const environment=document.getElementById('editEnvironment').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
   const prevStatus=tasks[editIndex].status||'';
-  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus};
+  const isReopen=status.startsWith('Reopen');
+  const reopenCount=(tasks[editIndex].reopenCount||0)+(isReopen&&prevStatus!==status?1:0);
+  tasks[editIndex]={...tasks[editIndex],empName,taskName,startDate,timeSpent,expectedHrs,status,environment,prevStatus,reopenCount};
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
@@ -770,7 +773,8 @@ function renderTable(){
     const envCell=t.environment?`<span class="env-badge ${envMap[t.environment]||'env-dev'}">${esc(t.environment)}</span>`:'—';
     const prevBc=STATUS_BADGE[t.prevStatus]||'badge-todo';
     const prevCell=t.prevStatus&&t.prevStatus!==t.status?`<span class="badge ${prevBc}" style="opacity:.7">${esc(t.prevStatus)}</span>`:'—';
-    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td>${prevCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
+    const reopenCell=t.reopenCount>0?`<span style="color:#f87171;font-weight:700;font-size:.82rem">${t.reopenCount}x</span>`:'—';
+    return`<tr><td><span class="emp-name">${esc(t.empName)}</span></td><td><span class="task-name">${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank" class="redmine-link">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}</span></td><td>${ds}</td><td>${t.timeSpent}h</td><td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td><td>${remCell}</td><td>${envCell}</td><td>${prevCell}</td><td><span class="badge ${bc}">${esc(t.status)}</span></td><td>${reopenCell}</td><td><div class="action-btns"><button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button></div></td></tr>`;
   }).join('');
 }
 
@@ -836,6 +840,14 @@ function renderInsights(){
   // Velocity
   const lastWeekHrs=recentTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
   insights.push({type:'info',icon:'📈',text:`Team logged <strong>${lastWeekHrs}h</strong> in the last 7 days across ${recentTasks.length} tasks.`});
+
+  // Reopen hotspots
+  const multiReopen=tasks.filter(t=>t.reopenCount>1);
+  if(multiReopen.length){
+    insights.push({type:'bad',icon:'🔁',text:`<strong>${multiReopen.length} task(s)</strong> reopened more than once — possible quality issue: ${multiReopen.map(t=>t.taskName.substring(0,30)).join(', ')}`});
+  }
+  const totalReopens=tasks.reduce((s,t)=>s+(t.reopenCount||0),0);
+  if(totalReopens>0)insights.push({type:'warn',icon:'↩️',text:`Total reopens across all tasks: <strong>${totalReopens}</strong>`});
 
   if(!insights.length){el.innerHTML='<div class="no-insights">Everything looks good! 🎉</div>';return;}
   el.innerHTML=insights.map(i=>`<div class="insight-item insight-${i.type}"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
