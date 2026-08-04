@@ -478,7 +478,7 @@
       {
         "name": "TEST2",
         "hrs": 1,
-        "done": false
+        "done": true
       }
     ],
     "prevStatus": "Done",
