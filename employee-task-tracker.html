@@ -896,8 +896,8 @@ function renderTable(){
         </td>
         <td>—</td>
         <td style="color:#94a3b8;font-size:.75rem">${stDateFmt}</td>
-        <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
         <td>—</td>
+        <td style="color:#818cf8;font-weight:600">${st.hrs||0}h</td>
         <td>—</td>
         <td><input type="date" class="inline-sel" value="${stDevEnd}" onchange="inlineSubUpdate(${i},${si},'devEndDate',this.value)" style="${isOverdue?'border-color:#f87171;color:#f87171':''}"/></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'environment',this.value)">${stEnvOpts}</select></td>
