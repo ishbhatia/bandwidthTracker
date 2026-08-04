@@ -472,7 +472,7 @@
       {
         "name": "OK1",
         "hrs": 3,
-        "done": false
+        "done": true
       },
       {
         "name": "OK101",
