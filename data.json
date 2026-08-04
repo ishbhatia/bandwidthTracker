@@ -458,26 +458,5 @@
     "environment": "PROD",
     "prevStatus": "Done",
     "reopenCount": 0
-  },
-  {
-    "id": 1785869785562,
-    "empName": "Ishant",
-    "taskName": "CR-101",
-    "startDate": "2026-08-04",
-    "timeSpent": 0,
-    "expectedHrs": 0,
-    "devEndDate": "2026-08-07",
-    "status": "To Do",
-    "environment": "DEV",
-    "subtasks": [
-      {
-        "name": "1010",
-        "hrs": 2,
-        "done": false,
-        "environment": "UAT",
-        "prevStatus": "To Do",
-        "status": "In Review"
-      }
-    ]
   }
 ]
