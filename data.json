@@ -7,7 +7,9 @@
     "timeSpent": 72,
     "status": "In Progress",
     "expectedHrs": 0,
-    "environment": "DEV"
+    "environment": "DEV",
+    "prevStatus": "In Progress",
+    "reopenCount": 1
   },
   {
     "id": 1785387801878,
