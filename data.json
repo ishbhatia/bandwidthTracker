@@ -464,7 +464,7 @@
     "empName": "Ishant",
     "taskName": "cr-1",
     "startDate": "2026-08-04",
-    "timeSpent": 0,
+    "timeSpent": 1,
     "expectedHrs": 4,
     "devEndDate": "2026-08-06",
     "status": "To Do",
@@ -480,6 +480,8 @@
         "hrs": 2,
         "done": false
       }
-    ]
+    ],
+    "prevStatus": "To Do",
+    "reopenCount": 0
   }
 ]
