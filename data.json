@@ -292,7 +292,8 @@
     "taskName": "Client ID D-Merging Required - Urgent -",
     "startDate": "2026-07-31",
     "timeSpent": 0,
-    "status": "To Do"
+    "status": "Done",
+    "prevStatus": "To Do"
   },
   {
     "id": 1785476338206,
