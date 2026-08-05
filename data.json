@@ -397,9 +397,10 @@
     "taskName": "DM-24353 Insure 2.0 || In the PPD PDF, PF, BI, and CIS are appearing multiple times.",
     "startDate": "2026-08-03",
     "timeSpent": 0,
-    "status": "To Do",
+    "status": "Done",
     "expectedHrs": 0,
-    "environment": ""
+    "environment": "",
+    "prevStatus": "To Do"
   },
   {
     "id": 1785738789770,
