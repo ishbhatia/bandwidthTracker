@@ -684,13 +684,15 @@
   {
     "id": 1785918777821,
     "empName": "Vijay",
-    "taskName": "Issue in DS Generation – ReadyForIssuance Flag Not Set",
+    "taskName": "PD-2078 || Issue in DS Generation – ReadyForIssuance Flag Not Set",
     "startDate": "2026-08-05",
     "timeSpent": 4,
     "expectedHrs": 0,
     "devEndDate": "2026-08-05",
     "status": "To Do",
     "environment": "UAT",
-    "subtasks": []
+    "subtasks": [],
+    "prevStatus": "To Do",
+    "reopenCount": 0
   }
 ]
