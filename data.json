@@ -464,9 +464,9 @@
     "startDate": "2026-08-03",
     "timeSpent": 4,
     "expectedHrs": 0,
-    "status": "In Review",
+    "status": "Done",
     "environment": "DEV",
-    "prevStatus": "In Progress",
+    "prevStatus": "In Review",
     "reopenCount": 0
   },
   {
