@@ -110,13 +110,16 @@
   {
     "id": 1785388281578,
     "empName": "Talha",
-    "taskName": "PD 1215",
+    "taskName": "PD 1215, 2564",
     "startDate": "2026-07-30",
     "timeSpent": 6,
     "status": "Done",
     "expectedHrs": 0,
-    "environment": "",
-    "prevStatus": "Blocked"
+    "environment": "DEV",
+    "prevStatus": "Done",
+    "devEndDate": "",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785388310728,
