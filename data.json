@@ -278,9 +278,10 @@
     "taskName": "Retail Equalizer issue -All documents are not reflecting on document view UI :",
     "startDate": "2026-07-30",
     "timeSpent": 5,
-    "status": "In Progress",
+    "status": "Done",
     "expectedHrs": 0,
-    "environment": "DEV"
+    "environment": "DEV",
+    "prevStatus": "In Progress"
   },
   {
     "id": 1785476317887,
