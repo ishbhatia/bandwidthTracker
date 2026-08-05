@@ -4,7 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Easy Tracker — AI Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -102,7 +101,7 @@
     .toolbar select option{background:var(--surface)}
 
     /* ── table ── */
-    .table-wrap{overflow-x:auto;max-height:320px;overflow-y:auto}
+    .table-wrap{overflow-x:auto;max-height:calc(100vh - 280px);min-height:500px;overflow-y:auto}
     .table-wrap::-webkit-scrollbar{width:4px}
     .table-wrap::-webkit-scrollbar-track{background:transparent}
     .table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -156,18 +155,6 @@
     .inline-sel{padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.72rem;font-family:inherit;cursor:pointer;max-width:130px}
     .inline-sel:focus{outline:none;border-color:var(--accent)}
     .inline-sel option{background:var(--surface)}
-
-    /* ── chart ── */
-    .chart-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-    .chart-controls label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-    .chart-controls input[type=date]{padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.78rem;background:var(--surface2);color:var(--text);font-family:inherit}
-    .ctrl-grp{display:flex;align-items:center;gap:6px}
-    .chart-wrap{position:relative;width:100%;min-height:160px;max-height:180px}
-    .legend-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-    .legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#94a3b8;
-      background:var(--surface2);padding:2px 9px;border-radius:20px;border:1px solid var(--border)}
-    .legend-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
-    .chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:var(--muted);font-size:.85rem}
 
     /* ── AI Insights ── */
     .insights-list{display:flex;flex-direction:column;gap:9px;max-height:220px;overflow-y:auto;padding-right:4px}
@@ -438,20 +425,6 @@
 
   <!-- RIGHT col -->
   <div class="right-col">
-    <!-- Chart -->
-    <div class="card">
-      <div class="card-title"><span class="ct-dot"></span>Day-wise Hours — Side by Side</div>
-      <div class="chart-controls">
-        <div class="ctrl-grp"><label>From</label><input type="date" id="chartFrom" onchange="renderChart()"/></div>
-        <div class="ctrl-grp"><label>To</label><input type="date" id="chartTo" onchange="renderChart()"/></div>
-        <button class="btn btn-secondary btn-sm" onclick="resetChartDates()">Reset</button>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="barChart"></canvas>
-        <div class="chart-empty" id="chartEmpty" style="display:none">📭 No data yet</div>
-      </div>
-      <div class="legend-wrap" id="chartLegend"></div>
-    </div>
 
     <!-- Table -->
     <div class="card">
@@ -987,7 +960,7 @@ function renderInsights(){
   el.innerHTML=insights.map(i=>`<div class="insight-item insight-${i.type}"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
 }
 
-function renderAll(){renderStats();renderTable();renderChart();renderInsights();}
+function renderAll(){renderStats();renderTable();renderInsights();}
 
 // ── Export CSV ────────────────────────────────────────────
 function exportCSV(){
@@ -1083,24 +1056,6 @@ async function sendChat(){
 // ── Helpers ───────────────────────────────────────────────
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ── Chart ─────────────────────────────────────────────────
-let chartInst=null;
-function resetChartDates(){document.getElementById('chartFrom').value='';document.getElementById('chartTo').value='';renderChart();}
-function renderChart(){
-  const from=document.getElementById('chartFrom').value,to=document.getElementById('chartTo').value;
-  const filt=tasks.filter(t=>t.startDate&&(!from||t.startDate>=from)&&(!to||t.startDate<=to));
-  const empty=document.getElementById('chartEmpty'),canvas=document.getElementById('barChart');
-  if(!filt.length){empty.style.display='flex';canvas.style.display='none';if(chartInst){chartInst.destroy();chartInst=null;}document.getElementById('chartLegend').innerHTML='';return;}
-  empty.style.display='none';canvas.style.display='block';
-  const dates=[...new Set(filt.map(t=>t.startDate))].sort();
-  const emps=[...new Set(filt.map(t=>t.empName.trim()))].sort();
-  const fmt=d=>new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  const datasets=emps.map((emp,i)=>({label:emp,data:dates.map(d=>filt.filter(t=>t.startDate===d&&t.empName.trim()===emp).reduce((s,t)=>s+(+t.timeSpent||0),0)),backgroundColor:PALETTE[i%PALETTE.length]+'cc',borderColor:PALETTE[i%PALETTE.length],borderWidth:1,borderRadius:5,borderSkipped:false,barThickness:14}));
-  const cfg={type:'bar',data:{labels:dates.map(fmt),datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#111827',borderColor:'#1e2d45',borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}h`}}},scales:{x:{stacked:false,grid:{display:false,color:'#1e2d45'},ticks:{color:'#64748b',font:{size:10}}},y:{stacked:false,beginAtZero:true,grid:{color:'#1e2d45'},ticks:{color:'#64748b',callback:v=>v+'h'}}}}};
-  if(chartInst)chartInst.destroy();
-  chartInst=new Chart(canvas,cfg);
-  document.getElementById('chartLegend').innerHTML=emps.map((e,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>${esc(e)}</div>`).join('');
-}
 
 // ── Report ────────────────────────────────────────────────
 function openReport(){document.getElementById('rptOverlay').classList.add('open');buildReport();}
@@ -1651,7 +1606,6 @@ async function toggleSubDone(taskIdx,subIdx){
 document.getElementById('startDate').valueAsDate=new Date();
 document.getElementById('scraperDate').valueAsDate=new Date();
 updateRedmineNote();
-(function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);document.getElementById('chartTo').valueAsDate=to;document.getElementById('chartFrom').valueAsDate=from;})();
 if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
 </body>
