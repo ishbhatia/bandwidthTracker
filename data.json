@@ -539,12 +539,6 @@
     "devEndDate": "",
     "status": "To Do",
     "environment": "DEV",
-    "subtasks": [
-      {
-        "name": "New",
-        "hrs": 2,
-        "done": false
-      }
-    ]
+    "subtasks": []
   }
 ]
