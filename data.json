@@ -171,11 +171,14 @@
     "empName": "Jatin",
     "taskName": "CR 47162",
     "startDate": "2026-07-29",
-    "timeSpent": 9,
+    "timeSpent": 18,
     "status": "Done",
     "expectedHrs": 0,
     "environment": "DEV",
-    "prevStatus": "In Progress"
+    "prevStatus": "Done",
+    "devEndDate": "",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785389952765,
