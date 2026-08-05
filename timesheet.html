@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Timesheet Export</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh;padding:28px}
+    h1{font-size:1.2rem;font-weight:700;margin-bottom:6px}
+    .sub{font-size:.8rem;color:#64748b;margin-bottom:24px}
+    .card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:20px}
+    .card h2{font-size:.85rem;font-weight:700;color:#1e40af;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px}
+    .fg{display:flex;flex-direction:column;gap:4px}
+    .fg label{font-size:.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+    .fg input,.fg select{padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;background:#f8fafc;font-family:inherit}
+    .fg input:focus,.fg select:focus{outline:none;border-color:#2563eb}
+    .btn{padding:9px 20px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+    .btn-primary{background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(79,70,229,.4)}
+    .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+    .btn-secondary:hover{background:#e2e8f0}
+    .btn-danger{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+    .btn-sm{padding:4px 10px;font-size:.75rem;border-radius:6px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
+    thead th{background:#f8fafc;color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+    tbody tr{border-bottom:1px solid #f1f5f9}
+    tbody tr:hover{background:#f8fafc}
+    tbody td{padding:9px 12px;vertical-align:middle}
+    tbody td input,tbody td select{padding:5px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:.8rem;background:#fff;font-family:inherit;width:100%}
+    tbody td input:focus,tbody td select:focus{outline:none;border-color:#2563eb}
+    .table-wrap{overflow-x:auto}
+    .sno{color:#94a3b8;font-size:.75rem;font-weight:600;text-align:center}
+    .del-btn{background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:.9rem;padding:2px 6px;border-radius:4px}
+    .del-btn:hover{color:#dc2626;background:#fee2e2}
+    .toast{position:fixed;bottom:22px;right:22px;background:#1e293b;color:#fff;padding:10px 18px;border-radius:10px;font-size:.8rem;font-weight:600;opacity:0;transform:translateY(12px);transition:all .28s;z-index:999;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+    .sum-card{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;font-size:.78rem}
+    .sum-card strong{color:#1d4ed8;font-size:1.1rem;display:block}
+  </style>
+</head>
+<body>
+
+<h1>📋 Timesheet</h1>
+<p class="sub">Fill in your timesheet rows and click Download Excel to get the file in SharePoint format.</p>
+
+<!-- Default values -->
+<div class="card">
+  <h2>Default Values (applied to new rows)</h2>
+  <div class="form-grid">
+    <div class="fg"><label>Resource Name</label><input id="defName" placeholder="e.g. Ishant Bhatia"/></div>
+    <div class="fg"><label>Resource ID</label><input id="defId" placeholder="e.g. 300104"/></div>
+    <div class="fg"><label>Activity Type</label>
+      <select id="defType">
+        <option>Developer</option>
+        <option>Tester</option>
+        <option>Business Analyst</option>
+        <option>Project Manager</option>
+        <option>DevOps</option>
+        <option>Support</option>
+      </select>
+    </div>
+    <div class="fg"><label>ON/OFF</label>
+      <select id="defOnOff"><option>ON</option><option>OFF</option></select>
+    </div>
+    <div class="fg"><label>Role</label>
+      <select id="defRole">
+        <option>Developer</option>
+        <option>Lead</option>
+        <option>Architect</option>
+        <option>Tester</option>
+        <option>Manager</option>
+        <option>Support</option>
+      </select>
+    </div>
+    <div class="fg"><label>Date</label><input type="date" id="defDate"/></div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="addRow()">＋ Add Row</button>
+    <button class="btn btn-secondary" onclick="addMultiple()">＋ Add 5 Rows</button>
+    <button class="btn btn-secondary btn-sm" onclick="clearAll()">Clear All</button>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <h2>Timesheet Entries</h2>
+  <div class="summary" id="summary"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px">S.No</th>
+          <th>Resource Name</th>
+          <th>Resource ID</th>
+          <th>Activity Type</th>
+          <th>ON/OFF</th>
+          <th>Role</th>
+          <th>Date</th>
+          <th>Activity Name</th>
+          <th>Hours Spent</th>
+          <th>Remarks</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="actions" style="margin-top:16px">
+    <button class="btn btn-primary" onclick="downloadExcel()">⬇️ Download Excel</button>
+    <button class="btn btn-secondary btn-sm" onclick="downloadCSV()">⬇️ Download CSV</button>
+    <span style="font-size:.75rem;color:#94a3b8" id="rowCount"></span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let rows=[];
+
+const ACTIVITY_TYPES=['Developer','Tester','Business Analyst','Project Manager','DevOps','Support'];
+const ROLES=['Developer','Lead','Architect','Tester','Manager','Support'];
+const ON_OFF=['ON','OFF'];
+
+function fmtDate(d){
+  if(!d)return'';
+  const dt=new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+function getDefaults(){
+  return{
+    name:document.getElementById('defName').value||'Ishant Bhatia',
+    id:document.getElementById('defId').value||'300104',
+    type:document.getElementById('defType').value,
+    onoff:document.getElementById('defOnOff').value,
+    role:document.getElementById('defRole').value,
+    date:document.getElementById('defDate').value
+  };
+}
+
+function addRow(){
+  const d=getDefaults();
+  rows.push({name:d.name,id:d.id,type:d.type,onoff:d.onoff,role:d.role,date:d.date,activity:'',hours:'',remarks:''});
+  render();
+}
+
+function addMultiple(){
+  for(let i=0;i<5;i++)addRow();
+}
+
+function deleteRow(i){rows.splice(i,1);render();}
+function clearAll(){if(rows.length&&!confirm('Clear all rows?'))return;rows=[];render();}
+
+function updateRow(i,field,val){rows[i][field]=val;updateSummary();}
+
+function render(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=rows.map((r,i)=>{
+    const typeOpts=ACTIVITY_TYPES.map(t=>`<option${t===r.type?' selected':''}>${t}</option>`).join('');
+    const roleOpts=ROLES.map(t=>`<option${t===r.role?' selected':''}>${t}</option>`).join('');
+    const onoffOpts=ON_OFF.map(t=>`<option${t===r.onoff?' selected':''}>${t}</option>`).join('');
+    return`<tr>
+      <td class="sno">${i+1}</td>
+      <td><input value="${esc(r.name)}" onchange="updateRow(${i},'name',this.value)" placeholder="Resource Name"/></td>
+      <td><input value="${esc(r.id)}" onchange="updateRow(${i},'id',this.value)" placeholder="ID" style="width:90px"/></td>
+      <td><select onchange="updateRow(${i},'type',this.value)">${typeOpts}</select></td>
+      <td><select onchange="updateRow(${i},'onoff',this.value)" style="width:70px">${onoffOpts}</select></td>
+      <td><select onchange="updateRow(${i},'role',this.value)">${roleOpts}</select></td>
+      <td><input type="date" value="${r.date}" onchange="updateRow(${i},'date',this.value)" style="width:130px"/></td>
+      <td><input value="${esc(r.activity)}" onchange="updateRow(${i},'activity',this.value)" placeholder="Activity name…" style="min-width:200px"/></td>
+      <td><input type="number" value="${r.hours}" onchange="updateRow(${i},'hours',this.value)" min="0" step="0.5" style="width:70px"/></td>
+      <td><input value="${esc(r.remarks)}" onchange="updateRow(${i},'remarks',this.value)" placeholder="Remarks…" style="min-width:160px"/></td>
+      <td><button class="del-btn" onclick="deleteRow(${i})" title="Delete">✕</button></td>
+    </tr>`;
+  }).join('');
+  updateSummary();
+}
+
+function updateSummary(){
+  const total=rows.reduce((s,r)=>s+(+r.hours||0),0);
+  const byPerson={};
+  rows.forEach(r=>{if(!byPerson[r.name])byPerson[r.name]=0;byPerson[r.name]+=(+r.hours||0);});
+  const summaryEl=document.getElementById('summary');
+  summaryEl.innerHTML=`<div class="sum-card"><strong>${rows.length}</strong>Rows</div>
+    <div class="sum-card"><strong>${total}h</strong>Total Hours</div>
+    ${Object.entries(byPerson).map(([n,h])=>`<div class="sum-card"><strong>${h}h</strong>${n}</div>`).join('')}`;
+  document.getElementById('rowCount').textContent=`${rows.length} row(s)`;
+}
+
+function downloadExcel(){
+  if(!rows.length){alert('No rows to export.');return;}
+  if(typeof XLSX==='undefined'){alert('SheetJS not loaded. Check internet connection.');return;}
+
+  const wb=XLSX.utils.book_new();
+
+  // Header
+  const header=['S.No','Resource Name','Resource ID','Activity Type','ON/OFF','Role','Date','Activity Name','Hours Spent','Remarks'];
+  const data=[header];
+
+  rows.forEach((r,i)=>{
+    data.push([
+      i+1,
+      r.name,
+      r.id,
+      r.type,
+      r.onoff,
+      r.role,
+      fmtDate(r.date),
+      r.activity,
+      r.hours===''?'':+r.hours,
+      r.remarks
+    ]);
+  });
+
+  const ws=XLSX.utils.aoa_to_sheet(data);
+
+  // Column widths matching SharePoint format
+  ws['!cols']=[
+    {wch:6},   // S.No
+    {wch:20},  // Resource Name
+    {wch:12},  // Resource ID
+    {wch:18},  // Activity Type
+    {wch:8},   // ON/OFF
+    {wch:14},  // Role
+    {wch:12},  // Date
+    {wch:45},  // Activity Name
+    {wch:12},  // Hours Spent
+    {wch:40},  // Remarks
+  ];
+
+  // Freeze top row
+  ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activePane:'bottomLeft',state:'frozen'};
+
+  XLSX.utils.book_append_sheet(wb,ws,'Timesheet');
+
+  // Employee summary sheet
+  const byPerson={};
+  rows.forEach(r=>{
+    if(!byPerson[r.name])byPerson[r.name]={name:r.name,id:r.id,rows:[],total:0};
+    byPerson[r.name].rows.push(r);
+    byPerson[r.name].total+=(+r.hours||0);
+  });
+  const sumData=[['Resource Name','Resource ID','Total Hours','Rows']];
+  Object.values(byPerson).forEach(p=>sumData.push([p.name,p.id,p.total,p.rows.length]));
+  const ws2=XLSX.utils.aoa_to_sheet(sumData);
+  ws2['!cols']=[{wch:22},{wch:12},{wch:14},{wch:8}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
+
+  const fname='Timesheet_'+new Date().toISOString().split('T')[0]+'.xlsx';
+  XLSX.writeFile(wb,fname);
+  showToast('✅ Excel downloaded: '+fname);
+}
+
+function downloadCSV(){
+  if(!rows.length){alert('No rows to export.');return;}
+  const header='S.No,Resource Name,Resource ID,Activity Type,ON/OFF,Role,Date,Activity Name,Hours Spent,Remarks';
+  const csv=rows.map((r,i)=>[i+1,r.name,r.id,r.type,r.onoff,r.role,fmtDate(r.date),r.activity,r.hours,r.remarks].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const blob=new Blob([[header,...csv].join('\n')],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'Timesheet_'+new Date().toISOString().split('T')[0]+'.csv'});
+  a.click();URL.revokeObjectURL(a.href);
+  showToast('⬇️ CSV downloaded!');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Set today as default date
+document.getElementById('defDate').valueAsDate=new Date();
+
+// Add 5 starter rows
+for(let i=0;i<5;i++)addRow();
+</script>
+</body>
+</html>
