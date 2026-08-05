@@ -154,12 +154,16 @@
   {
     "id": 1785388456345,
     "empName": "Harivansh",
-    "taskName": "Sceenza",
+    "taskName": "Sceenza Analysis",
     "startDate": "2026-08-06",
-    "timeSpent": 0,
+    "timeSpent": 2,
     "status": "To Do",
     "expectedHrs": 0,
-    "environment": ""
+    "environment": "DEV",
+    "devEndDate": "",
+    "prevStatus": "To Do",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785388557045,
