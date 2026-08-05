@@ -428,7 +428,7 @@
     "empName": "Akash",
     "taskName": "MRTA API Not Getting Triggered",
     "startDate": "2026-08-03",
-    "timeSpent": 11,
+    "timeSpent": 6,
     "expectedHrs": 0,
     "status": "Done",
     "environment": "DEV",
