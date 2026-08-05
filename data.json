@@ -412,8 +412,9 @@
     "startDate": "2026-08-03",
     "timeSpent": 0,
     "expectedHrs": 6,
-    "status": "In Progress",
-    "environment": ""
+    "status": "Done",
+    "environment": "",
+    "prevStatus": "In Progress"
   },
   {
     "id": 1785746125286,
