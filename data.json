@@ -496,10 +496,14 @@
     "empName": "Akash",
     "taskName": "Cae stuck Data ErrorQueue",
     "startDate": "2026-08-03",
-    "timeSpent": 1,
+    "timeSpent": 2,
     "expectedHrs": 0,
     "status": "Done",
-    "environment": "UAT"
+    "environment": "UAT",
+    "devEndDate": "",
+    "prevStatus": "Done",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785836918305,
