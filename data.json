@@ -94,8 +94,14 @@
     "empName": "Harivansh",
     "taskName": "CR 20875",
     "startDate": "2026-07-29",
-    "timeSpent": 5,
-    "status": "In Progress"
+    "timeSpent": 36,
+    "status": "Done",
+    "expectedHrs": 0,
+    "devEndDate": "2026-08-04",
+    "environment": "UAT",
+    "prevStatus": "In Progress",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785388204811,
