@@ -430,12 +430,16 @@
   {
     "id": 1785746125286,
     "empName": "Rajni",
-    "taskName": "TPA",
+    "taskName": "pd-2505 || TPA",
     "startDate": "2026-08-03",
-    "timeSpent": 0,
+    "timeSpent": 2,
     "expectedHrs": 0,
     "status": "In Progress",
-    "environment": "DEV"
+    "environment": "DEV",
+    "devEndDate": "",
+    "prevStatus": "In Progress",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785750480477,
