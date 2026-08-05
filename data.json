@@ -172,9 +172,10 @@
     "taskName": "CR 47162",
     "startDate": "2026-07-29",
     "timeSpent": 9,
-    "status": "In Progress",
+    "status": "Done",
     "expectedHrs": 0,
-    "environment": "DEV"
+    "environment": "DEV",
+    "prevStatus": "In Progress"
   },
   {
     "id": 1785389952765,
