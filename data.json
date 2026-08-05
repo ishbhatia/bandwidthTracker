@@ -209,9 +209,10 @@
     "taskName": "7200623980 - CIBIL waiver Case but Financial Raised by system / 7200627043",
     "startDate": "2026-08-03",
     "timeSpent": 4,
-    "status": "In Progress",
+    "status": "Done",
     "expectedHrs": 0,
-    "environment": "DEV"
+    "environment": "DEV",
+    "prevStatus": "In Progress"
   },
   {
     "id": 1785390873634,
