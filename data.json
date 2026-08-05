@@ -382,11 +382,14 @@
     "empName": "Radhika",
     "taskName": "DM-24585 Loading details EMR & FMR is not available for Critical illness in Unified UW screen",
     "startDate": "2026-08-02",
-    "timeSpent": 0,
+    "timeSpent": 2,
     "status": "Done",
     "expectedHrs": 0,
     "environment": "DEV",
-    "prevStatus": "In Progress"
+    "prevStatus": "Done",
+    "devEndDate": "",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785735103795,
