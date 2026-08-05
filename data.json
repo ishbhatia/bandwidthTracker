@@ -440,11 +440,14 @@
     "empName": "Radhika",
     "taskName": "Ageing Analysis || fix on prod",
     "startDate": "2026-08-03",
-    "timeSpent": 1,
+    "timeSpent": 5,
     "expectedHrs": 0,
     "status": "Done",
     "environment": "DEV",
-    "prevStatus": "In Progress"
+    "prevStatus": "Done",
+    "devEndDate": "",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785752560095,
