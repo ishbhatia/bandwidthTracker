@@ -434,7 +434,7 @@
     "startDate": "2026-08-03",
     "timeSpent": 2,
     "expectedHrs": 0,
-    "status": "In Progress",
+    "status": "Done",
     "environment": "DEV",
     "devEndDate": "",
     "prevStatus": "In Progress",
