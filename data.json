@@ -336,10 +336,14 @@
     "empName": "Suhel",
     "taskName": "BANK FILE UPLOAD IMPROVEMENT :- 400 record process taking 40 mint",
     "startDate": "2026-07-31",
-    "timeSpent": 27,
+    "timeSpent": 9,
     "status": "In Progress",
     "expectedHrs": 0,
-    "environment": "DEV"
+    "environment": "DEV",
+    "devEndDate": "",
+    "prevStatus": "In Progress",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785490891240,
