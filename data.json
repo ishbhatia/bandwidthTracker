@@ -458,30 +458,5 @@
     "environment": "PROD",
     "prevStatus": "Done",
     "reopenCount": 0
-  },
-  {
-    "id": 1785870286334,
-    "empName": "Ishant",
-    "taskName": "CR-1",
-    "startDate": "2026-08-03",
-    "timeSpent": 2,
-    "expectedHrs": 2,
-    "devEndDate": "2026-08-04",
-    "status": "Done",
-    "environment": "DEV",
-    "subtasks": [
-      {
-        "name": "TEST1",
-        "hrs": 1,
-        "done": false
-      },
-      {
-        "name": "TEST2",
-        "hrs": 1,
-        "done": false
-      }
-    ],
-    "prevStatus": "Done",
-    "reopenCount": 0
   }
 ]
