@@ -291,9 +291,14 @@
     "empName": "Priyanshi",
     "taskName": "Client ID D-Merging Required - Urgent -",
     "startDate": "2026-07-31",
-    "timeSpent": 0,
+    "timeSpent": 2,
     "status": "Done",
-    "prevStatus": "To Do"
+    "prevStatus": "Done",
+    "expectedHrs": 0,
+    "devEndDate": "",
+    "environment": "DEV",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785476338206,
