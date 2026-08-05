@@ -435,9 +435,9 @@
     "timeSpent": 2,
     "expectedHrs": 0,
     "status": "Done",
-    "environment": "DEV",
+    "environment": "UAT",
     "devEndDate": "",
-    "prevStatus": "In Progress",
+    "prevStatus": "Done",
     "reopenCount": 0,
     "subtasks": []
   },
