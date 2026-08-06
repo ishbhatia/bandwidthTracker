@@ -65,9 +65,10 @@
     "taskName": "SI NACH analysis",
     "startDate": "2026-08-03",
     "timeSpent": 2,
-    "status": "In Progress",
+    "status": "Done",
     "expectedHrs": 0,
-    "environment": ""
+    "environment": "",
+    "prevStatus": "In Progress"
   },
   {
     "id": 1785388110661,
