@@ -439,7 +439,7 @@
     "timeSpent": 6,
     "expectedHrs": 0,
     "status": "Done",
-    "environment": "DEV",
+    "environment": "PROD",
     "prevStatus": "Done",
     "devEndDate": "",
     "reopenCount": 0,
