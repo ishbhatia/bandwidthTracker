@@ -683,9 +683,10 @@
     "timeSpent": 0,
     "expectedHrs": 0,
     "devEndDate": "",
-    "status": "To Do",
+    "status": "Done",
     "environment": "DEV",
-    "subtasks": []
+    "subtasks": [],
+    "prevStatus": "To Do"
   },
   {
     "id": 1785918453570,
