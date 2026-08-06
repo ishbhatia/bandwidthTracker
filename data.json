@@ -828,11 +828,6 @@
         "done": false
       },
       {
-        "name": "WorkFlow",
-        "hrs": 18,
-        "done": false
-      },
-      {
         "name": "Thread creation and its End to End Movement and API Integration",
         "hrs": 13.5,
         "done": false
