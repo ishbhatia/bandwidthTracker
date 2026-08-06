@@ -364,6 +364,72 @@
     .remove-row:hover{color:var(--red);background:rgba(239,68,68,.1)}
 
     @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px}.stats-row{grid-template-columns:repeat(2,1fr)}}
+
+    /* ── Person View ── */
+    .pv-page{max-width:1100px;margin:28px auto;padding:0 24px}
+    .pv-header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:28px}
+    .pv-header-title{font-size:1.05rem;font-weight:700;color:#fff}
+    .pv-header-sub{font-size:.76rem;color:var(--muted);margin-top:3px}
+    .pv-select-wrap{position:relative;display:inline-flex;align-items:center}
+    .pv-name-select{padding:10px 42px 10px 16px;border:1px solid var(--border);border-radius:10px;
+      background:var(--surface2);color:var(--text);font-size:.92rem;font-weight:600;
+      font-family:inherit;cursor:pointer;appearance:none;min-width:200px;
+      transition:border-color .15s,box-shadow .15s}
+    .pv-name-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+    .pv-name-select option{background:var(--surface)}
+    .pv-select-arrow{position:absolute;right:14px;pointer-events:none;color:var(--muted);font-size:.75rem}
+    .pv-summary-chips{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+    .pv-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
+      font-size:.78rem;font-weight:600;border:1px solid}
+    .pv-chip-total{background:rgba(99,102,241,.1);color:#a5b4fc;border-color:rgba(99,102,241,.25)}
+    .pv-chip-done{background:rgba(16,185,129,.1);color:#34d399;border-color:rgba(16,185,129,.2)}
+    .pv-chip-blocked{background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.2)}
+    .pv-chip-hrs{background:rgba(6,182,212,.1);color:#67e8f9;border-color:rgba(6,182,212,.2)}
+    .pv-day-group{margin-bottom:28px}
+    .pv-day-label{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .pv-day-title{font-size:.95rem;font-weight:700;color:#fff}
+    .pv-day-date{font-size:.78rem;color:var(--muted);font-weight:500}
+    .pv-day-hrs{font-size:.76rem;font-weight:700;background:rgba(99,102,241,.1);color:#a5b4fc;
+      border:1px solid rgba(99,102,241,.25);padding:3px 10px;border-radius:20px}
+    .pv-day-divider{flex:1;height:1px;background:var(--border)}
+    .pv-task-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      padding:18px 22px;margin-bottom:12px;transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+    .pv-task-card:hover{border-color:rgba(99,102,241,.35);box-shadow:0 4px 20px rgba(99,102,241,.1)}
+    .pv-task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+      background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:3px 0 0 3px}
+    .pv-task-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .pv-task-name{font-size:.95rem;font-weight:600;color:#fff;line-height:1.4;flex:1}
+    .pv-task-name a{color:#a5b4fc;text-decoration:none}
+    .pv-task-name a:hover{text-decoration:underline}
+    .pv-task-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .pv-task-body{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+    .pv-field{display:flex;flex-direction:column;gap:3px;min-width:80px}
+    .pv-field-lbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+    .pv-field-val{font-size:.84rem;font-weight:600;color:#e2e8f0}
+    .pv-field-val.green{color:var(--green)}
+    .pv-field-val.red{color:#f87171}
+    .pv-field-val.cyan{color:var(--cyan)}
+    .pv-subtask-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+    .pv-subtask-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .pv-subtask-grid{display:flex;flex-direction:column;gap:5px}
+    .pv-st-row{display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;background:var(--surface2)}
+    .pv-st-row.done{opacity:.5}
+    .pv-st-done-icon{font-size:.8rem;flex-shrink:0;width:18px;text-align:center}
+    .pv-st-name{font-size:.8rem;color:#cbd5e1;flex:1}
+    .pv-st-name.done{text-decoration:line-through;color:var(--muted)}
+    .pv-st-hrs{font-size:.75rem;color:#818cf8;font-weight:600;flex-shrink:0}
+    .pv-st-progress{height:4px;border-radius:2px;background:var(--border);margin-top:8px;overflow:hidden}
+    .pv-st-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+    .pv-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+    .pv-empty-icon{font-size:3rem;margin-bottom:12px;display:block}
+    .pv-empty-msg{font-size:.9rem}
+    .pv-ticket-link{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;
+      font-size:.73rem;font-weight:700;letter-spacing:.03em;text-decoration:none}
+    .pv-ticket-cr{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+    .pv-ticket-pd{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+    .pv-ticket-dm{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+    .pv-today-badge{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);
+      padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700}
   </style>
 </head>
 <body>
@@ -386,6 +452,7 @@
 <nav class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
   <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper</button>
+  <button class="tab-btn" onclick="switchTab('personview')">👤 Person View</button>
 </nav>
 
 <!-- Dashboard Tab -->
@@ -630,6 +697,43 @@ CR-202 Dark mode feature request
 
 </div>
 </div><!-- end #tab-scraper -->
+
+<!-- Person View Tab -->
+<div class="tab-page" id="tab-personview">
+  <div class="pv-page">
+
+    <!-- Header + Controls -->
+    <div class="pv-header">
+      <div>
+        <div class="pv-header-title">👤 Person View</div>
+        <div class="pv-header-sub">Day-wise breakdown of tasks for any team member</div>
+      </div>
+
+      <div class="pv-select-wrap">
+        <select class="pv-name-select" id="pvNameSelect" onchange="renderPersonView()">
+          <option value="">— Select a person —</option>
+        </select>
+        <span class="pv-select-arrow">▾</span>
+      </div>
+
+      <div class="pv-summary-chips" id="pvSummaryChips" style="display:none">
+        <span class="pv-chip pv-chip-total" id="pvChipTotal">— Tasks</span>
+        <span class="pv-chip pv-chip-hrs" id="pvChipHrs">—h Total</span>
+        <span class="pv-chip pv-chip-done" id="pvChipDone">— Done</span>
+        <span class="pv-chip pv-chip-blocked" id="pvChipBlocked" style="display:none">— Blocked</span>
+      </div>
+    </div>
+
+    <!-- Content area -->
+    <div id="pvContent">
+      <div class="pv-empty">
+        <span class="pv-empty-icon">👆</span>
+        <div class="pv-empty-msg">Select a team member above to see their tasks day by day</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- end #tab-personview -->
 
 <!-- CSV Import Modal -->
 <div class="import-overlay" id="importCsvModal">
@@ -1177,7 +1281,7 @@ async function importCsvTasks(){
   await saveToGitHub(`Import CSV: ${p.name} (${empName})`);
 }
 
-function renderAll(){renderStats();renderTable();renderInsights();if(document.getElementById('tab-board')&&document.getElementById('tab-board').classList.contains('active'))renderBoard();}
+function renderAll(){renderStats();renderTable();renderInsights();populatePvSelect();if(document.getElementById('tab-board')&&document.getElementById('tab-board').classList.contains('active'))renderBoard();}
 
 // ── Export CSV ────────────────────────────────────────────
 function exportCSV(){
@@ -1677,6 +1781,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
+  if(name==='personview'){populatePvSelect();renderPersonView();}
 }
 
 // ── Outlook Scraper ───────────────────────────────────────
@@ -1894,6 +1999,179 @@ async function toggleSubDone(taskIdx,subIdx){
   tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
   renderAll();
   await saveToGitHub(`Update subtask: ${tasks[taskIdx].subtasks[subIdx].name}`);
+}
+
+// ── Person View ──────────────────────────────────────────
+function populatePvSelect(){
+  const sel=document.getElementById('pvNameSelect');
+  if(!sel)return;
+  const current=sel.value;
+  const names=[...new Set(tasks.map(t=>t.empName.trim()))].filter(Boolean).sort();
+  sel.innerHTML='<option value="">— Select a person —</option>'+names.map(n=>`<option value="${esc(n)}"${n===current?' selected':''}>${esc(n)}</option>`).join('');
+}
+
+function renderPersonView(){
+  const sel=document.getElementById('pvNameSelect');
+  const name=sel?sel.value:'';
+  const content=document.getElementById('pvContent');
+  const chips=document.getElementById('pvSummaryChips');
+  const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked','Reopen':'badge-reopen','Reopen (QA)':'badge-reopen-qa','Reopen (Dev)':'badge-reopen-dev'};
+  const ENV_CLS={'DEV':'env-dev','UAT':'env-uat','PROD':'env-prod'};
+
+  if(!name){
+    chips.style.display='none';
+    content.innerHTML=`<div class="pv-empty"><span class="pv-empty-icon">👆</span><div class="pv-empty-msg">Select a team member above to see their tasks day by day</div></div>`;
+    return;
+  }
+
+  // Filter tasks for this person
+  const personTasks=tasks.filter(t=>t.empName.trim()===name);
+  if(!personTasks.length){
+    chips.style.display='none';
+    content.innerHTML=`<div class="pv-empty"><span class="pv-empty-icon">📭</span><div class="pv-empty-msg">No tasks found for <strong>${esc(name)}</strong></div></div>`;
+    return;
+  }
+
+  // Summary chips
+  const totalHrs=personTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+  const doneCount=personTasks.filter(t=>t.status==='Done').length;
+  const blockedCount=personTasks.filter(t=>t.status==='Blocked'||t.status.startsWith('Reopen')).length;
+  chips.style.display='flex';
+  document.getElementById('pvChipTotal').textContent=personTasks.length+' Task'+(personTasks.length!==1?'s':'');
+  document.getElementById('pvChipHrs').textContent=totalHrs.toFixed(1)+'h Total';
+  document.getElementById('pvChipDone').textContent=doneCount+' Done';
+  const blockedChip=document.getElementById('pvChipBlocked');
+  if(blockedCount>0){blockedChip.textContent=blockedCount+' Blocked/Reopen';blockedChip.style.display='inline-flex';}
+  else blockedChip.style.display='none';
+
+  // Group by date (sorted newest → oldest)
+  const byDate={};
+  personTasks.forEach(t=>{
+    const d=t.startDate||'Unknown';
+    if(!byDate[d])byDate[d]=[];
+    byDate[d].push(t);
+  });
+  const sortedDates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+  const today=new Date().toISOString().split('T')[0];
+
+  function extractTicketBadge(taskName){
+    const m=taskName.match(/\b(CR|PD|DM)[-\s#]?(\d+)/i);
+    if(!m)return'';
+    const type=m[1].toUpperCase();
+    const num=m[2];
+    const cls=type==='CR'?'pv-ticket-cr':type==='PD'?'pv-ticket-pd':'pv-ticket-dm';
+    return`<span class="pv-ticket-link ${cls}">${type}-${num}</span>`;
+  }
+
+  function fmtDate(d){
+    if(!d||d==='Unknown')return'Unknown Date';
+    const dt=new Date(d+'T00:00:00');
+    return dt.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+  function fmtDateShort(d){
+    if(!d||d==='Unknown')return'';
+    const dt=new Date(d+'T00:00:00');
+    return dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  let html='';
+
+  sortedDates.forEach(date=>{
+    const dayTasks=byDate[date];
+    const dayHrs=dayTasks.reduce((s,t)=>s+(+t.timeSpent||0),0);
+    const isToday=date===today;
+
+    html+=`<div class="pv-day-group">
+      <div class="pv-day-label">
+        <div>
+          <span class="pv-day-title">${fmtDate(date)}</span>
+          ${isToday?'<span class="pv-today-badge" style="margin-left:8px">Today</span>':''}
+        </div>
+        <span class="pv-day-date">${fmtDateShort(date)}</span>
+        <span class="pv-day-hrs">${dayHrs.toFixed(1)}h logged</span>
+        <div class="pv-day-divider"></div>
+      </div>`;
+
+    dayTasks.forEach(t=>{
+      const taskIdx=tasks.indexOf(t);
+      const bc=STATUS_BADGE[t.status]||'badge-todo';
+      const envCls=ENV_CLS[t.environment]||'env-dev';
+      const rem=t.expectedHrs?(+(t.expectedHrs-(t.timeSpent||0)).toFixed(1)):null;
+      const remVal=rem===null?'—':rem<0?`<span class="red">${Math.abs(rem)}h over</span>`:rem===0?`<span class="green">On target</span>`:`<span>${rem}h left</span>`;
+      const ticketBadge=extractTicketBadge(t.taskName);
+      const subs=t.subtasks||[];
+      const subDone=subs.filter(s=>s.done).length;
+      const subHrs=subs.reduce((s,st)=>s+(+st.hrs||0),0);
+      const subPct=subs.length?Math.round(subDone/subs.length*100):0;
+      const devEndFmt=t.devEndDate?new Date(t.devEndDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
+      const isOverdue=t.devEndDate&&t.devEndDate<today&&t.status!=='Done';
+
+      // Subtask rows
+      let subHtml='';
+      if(subs.length){
+        const stRows=subs.map(st=>`
+          <div class="pv-st-row${st.done?' done':''}">
+            <span class="pv-st-done-icon">${st.done?'✅':'⬜'}</span>
+            <span class="pv-st-name${st.done?' done':''}">${esc(st.name)}</span>
+            <span class="pv-st-hrs">${st.hrs||0}h</span>
+          </div>`).join('');
+        subHtml=`<div class="pv-subtask-section">
+          <div class="pv-subtask-title">
+            Subtasks
+            <span style="color:#818cf8;font-weight:700">${subDone}/${subs.length}</span>
+            <span style="color:var(--muted);font-weight:400">${subHrs}h</span>
+          </div>
+          <div class="pv-st-progress"><div class="pv-st-progress-fill" style="width:${subPct}%"></div></div>
+          <div class="pv-subtask-grid" style="margin-top:8px">${stRows}</div>
+        </div>`;
+      }
+
+      html+=`<div class="pv-task-card">
+        <div class="pv-task-top">
+          <div class="pv-task-name">
+            ${ticketBadge?ticketBadge+' ':''}
+            ${t.redmineUrl?`<a href="${t.redmineUrl}" target="_blank">${esc(t.taskName)} 🔗</a>`:esc(t.taskName)}
+          </div>
+          <div class="pv-task-meta">
+            ${t.environment?`<span class="env-badge ${envCls}">${esc(t.environment)}</span>`:''}
+            <span class="badge ${bc}">${esc(t.status)}</span>
+            ${t.reopenCount>0?`<span style="font-size:.72rem;font-weight:700;color:#f87171">↩ ${t.reopenCount}x reopen</span>`:''}
+          </div>
+        </div>
+        <div class="pv-task-body">
+          <div class="pv-field">
+            <span class="pv-field-lbl">Time Spent</span>
+            <span class="pv-field-val cyan">${t.timeSpent||0}h</span>
+          </div>
+          ${t.expectedHrs?`<div class="pv-field">
+            <span class="pv-field-lbl">Expected</span>
+            <span class="pv-field-val">${t.expectedHrs}h</span>
+          </div>`:''}
+          ${rem!==null?`<div class="pv-field">
+            <span class="pv-field-lbl">Remaining</span>
+            <span class="pv-field-val">${remVal}</span>
+          </div>`:''}
+          <div class="pv-field">
+            <span class="pv-field-lbl">Dev End</span>
+            <span class="pv-field-val${isOverdue?' red':''}">${devEndFmt}${isOverdue?' ⚠️':''}</span>
+          </div>
+          ${t.prevStatus?`<div class="pv-field">
+            <span class="pv-field-lbl">Prev Status</span>
+            <span class="pv-field-val" style="color:#94a3b8">${esc(t.prevStatus)}</span>
+          </div>`:''}
+          ${subs.length?`<div class="pv-field">
+            <span class="pv-field-lbl">Subtasks</span>
+            <span class="pv-field-val">${subDone}/${subs.length} done</span>
+          </div>`:''}
+        </div>
+        ${subHtml}
+      </div>`;
+    });
+
+    html+='</div>';
+  });
+
+  content.innerHTML=html;
 }
 
 // ── Init ──────────────────────────────────────────────────
