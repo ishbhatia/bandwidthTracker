@@ -644,13 +644,14 @@
     "empName": "Rajni",
     "taskName": "CR-18954",
     "startDate": "2026-08-05",
-    "timeSpent": 1,
+    "timeSpent": 3,
     "expectedHrs": 0,
     "devEndDate": "",
     "status": "Done",
-    "environment": "DEV",
+    "environment": "UAT",
     "subtasks": [],
-    "prevStatus": "To Do"
+    "prevStatus": "Done",
+    "reopenCount": 0
   },
   {
     "id": 1785917884237,
