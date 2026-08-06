@@ -689,12 +689,14 @@
     "empName": "Harivansh",
     "taskName": "SI NACH",
     "startDate": "2026-08-10",
-    "timeSpent": 0,
+    "timeSpent": 2,
     "expectedHrs": 0,
     "devEndDate": "",
-    "status": "To Do",
-    "environment": "DEV",
-    "subtasks": []
+    "status": "Done",
+    "environment": "UAT",
+    "subtasks": [],
+    "prevStatus": "To Do",
+    "reopenCount": 0
   },
   {
     "id": 1785918777821,
