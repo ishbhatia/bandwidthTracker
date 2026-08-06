@@ -407,7 +407,7 @@
     "timeSpent": 2,
     "status": "Done",
     "expectedHrs": 0,
-    "environment": "DEV",
+    "environment": "UAT",
     "prevStatus": "Done",
     "devEndDate": "",
     "reopenCount": 0,
