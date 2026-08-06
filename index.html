@@ -480,6 +480,17 @@
           <option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option><option>Reopen</option><option>Reopen (QA)</option><option>Reopen (Dev)</option>
         </select>
         <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        <div style="position:relative;display:inline-block" id="exportDropWrap">
+          <button class="btn btn-success btn-sm" onclick="toggleExportDrop()" style="display:flex;align-items:center;gap:5px">
+            📋 Export Task ▾
+          </button>
+          <div id="exportDrop" style="display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:50;
+            background:var(--surface);border:1px solid var(--border);border-radius:10px;
+            min-width:240px;box-shadow:0 8px 24px rgba(0,0,0,.4);padding:8px">
+            <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 8px">Select task to export</div>
+            <div id="exportTaskList" style="max-height:220px;overflow-y:auto"></div>
+          </div>
+        </div>
         <button class="btn btn-secondary btn-sm" onclick="loadFromGitHub()">🔄 Refresh</button>
         <button class="btn btn-primary btn-sm" onclick="openReport()">📄 Report</button>
       </div>
@@ -1175,6 +1186,79 @@ function exportCSV(){
   const blob=new Blob([['Employee,Task,Date,Hrs,Status',...rows].join('\n')],{type:'text/csv'});
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'tasks.csv'});
   a.click();URL.revokeObjectURL(a.href);showToast('⬇️ CSV exported!');
+}
+
+// ── Export Single Task ────────────────────────────────────
+function toggleExportDrop(){
+  const drop=document.getElementById('exportDrop');
+  const isOpen=drop.style.display==='block';
+  if(isOpen){drop.style.display='none';return;}
+  // Populate task list
+  const list=document.getElementById('exportTaskList');
+  if(!tasks.length){list.innerHTML='<div style="padding:10px 12px;font-size:.78rem;color:var(--muted)">No tasks yet</div>';drop.style.display='block';return;}
+  list.innerHTML=tasks.map((t,i)=>`
+    <button onclick="exportSingleTask(${i});toggleExportDrop()" style="
+      width:100%;text-align:left;background:transparent;border:none;padding:8px 12px;
+      border-radius:7px;cursor:pointer;font-family:inherit;transition:background .12s;
+      display:flex;flex-direction:column;gap:2px"
+      onmouseover="this.style.background='rgba(99,102,241,.1)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:.82rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px">${esc(t.taskName)}</span>
+      <span style="font-size:.7rem;color:var(--muted)">${esc(t.empName)} · ${t.startDate||'—'} · <span style="color:${t.status==='Done'?'#34d399':t.status==='Blocked'?'#f87171':'#818cf8'}">${t.status}</span></span>
+    </button>`).join('');
+  drop.style.display='block';
+}
+
+// Close export drop when clicking outside
+document.addEventListener('click',e=>{
+  const wrap=document.getElementById('exportDropWrap');
+  if(wrap&&!wrap.contains(e.target))document.getElementById('exportDrop').style.display='none';
+});
+
+function exportSingleTask(idx){
+  const t=tasks[idx];
+  if(!t){showToast('Task not found');return;}
+  const q=v=>`"${String(v===undefined||v===null?'':v).replace(/"/g,'""')}"`;
+  const lines=[];
+
+  // ── Header section ──
+  lines.push('TASK EXPORT REPORT');
+  lines.push(`Generated,${new Date().toLocaleString()}`);
+  lines.push('');
+
+  // ── Task details ──
+  lines.push('TASK DETAILS');
+  lines.push(`Employee,${q(t.empName)}`);
+  lines.push(`Task Name,${q(t.taskName)}`);
+  lines.push(`Start Date,${q(t.startDate)}`);
+  lines.push(`Dev End Date,${q(t.devEndDate||'')}`);
+  lines.push(`Environment,${q(t.environment||'')}`);
+  lines.push(`Status,${q(t.status)}`);
+  lines.push(`Previous Status,${q(t.prevStatus||'')}`);
+  lines.push(`Reopen Count,${q(t.reopenCount||0)}`);
+  lines.push(`Time Spent (hrs),${q(t.timeSpent)}`);
+  lines.push(`Expected Hours,${q(t.expectedHrs||'')}`);
+  const rem=t.expectedHrs?+(t.expectedHrs-(t.timeSpent||0)).toFixed(1):null;
+  lines.push(`Remaining Hours,${q(rem!==null?(rem<0?Math.abs(rem)+'h over':rem+'h left'):'—')}`);
+  if(t.redmineUrl)lines.push(`Redmine URL,${q(t.redmineUrl)}`);
+  lines.push('');
+
+  // ── Subtasks ──
+  const subs=t.subtasks||[];
+  if(subs.length){
+    lines.push('SUBTASKS');
+    lines.push('#,Subtask Name,Hours,Done');
+    subs.forEach((s,i)=>lines.push(`${i+1},${q(s.name)},${q(s.hrs||0)},${q(s.done?'Yes':'No')}`));
+    const subTotal=subs.reduce((a,s)=>a+(+s.hrs||0),0);
+    const subDone=subs.filter(s=>s.done).length;
+    lines.push(`,,Total Hours,${q(subTotal)}`);
+    lines.push(`,,Completed,${q(subDone+'/'+subs.length)}`);
+  }
+
+  const safe=t.taskName.replace(/[^a-z0-9_\-]/gi,'_').slice(0,40);
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`${safe}_export.csv`});
+  a.click();URL.revokeObjectURL(a.href);
+  showToast(`⬇️ Exported: ${t.taskName.slice(0,30)}`);
 }
 
 // ── AI Chat ───────────────────────────────────────────────
