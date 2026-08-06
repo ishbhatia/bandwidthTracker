@@ -86,7 +86,7 @@
     .btn-danger:hover{background:rgba(239,68,68,.18)}
     .btn-success{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
     .btn-success:hover{background:rgba(16,185,129,.18)}
-    .btn-sm{padding:6px 12px;font-size:.78rem;border-radius:7px}
+    .btn-sm{padding:5px 10px;font-size:.75rem;border-radius:7px}
 
     /* ── right col ── */
     .right-col{display:flex;flex-direction:column;gap:18px;min-width:0;overflow:hidden}
@@ -106,17 +106,17 @@
     .table-wrap::-webkit-scrollbar-track{background:transparent}
     .table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
     table{width:100%;border-collapse:collapse;font-size:.88rem}
-    thead th{background:var(--surface2);color:var(--muted);font-size:.72rem;font-weight:700;
-      text-transform:uppercase;letter-spacing:.07em;padding:13px 14px;text-align:left;
+    thead th{background:var(--surface2);color:var(--muted);font-size:.68rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;padding:9px 8px;text-align:left;
       border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;
       position:sticky;top:0;z-index:1}
     thead th:hover{color:var(--accent)}
     tbody tr{border-bottom:1px solid rgba(30,45,69,.6);transition:background .12s}
     tbody tr:hover{background:rgba(99,102,241,.06)}
-    tbody td{padding:13px 14px;vertical-align:middle}
-    .emp-name{font-weight:600;color:#fff;font-size:.9rem}
-    .task-name{color:#94a3b8;font-size:.88rem}
-    .action-btns{display:flex;gap:6px}
+    tbody td{padding:8px 8px;vertical-align:middle}
+    .emp-name{font-weight:600;color:#fff;font-size:.82rem}
+    .task-name{color:#94a3b8;font-size:.8rem}
+    .action-btns{display:flex;gap:4px}
     .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
 
     /* ── badges ── */
@@ -130,7 +130,7 @@
     .badge-reopen{background:rgba(249,115,22,.1);color:#fb923c;border:1px solid rgba(249,115,22,.2)}
     .badge-reopen-qa{background:rgba(236,72,153,.1);color:#f472b6;border:1px solid rgba(236,72,153,.2)}
     .badge-reopen-dev{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
-    .env-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;font-size:.76rem;font-weight:700;letter-spacing:.04em}
+    .env-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700;letter-spacing:.04em}
     .env-dev{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
     .env-uat{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
     .env-prod{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.25)}
@@ -152,7 +152,7 @@
     .st-progress{height:3px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden}
     .st-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),#8b5cf6);transition:width .3s}
     /* Inline editable selects */
-    .inline-sel{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.8rem;font-family:inherit;cursor:pointer;max-width:140px}
+    .inline-sel{padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);font-size:.75rem;font-family:inherit;cursor:pointer;max-width:118px}
     .inline-sel:focus{outline:none;border-color:var(--accent)}
     .inline-sel option{background:var(--surface)}
 
@@ -1051,13 +1051,13 @@ function renderTable(){
       <td>${ds}</td><td>${t.timeSpent}h</td>
       <td>${t.expectedHrs?t.expectedHrs+'h':'—'}</td>
       <td>${remCell}</td>
-      <td><input type="date" class="inline-sel" value="${t.devEndDate||''}" onchange="inlineUpdate(${i},'devEndDate',this.value)" title="Dev End Date" style="${t.devEndDate&&t.devEndDate<new Date().toISOString().split('T')[0]&&t.status!=='Done'?'border-color:#f87171;color:#f87171':''}"/></td><td>${envCell}</td>
+      <td><input type="date" class="inline-sel" value="${t.devEndDate||''}" onchange="inlineUpdate(${i},'devEndDate',this.value)" title="Dev End Date" style="max-width:110px;${t.devEndDate&&t.devEndDate<new Date().toISOString().split('T')[0]&&t.status!=='Done'?'border-color:#f87171;color:#f87171':''}"/></td><td>${envCell}</td>
       <td>${prevCell}</td>
       <td>${statusCell}</td>
       <td>${reopenCell}</td>
       <td><div class="action-btns">
-        <button class="btn btn-secondary btn-sm" onclick="openEdit(${i})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTask(${i})">Delete</button>
+        <button class="btn btn-secondary btn-sm" onclick="openEdit(${i})" title="Edit" style="padding:4px 8px">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTask(${i})" title="Delete" style="padding:4px 8px">🗑</button>
       </div></td>
     </tr>`;
 
@@ -1094,7 +1094,7 @@ function renderTable(){
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'prevStatus',this.value)">${stPrevOpts}</select></td>
         <td><select class="inline-sel" onchange="inlineSubUpdate(${i},${si},'status',this.value)">${stStatusOpts}</select></td>
         <td>—</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteSubtask(${i},${si})">Delete</button></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteSubtask(${i},${si})" title="Delete" style="padding:4px 8px">🗑</button></td>
       </tr>`;
     }).join('');
 
