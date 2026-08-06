@@ -64,11 +64,14 @@
     "empName": "Radhika",
     "taskName": "SI NACH analysis",
     "startDate": "2026-08-03",
-    "timeSpent": 2,
+    "timeSpent": 6,
     "status": "Done",
     "expectedHrs": 0,
-    "environment": "",
-    "prevStatus": "In Progress"
+    "environment": "DEV",
+    "prevStatus": "Done",
+    "devEndDate": "",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785388110661,
