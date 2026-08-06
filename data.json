@@ -467,7 +467,11 @@
     "timeSpent": 0.3,
     "expectedHrs": 0,
     "status": "Done",
-    "environment": "DEV"
+    "environment": "UAT",
+    "devEndDate": "",
+    "prevStatus": "Done",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785750506991,
