@@ -693,7 +693,7 @@
   {
     "id": 1785918777821,
     "empName": "Vijay",
-    "taskName": "PD-2078 || Issue in DS Generation Ã¢ÂÂ ReadyForIssuance Flag Not Set",
+    "taskName": "PD-2078 || Issue in DS Generation ÃÂ¢ÃÂÃÂ ReadyForIssuance Flag Not Set",
     "startDate": "2026-08-05",
     "timeSpent": 4,
     "expectedHrs": 0,
@@ -703,5 +703,175 @@
     "subtasks": [],
     "prevStatus": "To Do",
     "reopenCount": 0
+  },
+  {
+    "id": 1786029930997,
+    "empName": "Radhika",
+    "taskName": "An API for SI Mandate PFR raise for child thread",
+    "startDate": "2026-08-06",
+    "timeSpent": 0,
+    "expectedHrs": 1,
+    "devEndDate": "",
+    "status": "To Do",
+    "environment": "DEV",
+    "prevStatus": "",
+    "reopenCount": 0,
+    "subtasks": [
+      {
+        "name": "\"New 4 Queues Addition (Maker",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "New Filter for advance search and Column Addition",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "\"Mandate Decision Page � Document Viewer (image display",
+        "hrs": 0,
+        "done": false
+      },
+      {
+        "name": "Mandate Decision Page � NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
+        "hrs": 3,
+        "done": false
+      },
+      {
+        "name": "\"Mandate Decision Page � Decision Section (Maker fields",
+        "hrs": 6,
+        "done": false
+      },
+      {
+        "name": "APIs for Save & Submit ()",
+        "hrs": 5,
+        "done": false
+      },
+      {
+        "name": "Mandate Decision Page - Audit Seciton",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "\"Checker Mandate Decision Page (reuse Maker components",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "API Creation for calling icr/ocr and save data in DB",
+        "hrs": 4,
+        "done": false
+      },
+      {
+        "name": "Fuzzy Logics or Comparision and save data in DB",
+        "hrs": 4,
+        "done": false
+      },
+      {
+        "name": "API integration to push MPQ if auto matched",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "New API for Day2 cases",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "ICR/OCR API integration in for Day2 cases",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "ICR/OCR API integration in S3Upload API",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "workflow APIs integration",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "BNC API integration",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "PFR API integration",
+        "hrs": 1,
+        "done": false
+      },
+      {
+        "name": "Old PFR raise and Docindexing remove",
+        "hrs": 3,
+        "done": false
+      },
+      {
+        "name": "PR Review & Merge & Deploy",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "Testing",
+        "hrs": 13.5,
+        "done": false
+      },
+      {
+        "name": "ICR/OCR of SIM/ECS/NCH Document",
+        "hrs": 18,
+        "done": false
+      },
+      {
+        "name": "WorkFlow",
+        "hrs": 18,
+        "done": false
+      },
+      {
+        "name": "Thread creation and its End to End Movement and API Integration",
+        "hrs": 13.5,
+        "done": false
+      },
+      {
+        "name": "Testing",
+        "hrs": 0.5,
+        "done": false
+      },
+      {
+        "name": "BNC",
+        "hrs": 9,
+        "done": false
+      },
+      {
+        "name": "\"Connection pooling implimentation",
+        "hrs": 8,
+        "done": false
+      },
+      {
+        "name": "schema creations in terms of constraints and indexing to use less storage in db",
+        "hrs": 8,
+        "done": false
+      },
+      {
+        "name": "Swagger implemantions",
+        "hrs": 4,
+        "done": false
+      },
+      {
+        "name": "\"tracing",
+        "hrs": 4,
+        "done": false
+      },
+      {
+        "name": "\"gracefulll handling ex gracefull shutdown server",
+        "hrs": 8,
+        "done": false
+      },
+      {
+        "name": "memory monitoring tool usage while development",
+        "hrs": 4,
+        "done": false
+      }
+    ]
   }
 ]
