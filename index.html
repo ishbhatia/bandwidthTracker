@@ -553,8 +553,15 @@
           </button>
           <div id="exportDrop" style="display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:50;
             background:var(--surface);border:1px solid var(--border);border-radius:10px;
-            min-width:240px;box-shadow:0 8px 24px rgba(0,0,0,.4);padding:8px">
+            min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.4);padding:8px">
             <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 8px">Select task to export</div>
+            <div style="padding:0 6px 8px">
+              <input id="exportSearchInput" placeholder="🔍 Search task or name…"
+                oninput="populateExportTaskList(this.value)"
+                style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:7px;
+                  background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit;outline:none"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+            </div>
             <div id="exportTaskList" style="max-height:220px;overflow-y:auto"></div>
           </div>
         </div>
@@ -1297,19 +1304,28 @@ function toggleExportDrop(){
   const drop=document.getElementById('exportDrop');
   const isOpen=drop.style.display==='block';
   if(isOpen){drop.style.display='none';return;}
-  // Populate task list
+  drop.style.display='block';
+  populateExportTaskList('');
+  const si=document.getElementById('exportSearchInput');
+  if(si){si.value='';si.focus();}
+}
+
+function populateExportTaskList(q){
   const list=document.getElementById('exportTaskList');
-  if(!tasks.length){list.innerHTML='<div style="padding:10px 12px;font-size:.78rem;color:var(--muted)">No tasks yet</div>';drop.style.display='block';return;}
-  list.innerHTML=tasks.map((t,i)=>`
-    <button onclick="exportSingleTask(${i});toggleExportDrop()" style="
-      width:100%;text-align:left;background:transparent;border:none;padding:8px 12px;
+  if(!tasks.length){list.innerHTML='<div style="padding:10px 12px;font-size:.78rem;color:var(--muted)">No tasks yet</div>';return;}
+  const filtered=q?tasks.filter((t,i)=>t.taskName.toLowerCase().includes(q.toLowerCase())||t.empName.toLowerCase().includes(q.toLowerCase())):tasks;
+  if(!filtered.length){list.innerHTML='<div style="padding:10px 12px;font-size:.78rem;color:var(--muted)">No tasks match "'+esc(q)+'"</div>';return;}
+  list.innerHTML=filtered.map(t=>{
+    const i=tasks.indexOf(t);
+    return`<button onclick="exportSingleTask(${i});toggleExportDrop()" style="
+      width:100%;text-align:left;background:transparent;border:none;padding:7px 10px;
       border-radius:7px;cursor:pointer;font-family:inherit;transition:background .12s;
       display:flex;flex-direction:column;gap:2px"
       onmouseover="this.style.background='rgba(99,102,241,.1)'" onmouseout="this.style.background='transparent'">
-      <span style="font-size:.82rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px">${esc(t.taskName)}</span>
+      <span style="font-size:.8rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px">${esc(t.taskName)}</span>
       <span style="font-size:.7rem;color:var(--muted)">${esc(t.empName)} · ${t.startDate||'—'} · <span style="color:${t.status==='Done'?'#34d399':t.status==='Blocked'?'#f87171':'#818cf8'}">${t.status}</span></span>
-    </button>`).join('');
-  drop.style.display='block';
+    </button>`;
+  }).join('');
 }
 
 // Close export drop when clicking outside
