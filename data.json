@@ -825,7 +825,7 @@
       {
         "name": "ICR/OCR of SIM/ECS/NCH Document",
         "hrs": 18,
-        "done": false
+        "done": true
       },
       {
         "name": "WorkFlow",
