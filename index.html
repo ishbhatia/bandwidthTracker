@@ -2178,7 +2178,7 @@ function renderPersonView(){
 document.getElementById('startDate').valueAsDate=new Date();
 document.getElementById('scraperDate').valueAsDate=new Date();
 updateRedmineNote();
-(function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);document.getElementById('chartTo').valueAsDate=to;document.getElementById('chartFrom').valueAsDate=from;})();
+(function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);const cTo=document.getElementById('chartTo'),cFrom=document.getElementById('chartFrom');if(cTo)cTo.valueAsDate=to;if(cFrom)cFrom.valueAsDate=from;})();
 if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
 </body>
