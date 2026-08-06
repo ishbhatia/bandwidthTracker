@@ -340,7 +340,7 @@
     "empName": "Akash",
     "taskName": "MONGO EXCEPTION CASE STUCK IN COND QUEUE",
     "startDate": "2026-07-31",
-    "timeSpent": 0,
+    "timeSpent": 5,
     "status": "In Progress",
     "expectedHrs": 0,
     "environment": "UAT",
