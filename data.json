@@ -562,19 +562,6 @@
     "subtasks": []
   },
   {
-    "id": 1785908234003,
-    "empName": "Rajni",
-    "taskName": "CR-18954 || New field Addition",
-    "startDate": "2026-08-05",
-    "timeSpent": 0,
-    "expectedHrs": 0,
-    "devEndDate": "",
-    "status": "In Review",
-    "environment": "DEV",
-    "subtasks": [],
-    "prevStatus": "To Do"
-  },
-  {
     "id": 1785914012961,
     "empName": "Rajni",
     "taskName": "Connection pooling",
