@@ -514,10 +514,14 @@
     "empName": "Jatin",
     "taskName": "CR-18954",
     "startDate": "2026-08-04",
-    "timeSpent": 0,
+    "timeSpent": 6,
     "expectedHrs": 0,
-    "status": "In Progress",
-    "environment": "DEV"
+    "status": "Done",
+    "environment": "UAT",
+    "devEndDate": "",
+    "prevStatus": "In Progress",
+    "reopenCount": 0,
+    "subtasks": []
   },
   {
     "id": 1785836985154,
