@@ -280,14 +280,6 @@
     "environment": "UAT"
   },
   {
-    "id": 1785475477740,
-    "empName": "Radhika",
-    "taskName": "SI NACH",
-    "startDate": "2026-08-03",
-    "timeSpent": 0,
-    "status": "To Do"
-  },
-  {
     "id": 1785476232472,
     "empName": "Priyanshi",
     "taskName": "RCA BAV PFR (Req 1567) Remaining in ORD Despite Successful Bank Validation || open issue",
@@ -701,7 +693,7 @@
   {
     "id": 1785918777821,
     "empName": "Vijay",
-    "taskName": "PD-2078 || Issue in DS Generation â ReadyForIssuance Flag Not Set",
+    "taskName": "PD-2078 || Issue in DS Generation Ã¢ÂÂ ReadyForIssuance Flag Not Set",
     "startDate": "2026-08-05",
     "timeSpent": 4,
     "expectedHrs": 0,
