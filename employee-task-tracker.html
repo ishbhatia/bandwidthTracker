@@ -198,6 +198,40 @@
     .openai-note{font-size:.68rem;color:var(--muted);margin-top:6px;text-align:center}
     .openai-note a{color:#818cf8;text-decoration:none}
 
+    /* ── CSV Import Modal ── */
+    .import-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:150;
+      align-items:flex-start;justify-content:center;backdrop-filter:blur(4px);overflow-y:auto;padding:30px 16px}
+    .import-overlay.open{display:flex}
+    .import-modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      width:100%;max-width:700px;box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+    .import-modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .import-modal-header h2{font-size:.95rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:9px}
+    .import-modal-body{padding:22px}
+    .import-drop-zone{border:2px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;
+      cursor:pointer;transition:all .2s;background:var(--surface2);position:relative}
+    .import-drop-zone:hover,.import-drop-zone.drag-active{border-color:var(--accent);background:rgba(99,102,241,.07)}
+    .import-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .import-drop-zone .dz-icon{font-size:2.2rem;margin-bottom:10px}
+    .import-drop-zone .dz-title{font-size:.92rem;font-weight:600;color:#e2e8f0;margin-bottom:5px}
+    .import-drop-zone .dz-sub{font-size:.76rem;color:var(--muted)}
+    .import-format-hint{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:10px;
+      padding:12px 15px;margin:14px 0;font-size:.76rem;color:#a5b4fc;line-height:1.8}
+    .import-format-hint code{background:rgba(99,102,241,.15);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:.75rem}
+    .import-preview-wrap{max-height:340px;overflow-y:auto;margin-top:14px}
+    .import-preview-wrap::-webkit-scrollbar{width:4px}
+    .import-preview-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .import-preview-table{width:100%;border-collapse:collapse;font-size:.82rem}
+    .import-preview-table th{background:var(--surface2);color:var(--muted);font-size:.68rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.06em;padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0}
+    .import-preview-table td{padding:9px 11px;border-bottom:1px solid rgba(30,45,69,.5);vertical-align:middle;color:#cbd5e1}
+    .import-preview-table tr.is-parent td{color:#fff;font-weight:700;background:rgba(99,102,241,.08)}
+    .import-preview-table tr.is-child td{padding-left:24px;color:#94a3b8}
+    .import-preview-table tr.is-child td:first-child::before{content:'↳ ';color:var(--accent)}
+    .import-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+    .import-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .import-summary-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,.1);
+      border:1px solid rgba(16,185,129,.25);color:#34d399;border-radius:20px;padding:4px 12px;font-size:.76rem;font-weight:600}
+
     /* ── modals ── */
     .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;
       align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -366,7 +400,11 @@
 
     <!-- Add Task -->
     <div class="card">
-      <div class="card-title"><span class="ct-dot"></span>Add New Task</div>
+      <div class="card-title"><span class="ct-dot"></span>Add New Task
+        <button class="btn btn-secondary btn-sm" onclick="openImportModal()" style="margin-left:auto;display:flex;align-items:center;gap:5px">
+          📂 Import CSV
+        </button>
+      </div>
       <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
       <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
       <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
@@ -579,6 +617,56 @@ CR-202 Dark mode feature request
 
 </div>
 </div><!-- end #tab-scraper -->
+
+<!-- CSV Import Modal -->
+<div class="import-overlay" id="importCsvModal">
+  <div class="import-modal">
+    <div class="import-modal-header">
+      <h2>📂 Import Tasks from CSV</h2>
+      <button class="btn btn-secondary btn-sm" onclick="closeImportModal()">✕ Close</button>
+    </div>
+    <div class="import-modal-body">
+      <div class="import-format-hint">
+        <strong>Expected CSV format:</strong><br/>
+        Row 1 → Parent task name + total effort (e.g. <code>SI-NACH, 50 hrs</code>)<br/>
+        Next rows → Child tasks: <code>Task name, 2 hrs</code> or <code>Task name, 1 day</code> or <code>Task name, 1.5 days</code><br/>
+        <strong>1 day = 9 hrs</strong> · Empty rows are skipped · Buffer % row is skipped
+      </div>
+      <div class="import-field-row">
+        <div class="fg" style="margin:0"><label>Employee Name</label><input id="csvEmpName" placeholder="e.g. Harivansh"/></div>
+        <div class="fg" style="margin:0"><label>Start Date</label><input type="date" id="csvStartDate"/></div>
+        <div class="fg" style="margin:0"><label>Status</label>
+          <select id="csvStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Done</option><option>Blocked</option></select>
+        </div>
+        <div class="fg" style="margin:0"><label>Environment</label>
+          <select id="csvEnv"><option value="DEV">DEV</option><option value="UAT">UAT</option><option value="PROD">PROD</option></select>
+        </div>
+      </div>
+      <div class="import-drop-zone" id="csvDropZone">
+        <input type="file" accept=".csv,.txt" onchange="handleCsvFile(this.files[0])"/>
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop your CSV file here or click to browse</div>
+        <div class="dz-sub">Supports .csv and .txt files</div>
+      </div>
+      <div id="csvPreviewSection" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 10px">
+          <div id="csvSummaryPill"></div>
+          <button class="btn btn-secondary btn-sm" onclick="clearCsvPreview()">✕ Clear</button>
+        </div>
+        <div class="import-preview-wrap">
+          <table class="import-preview-table">
+            <thead><tr><th>Type</th><th>Task Name</th><th>Expected Hrs</th></tr></thead>
+            <tbody id="csvPreviewBody"></tbody>
+          </table>
+        </div>
+        <div class="import-actions">
+          <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="importCsvTasks()">✅ Import Tasks</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Edit Modal -->
 <div class="overlay" id="editModal">
@@ -958,6 +1046,60 @@ function renderInsights(){
 
   if(!insights.length){el.innerHTML='<div class="no-insights">Everything looks good! 🎉</div>';return;}
   el.innerHTML=insights.map(i=>`<div class="insight-item insight-${i.type}"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
+}
+
+// ── CSV Import ────────────────────────────────────────────
+let csvParsed=[];
+function openImportModal(){document.getElementById('importCsvModal').classList.add('open');document.getElementById('csvStartDate').valueAsDate=new Date();}
+function closeImportModal(){document.getElementById('importCsvModal').classList.remove('open');}
+document.getElementById('importCsvModal').addEventListener('click',e=>{if(e.target===document.getElementById('importCsvModal'))closeImportModal();});
+const dz=document.getElementById('csvDropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-active');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-active'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-active');if(e.dataTransfer.files[0])handleCsvFile(e.dataTransfer.files[0]);});
+function handleCsvFile(file){if(!file)return;const reader=new FileReader();reader.onload=e=>parseCsvContent(e.target.result);reader.readAsText(file);}
+function parseHours(str){
+  if(!str)return 0;str=str.trim().toLowerCase();
+  str=str.replace(/(\d+\.?\d*)\s*[-–]\s*(\d+\.?\d*)\s*(day|days|hr|hrs|h)/,(m,a,b,unit)=>`${b} ${unit}`);
+  const dayMatch=str.match(/([\d\s+.]+)\s*(day|days)/);
+  if(dayMatch){return+(dayMatch[1].split('+').reduce((s,n)=>s+parseFloat(n.trim()||0),0)*9).toFixed(1);}
+  const hrMatch=str.match(/([\d\s+.]+)\s*(hrs|hr|h)/);
+  if(hrMatch){return+hrMatch[1].split('+').reduce((s,n)=>s+parseFloat(n.trim()||0),0).toFixed(1);}
+  const num=parseFloat(str);return isNaN(num)?0:num;
+}
+function parseCsvContent(text){
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l);
+  csvParsed=[];let parentFound=false;let parentTask=null;
+  for(const line of lines){
+    const commaIdx=line.indexOf(',');if(commaIdx===-1)continue;
+    const col0=line.substring(0,commaIdx).trim();const rest=line.substring(commaIdx+1).trim();
+    if(!col0)continue;
+    if(/^parent\s*task/i.test(col0)||/^efforts/i.test(rest)||/buffer/i.test(col0))continue;
+    const hrs=parseHours(rest);
+    if(!parentFound){parentTask={name:col0,totalHrs:hrs,subtasks:[]};parentFound=true;}
+    else{if(col0&&parentTask)parentTask.subtasks.push({name:col0,hrs,done:false});}
+  }
+  if(parentTask)csvParsed=[parentTask];renderCsvPreview();
+}
+function renderCsvPreview(){
+  const section=document.getElementById('csvPreviewSection'),body=document.getElementById('csvPreviewBody'),pill=document.getElementById('csvSummaryPill');
+  if(!csvParsed.length){section.style.display='none';return;}
+  const p=csvParsed[0];const totalChildHrs=p.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);const displayHrs=p.totalHrs||totalChildHrs;
+  pill.innerHTML=`<span class="import-summary-pill">✅ 1 parent · ${p.subtasks.length} subtasks · ${displayHrs}h total</span>`;
+  body.innerHTML=`<tr class="is-parent"><td>📁 Parent</td><td>${esc(p.name)}</td><td>${displayHrs}h</td></tr>`+p.subtasks.map(st=>`<tr class="is-child"><td>Child</td><td>${esc(st.name)}</td><td>${st.hrs}h</td></tr>`).join('');
+  section.style.display='block';
+}
+function clearCsvPreview(){csvParsed=[];document.getElementById('csvPreviewSection').style.display='none';}
+async function importCsvTasks(){
+  if(!csvParsed.length){showToast('⚠️ No data to import');return;}
+  const empName=document.getElementById('csvEmpName').value.trim();
+  if(!empName){alert('Please enter an Employee Name before importing.');return;}
+  const startDate=document.getElementById('csvStartDate').value,status=document.getElementById('csvStatus').value,environment=document.getElementById('csvEnv').value;
+  const p=csvParsed[0];const expectedHrs=p.totalHrs||p.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
+  tasks.push({id:Date.now(),empName,taskName:p.name,startDate,timeSpent:0,expectedHrs,devEndDate:'',status,environment,prevStatus:'',reopenCount:0,subtasks:p.subtasks});
+  renderAll();closeImportModal();clearCsvPreview();
+  showToast('✅ Imported "'+p.name+'" with '+p.subtasks.length+' subtasks');
+  await saveToGitHub('Import CSV: '+p.name+' ('+empName+')');
 }
 
 function renderAll(){renderStats();renderTable();renderInsights();}
