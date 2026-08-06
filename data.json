@@ -592,7 +592,7 @@
       {
         "name": "MONGO",
         "hrs": 0,
-        "done": false
+        "done": true
       },
       {
         "name": "INGINIUM",
