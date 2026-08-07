@@ -376,7 +376,6 @@
     .lv-type-btn{padding:8px 6px;border:1px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--muted);font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center}
     .lv-type-btn:hover{border-color:rgba(99,102,241,.4);color:var(--text)}
     .lv-type-btn.selected{color:#fff;border-color:transparent}
-    .lv-type-annual.selected{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
     .lv-type-sick.selected{background:linear-gradient(135deg,#ef4444,#f97316)}
     /* Calendar */
     .lv-cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
@@ -399,7 +398,7 @@
     .lv-cal-day.today .lv-cal-day-num{color:#a5b4fc}
     .lv-leave-chip{display:flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;font-size:.62rem;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:opacity .15s}
     .lv-leave-chip:hover{opacity:.75}
-    .lv-chip-annual{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+    .lv-chip-sick{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
     .lv-chip-sick{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25)}
     /* Team availability strip */
     .lv-avail-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:20px}
@@ -908,8 +907,7 @@ CR-202 Dark mode feature request
       <div class="fg" style="margin-top:12px">
         <label style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Leave Type</label>
         <div class="lv-type-grid">
-          <button class="lv-type-btn lv-type-annual selected" data-type="Annual Leave" onclick="selectLeaveType(this)">🏖 Annual Leave</button>
-          <button class="lv-type-btn lv-type-sick"   data-type="Sick Leave"   onclick="selectLeaveType(this)">🤒 Sick Leave</button>
+          <button class="lv-type-btn lv-type-sick selected" data-type="Sick Leave" onclick="selectLeaveType(this)">🤒 Sick Leave</button>
         </div>
       </div>
 
@@ -969,10 +967,9 @@ CR-202 Dark mode feature request
 
     <!-- Team Availability Bar (next 14 days) -->
     <div class="lv-avail-card">
-      <div class="lv-section-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Team Availability — Next 14 Days</div>
+      <div class="lv-section-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Team Availability — Next 30 Days</div>
       <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
         <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(16,185,129,.5);display:inline-block"></span>Available</span>
-        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(99,102,241,.5);display:inline-block"></span>Annual Leave</span>
         <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.5);display:inline-block"></span>Sick Leave</span>
       </div>
       <div style="display:flex;gap:0;margin-bottom:6px;padding-left:110px" id="lvAvailDateHeader"></div>
@@ -989,7 +986,7 @@ CR-202 Dark mode feature request
           </select>
           <select id="lvListTypeFilter" onchange="renderLvList()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit">
             <option value="">All Types</option>
-            <option>Annual Leave</option><option>Sick Leave</option>
+            <option>Sick Leave</option>
           </select>
         </div>
       </div>
@@ -2700,11 +2697,10 @@ function renderPersonView(){
 let leaves = [];
 let lvCalYear = new Date().getFullYear();
 let lvCalMonth = new Date().getMonth();
-let lvSelectedType = 'Annual Leave';
+let lvSelectedType = 'Sick Leave';
 
 const LV_TYPE_COLORS = {
-  'Annual Leave': { bg:'rgba(99,102,241,.5)',  chip:'lv-chip-annual'  },
-  'Sick Leave':   { bg:'rgba(239,68,68,.5)',   chip:'lv-chip-sick'    },
+  'Sick Leave': { bg:'rgba(239,68,68,.5)', chip:'lv-chip-sick' },
 };
 
 function lvSaveLocal(){ localStorage.setItem('et_leaves', JSON.stringify(leaves)); }
@@ -2822,7 +2818,7 @@ function renderLvCal(){
     if(isWeekend) cls+=' weekend-day';
 
     const chips = dayLeaves.slice(0,3).map(l=>{
-      const cc = (LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Annual Leave']).chip;
+      const cc = (LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Sick Leave']).chip;
       return `<div class="lv-leave-chip ${cc}" title="${l.emp} — ${l.type}${l.note?' ('+l.note+')':''}" onclick="event.stopPropagation()">
         <span style="overflow:hidden;text-overflow:ellipsis">${l.emp.split(' ')[0]}</span>
       </div>`;
@@ -2850,7 +2846,7 @@ function renderLvAvailability(){
   const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
   const dates = [];
   const today = new Date();
-  for(let i=0; i<14; i++){
+  for(let i=0; i<30; i++){
     const d = new Date(today); d.setDate(d.getDate()+i);
     dates.push(d.toISOString().split('T')[0]);
   }
@@ -2872,7 +2868,7 @@ function renderLvAvailability(){
       if(dow===0||dow===6){ bg='rgba(100,116,139,.15)'; tip='Weekend'; }
       else if(dl.length){
         const l=dl[0];
-        bg=(LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Annual Leave']).bg;
+        bg=(LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Sick Leave']).bg;
         tip=`${emp} — ${l.type}${l.note?' ('+l.note+')':''}`;
       }
       return `<div class="lv-avail-seg" style="flex:1;background:${bg}" data-tip="${tip}"></div>`;
@@ -2917,7 +2913,7 @@ function renderLvList(){
   const filtered = leaves.filter(l=>(!empF||l.emp===empF)&&(!typeF||l.type===typeF))
     .sort((a,b)=>b.from.localeCompare(a.from));
 
-  const CHIP_CLASS = { 'Annual Leave':'lv-chip-annual','Sick Leave':'lv-chip-sick' };
+  const CHIP_CLASS = { 'Sick Leave':'lv-chip-sick' };
 
   const body = document.getElementById('lvListBody');
   if(!filtered.length){ body.innerHTML=`<tr><td colspan="7" class="lv-list-empty">📭 No leave records found</td></tr>`; return; }
@@ -2929,7 +2925,6 @@ function renderLvList(){
         <td><span style="font-weight:600;color:#e2e8f0">${l.emp}</span></td>
         <td>
           <select id="lvEditType_${l.id}" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit">
-            <option${l.type==='Annual Leave'?' selected':''}>Annual Leave</option>
             <option${l.type==='Sick Leave'?' selected':''}>Sick Leave</option>
           </select>
         </td>
@@ -2945,7 +2940,7 @@ function renderLvList(){
     }
     return `<tr>
       <td><span style="font-weight:600;color:#e2e8f0">${l.emp}</span></td>
-      <td><span class="lv-leave-chip ${CHIP_CLASS[l.type]||'lv-chip-annual'}" style="display:inline-flex">${l.type}</span></td>
+      <td><span class="lv-leave-chip ${CHIP_CLASS[l.type]||'lv-chip-sick'}" style="display:inline-flex">${l.type}</span></td>
       <td style="color:#94a3b8">${l.from}</td>
       <td style="color:#94a3b8">${l.to}</td>
       <td style="font-weight:700;color:#a5b4fc">${l.days}d</td>
