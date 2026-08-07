@@ -681,31 +681,62 @@
       </div>
 
       <!-- Redmine Box -->
-      <div style="background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:11px;padding:12px 13px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
-          <input type="checkbox" id="addRedmine" style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;flex-shrink:0"/>
-          <label for="addRedmine" style="cursor:pointer;display:flex;align-items:center;gap:7px">
-            <span style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#b91c1c,#dc2626);
-              color:#fff;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.03em;
-              box-shadow:0 2px 8px rgba(220,38,38,.35)">
-              ● REDMINE
-            </span>
-            <span style="font-size:.78rem;font-weight:600;color:#e2e8f0">Push issue to Redmine</span>
-          </label>
-        </div>
+      <div style="position:relative;border-radius:13px;margin-bottom:14px;overflow:hidden;
+                  background:linear-gradient(135deg,rgba(185,28,28,.08),rgba(220,38,38,.04));
+                  border:1px solid rgba(220,38,38,.25);box-shadow:0 2px 12px rgba(220,38,38,.08)">
 
-        <div class="fg" style="margin-bottom:8px">
-          <label>Assign To</label>
-          <select id="addRedmineAssignee" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
-          </select>
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label>Tracker Type</label>
-          <select id="addRedmineTracker" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
-            <option value="CR">CR — Change Request</option>
-            <option value="PD">PD — Production Defect</option>
-            <option value="DM">DM — Non-Prod Defect</option>
-          </select>
+        <!-- Top accent line -->
+        <div style="height:2px;background:linear-gradient(90deg,#b91c1c,#ef4444,#f97316);border-radius:13px 13px 0 0"></div>
+
+        <div style="padding:12px 14px">
+          <!-- Header row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <!-- Custom toggle checkbox -->
+              <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer">
+                <input type="checkbox" id="addRedmine" style="position:absolute;opacity:0;width:0;height:0"/>
+                <span id="redmineToggleTrack" onclick="this.previousElementSibling.click();updateRedmineToggle()"
+                  style="width:34px;height:18px;background:#374151;border-radius:9px;
+                         border:1px solid rgba(220,38,38,.3);transition:all .25s;
+                         display:flex;align-items:center;padding:2px;cursor:pointer">
+                  <span id="redmineToggleThumb" style="width:13px;height:13px;border-radius:50%;
+                         background:#6b7280;transition:all .25s;transform:translateX(0)"></span>
+                </span>
+              </label>
+              <!-- Redmine brand badge -->
+              <div style="display:flex;align-items:center;gap:7px">
+                <div style="width:28px;height:28px;border-radius:8px;
+                     background:linear-gradient(135deg,#b91c1c,#ef4444);
+                     display:flex;align-items:center;justify-content:center;
+                     box-shadow:0 2px 8px rgba(239,68,68,.4);font-size:.9rem">🔴</div>
+                <div>
+                  <div style="font-size:.8rem;font-weight:800;color:#fca5a5;letter-spacing:.06em;line-height:1">REDMINE</div>
+                  <div style="font-size:.62rem;color:#9ca3af;margin-top:1px">Issue Tracker</div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:.65rem;font-weight:600;padding:2px 8px;border-radius:10px;
+                        background:rgba(220,38,38,.1);color:#f87171;border:1px solid rgba(220,38,38,.2)">
+              oktovia-recur-df
+            </div>
+          </div>
+
+          <!-- Fields (shown when checkbox checked) -->
+          <div id="redmineFields" style="display:none">
+            <div style="height:1px;background:rgba(220,38,38,.15);margin-bottom:11px"></div>
+            <div class="fg" style="margin-bottom:8px">
+              <label>Assign To</label>
+              <select id="addRedmineAssignee" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit"></select>
+            </div>
+            <div class="fg" style="margin-bottom:0">
+              <label>Tracker Type</label>
+              <select id="addRedmineTracker" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
+                <option value="CR">CR — Change Request</option>
+                <option value="PD">PD — Production Defect</option>
+                <option value="DM">DM — Non-Prod Defect</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
       <div class="form-actions">
@@ -2421,6 +2452,19 @@ function toggleProxy(){
 function startProxyPolling(){
   checkProxyStatus();
   _proxyCheckTimer = setInterval(checkProxyStatus, 5000);
+}
+
+// ── Redmine Toggle ───────────────────────────────────────
+function updateRedmineToggle(){
+  const cb = document.getElementById('addRedmine');
+  const track = document.getElementById('redmineToggleTrack');
+  const thumb = document.getElementById('redmineToggleThumb');
+  const fields = document.getElementById('redmineFields');
+  if(!cb) return;
+  const on = cb.checked;
+  if(track){ track.style.background = on ? 'rgba(239,68,68,.3)' : '#374151'; track.style.borderColor = on ? 'rgba(239,68,68,.6)' : 'rgba(220,38,38,.3)'; }
+  if(thumb){ thumb.style.background = on ? '#ef4444' : '#6b7280'; thumb.style.transform = on ? 'translateX(16px)' : 'translateX(0)'; thumb.style.boxShadow = on ? '0 0 6px rgba(239,68,68,.6)' : 'none'; }
+  if(fields){ fields.style.display = on ? 'block' : 'none'; }
 }
 
 // ── About ────────────────────────────────────────────────
