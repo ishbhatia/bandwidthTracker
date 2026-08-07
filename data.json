@@ -972,7 +972,9 @@
       {
         "name": "Requirement Analysis & Discussion and Planning",
         "hrs": 8,
-        "done": false
+        "done": false,
+        "prevStatus": "To Do",
+        "status": "In Progress"
       },
       {
         "name": "Requirement Analysis & Flow Designb Part-2",
