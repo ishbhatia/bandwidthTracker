@@ -634,6 +634,7 @@
   <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper <span style="font-size:.58rem;font-weight:700;background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">Coming Soon</span></button>
   <button class="tab-btn" onclick="switchTab('personview')">👤 Person View</button>
   <button class="tab-btn" onclick="switchTab('leave')">🗓 Leave Tracker</button>
+  <button class="tab-btn" onclick="switchTab('delivery')">📊 Delivery Report</button>
 </nav>
 
 <!-- Dashboard Tab -->
@@ -1097,6 +1098,68 @@ CR-202 Dark mode feature request
   </div>
 </div>
 </div><!-- end #tab-leave -->
+
+<!-- Delivery Report Tab -->
+<div class="tab-page" id="tab-delivery">
+<div style="max-width:1200px;margin:24px auto;padding:0 20px">
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><span class="ct-dot"></span>📊 CR / PD / DM Delivery Report</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+      <div class="fg" style="margin-bottom:0">
+        <label>From Date</label>
+        <input type="date" id="dlFrom" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label>To Date</label>
+        <input type="date" id="dlTo" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label>Environment</label>
+        <select id="dlEnv" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;min-width:130px">
+          <option value="">All (UAT + PROD)</option>
+          <option value="UAT">UAT only</option>
+          <option value="PROD">PROD only</option>
+          <option value="DEV">DEV only</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label>Date Basis</label>
+        <select id="dlDateBasis" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit">
+          <option value="devEndDate">Dev End Date</option>
+          <option value="startDate">Start Date</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="renderDelivery()">🔍 Generate</button>
+      <button class="btn btn-secondary" onclick="dlQuickRange('week')">This Week</button>
+      <button class="btn btn-secondary" onclick="dlQuickRange('month')">This Month</button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="dlSummaryCards"></div>
+
+  <!-- Breakdown by type -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><span class="ct-dot" style="background:#10b981;box-shadow:0 0 6px #10b981"></span>Completed Tickets</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+        <thead><tr style="background:var(--surface2)">
+          <th style="text-align:left;padding:10px;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Ticket</th>
+          <th style="text-align:left;padding:10px;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Type</th>
+          <th style="text-align:left;padding:10px;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Task</th>
+          <th style="text-align:left;padding:10px;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Employee</th>
+          <th style="text-align:left;padding:10px;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Env</th>
+          <th style="text-align:left;padding:10px;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Completed</th>
+        </tr></thead>
+        <tbody id="dlTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div><!-- end #tab-delivery -->
 
 <!-- CSV Import Modal -->
 <div class="import-overlay" id="importCsvModal">
@@ -2491,6 +2554,106 @@ function switchTab(name){
   document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
   if(name==='personview'){populatePvSelect();renderPersonView();}
   if(name==='leave'){lvLoadLocal();renderLvAll();}
+  if(name==='delivery'){initDelivery();}
+}
+
+// ── Delivery Report (CR/PD/DM) ────────────────────────────
+function extractTicketType(name){
+  const m = (name||'').match(/\b(CR|PD|DM)[-\s#]?(\d+)?/i);
+  if(!m) return null;
+  const t = m[1].toUpperCase();
+  return { type:t, ticket: m[0].toUpperCase().replace(/\s/,'-') };
+}
+
+let _dlInit = false;
+function initDelivery(){
+  if(!_dlInit){
+    // Default range: this month
+    dlQuickRange('month');
+    _dlInit = true;
+  } else {
+    renderDelivery();
+  }
+}
+
+function dlQuickRange(kind){
+  const to = new Date();
+  const from = new Date();
+  if(kind==='week') from.setDate(from.getDate()-6);
+  if(kind==='month') from.setDate(1);
+  document.getElementById('dlFrom').valueAsDate = from;
+  document.getElementById('dlTo').valueAsDate = to;
+  renderDelivery();
+}
+
+function renderDelivery(){
+  const from = document.getElementById('dlFrom').value;
+  const to   = document.getElementById('dlTo').value;
+  const env  = document.getElementById('dlEnv').value;
+  const basis = document.getElementById('dlDateBasis').value; // devEndDate | startDate
+
+  if(!from || !to){ showToast('⚠️ Select both dates'); return; }
+
+  // Filter: completed (Done) tasks that are CR/PD/DM, within date range, matching env
+  const matched = tasks.filter(t=>{
+    if(t.status !== 'Done') return false;
+    const tt = extractTicketType(t.taskName);
+    if(!tt) return false;
+    // date basis — devEndDate falls back to startDate if empty
+    let d = t[basis];
+    if(basis==='devEndDate' && !d) d = t.startDate; // fallback
+    if(!d) return false;
+    if(d < from || d > to) return false;
+    // env filter
+    if(env && (t.environment||'') !== env) return false;
+    return true;
+  }).map(t=>({ ...t, _tt: extractTicketType(t.taskName) }));
+
+  // Count unique tickets by type
+  const counts = { CR:new Set(), PD:new Set(), DM:new Set() };
+  matched.forEach(t=>{ if(counts[t._tt.type]) counts[t._tt.type].add(t._tt.ticket); });
+  const crN = counts.CR.size, pdN = counts.PD.size, dmN = counts.DM.size;
+  const total = crN + pdN + dmN;
+
+  // Summary cards
+  const card = (num,label,color,bg) => `<div class="stat-card" style="background:${bg}"><div class="num" style="color:${color}">${num}</div><div class="lbl">${label}</div></div>`;
+  document.getElementById('dlSummaryCards').innerHTML =
+    card(total,'Total Completed','#fff','var(--surface)') +
+    card(crN,'CR — Features','#818cf8','var(--surface)') +
+    card(pdN,'PD — Prod Defects','#f87171','var(--surface)') +
+    card(dmN,'DM — Non-Prod','#fbbf24','var(--surface)');
+
+  // Table
+  const envBadge = e => {
+    if(e==='PROD') return '<span class="env-badge env-prod">PROD</span>';
+    if(e==='UAT') return '<span class="env-badge env-uat">UAT</span>';
+    if(e==='DEV') return '<span class="env-badge env-dev">DEV</span>';
+    return '—';
+  };
+  const typeBadge = t => {
+    const c = t==='CR'?'#818cf8':t==='PD'?'#f87171':'#fbbf24';
+    return `<span style="font-weight:700;color:${c}">${t}</span>`;
+  };
+  const fmt = d => d ? new Date(d+'T00:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}) : '—';
+
+  if(!matched.length){
+    document.getElementById('dlTableBody').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">📭 No completed CR/PD/DM tickets in this range</td></tr>';
+    return;
+  }
+
+  matched.sort((a,b)=>(b[basis]||b.startDate||'').localeCompare(a[basis]||a.startDate||''));
+  document.getElementById('dlTableBody').innerHTML = matched.map(t=>{
+    const d = (basis==='devEndDate' ? (t.devEndDate||t.startDate) : t.startDate);
+    return `<tr style="border-bottom:1px solid rgba(30,45,69,.5)">
+      <td style="padding:9px 10px;font-weight:700;color:#a5b4fc">${esc(t._tt.ticket)}</td>
+      <td style="padding:9px 10px">${typeBadge(t._tt.type)}</td>
+      <td style="padding:9px 10px;color:#cbd5e1">${esc(t.taskName)}</td>
+      <td style="padding:9px 10px;color:#e2e8f0;font-weight:600">${esc(t.empName)}</td>
+      <td style="padding:9px 10px">${envBadge(t.environment)}</td>
+      <td style="padding:9px 10px;color:#94a3b8">${fmt(d)}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── Outlook Scraper ───────────────────────────────────────
