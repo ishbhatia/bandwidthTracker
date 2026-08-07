@@ -992,12 +992,12 @@
       {
         "name": "Insure2UpdatePlayerDetails - Impl Development",
         "hrs": 2,
-        "done": true
+        "done": false
       },
       {
         "name": "Insure2FinancialPFRCheck - Impl Development",
         "hrs": 2,
-        "done": false
+        "done": true
       },
       {
         "name": "Insure2AnurCheckCommand - ProposalDB Integration",
