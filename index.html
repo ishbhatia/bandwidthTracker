@@ -2163,8 +2163,14 @@ function updateRedmineNote(){
   const cfg=getCfg();
   const el=document.getElementById('redmineSetupNote');
   if(!el)return;
-  el.textContent=cfg.redmineKey?'✅ Redmine connected':'⚠️ Add Redmine API key in ⚙ Setup';
-  el.style.color=cfg.redmineKey?'#34d399':'#fbbf24';
+  if(!cfg.redmineKey){
+    el.innerHTML='⚠️ Add Redmine API key in ⚙ Setup';
+    el.style.color='#fbbf24'; return;
+  }
+  // Check if proxy is running
+  fetch('http://localhost:3001/',{method:'GET',signal:AbortSignal.timeout(1500)})
+    .then(()=>{el.innerHTML='✅ Redmine connected · Proxy running';el.style.color='#34d399';})
+    .catch(()=>{el.innerHTML='⚠️ Start proxy: <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px">node redmine-proxy.js</code>';el.style.color='#f87171';});
 }
 
 async function createRedmineIssue(subject,typeKey,description,assigneeId,parentIssueId){
@@ -2183,7 +2189,11 @@ async function createRedmineIssue(subject,typeKey,description,assigneeId,parentI
   if(parentIssueId) issueBody.parent_issue_id = parentIssueId;
   const body={issue:issueBody};
   try{
-    const res=await fetch(`${cfg.redmineUrl}/issues.json`,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    // Route through local CORS proxy (node redmine-proxy.js must be running)
+    const proxyBase = 'http://localhost:3001';
+    const redmineBase = cfg.redmineUrl || 'http://svn.aps1aws.lumiq.int';
+    const fetchUrl = `${proxyBase}/issues.json`;
+    const res=await fetch(fetchUrl,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json','x-redmine-target':redmineBase},body:JSON.stringify(body)});
     if(!res.ok){
       const e=await res.text();
       console.error('Redmine error:',res.status, e);
