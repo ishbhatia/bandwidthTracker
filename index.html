@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Easy Tracker — AI Dashboard</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -753,10 +754,11 @@ CR-202 Dark mode feature request
 
       <!-- Format hint -->
       <div class="import-format-hint">
-        <strong>Expected CSV format:</strong><br/>
+        <strong>Expected format (CSV or Excel):</strong><br/>
         Row 1 → Parent task name + total effort (e.g. <code>SI-NACH, 50 hrs</code>)<br/>
         Next rows → Child tasks: <code>Task name, 2 hrs</code> or <code>Task name, 1 day</code> or <code>Task name, 1.5 days</code><br/>
-        <strong>1 day = 9 hrs</strong> · Empty rows are skipped · Buffer % row is skipped
+        <strong>1 day = 9 hrs</strong> · Empty rows are skipped · Buffer % row is skipped<br/>
+        <strong>📋 Excel (.xlsx):</strong> If your file has multiple sheets, you'll be asked to pick the right tab.
       </div>
 
       <!-- Default fields applied to all tasks -->
@@ -773,10 +775,20 @@ CR-202 Dark mode feature request
 
       <!-- Drop zone -->
       <div class="import-drop-zone" id="csvDropZone">
-        <input type="file" accept=".csv,.txt" onchange="handleCsvFile(this.files[0])"/>
+        <input type="file" accept=".csv,.txt,.xlsx,.xls" onchange="handleCsvFile(this.files[0])"/>
         <div class="dz-icon">📄</div>
-        <div class="dz-title">Drop your CSV file here or click to browse</div>
-        <div class="dz-sub">Supports .csv and .txt files</div>
+        <div class="dz-title">Drop your CSV or Excel file here or click to browse</div>
+        <div class="dz-sub">Supports .csv, .txt, .xlsx, .xls</div>
+      </div>
+
+      <!-- Sheet/Tab selector (shown only for Excel with multiple sheets) -->
+      <div id="sheetPickerSection" style="display:none;margin-top:14px">
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px 15px;">
+          <div style="font-size:.75rem;font-weight:700;color:#fbbf24;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+            📋 This Excel file has multiple sheets — pick the one to import:
+          </div>
+          <div id="sheetTabList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
       </div>
 
       <!-- Preview -->
@@ -1201,9 +1213,64 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-acti
 
 function handleCsvFile(file){
   if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>parseCsvContent(e.target.result);
-  reader.readAsText(file);
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='xlsx'||ext==='xls'){
+    // Excel file — use SheetJS
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const sheets=wb.SheetNames;
+      if(sheets.length===1){
+        // Only one sheet — parse directly
+        const csv=XLSX.utils.sheet_to_csv(wb.Sheets[sheets[0]]);
+        document.getElementById('sheetPickerSection').style.display='none';
+        parseCsvContent(csv);
+      } else {
+        // Multiple sheets — show tab picker
+        document.getElementById('sheetPickerSection').style.display='block';
+        document.getElementById('csvPreviewSection').style.display='none';
+        const tabList=document.getElementById('sheetTabList');
+        tabList.innerHTML=sheets.map((name,i)=>`
+          <button onclick="pickSheet(${i})" id="sheetBtn-${i}"
+            style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);
+            background:var(--surface2);color:#e2e8f0;font-size:.78rem;font-weight:600;
+            cursor:pointer;font-family:inherit;transition:all .15s"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='#a5b4fc'"
+            onmouseout="if(!this.dataset.selected){this.style.borderColor='var(--border)';this.style.color='#e2e8f0'}">
+            📋 ${esc(name)}
+          </button>`).join('');
+        // Store workbook globally for sheet picking
+        window._xlsxWb=wb;
+        showToast(`📋 ${sheets.length} sheets found — pick a tab to import`);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // Plain CSV/TXT
+    document.getElementById('sheetPickerSection').style.display='none';
+    const reader=new FileReader();
+    reader.onload=e=>parseCsvContent(e.target.result);
+    reader.readAsText(file);
+  }
+}
+
+function pickSheet(idx){
+  const wb=window._xlsxWb;
+  if(!wb)return;
+  const sheetName=wb.SheetNames[idx];
+  // Highlight selected tab
+  wb.SheetNames.forEach((_,i)=>{
+    const btn=document.getElementById(`sheetBtn-${i}`);
+    if(!btn)return;
+    btn.dataset.selected=i===idx?'1':'';
+    btn.style.background=i===idx?'rgba(99,102,241,.2)':'var(--surface2)';
+    btn.style.borderColor=i===idx?'var(--accent)':'var(--border)';
+    btn.style.color=i===idx?'#a5b4fc':'#e2e8f0';
+  });
+  const csv=XLSX.utils.sheet_to_csv(wb.Sheets[sheetName]);
+  parseCsvContent(csv);
+  showToast(`📋 Loaded sheet: ${sheetName}`);
 }
 
 function parseHours(str){
@@ -1268,7 +1335,7 @@ function renderCsvPreview(){
   section.style.display='block';
 }
 
-function clearCsvPreview(){csvParsed=[];document.getElementById('csvPreviewSection').style.display='none';}
+function clearCsvPreview(){csvParsed=[];document.getElementById('csvPreviewSection').style.display='none';document.getElementById('sheetPickerSection').style.display='none';window._xlsxWb=null;}
 
 async function importCsvTasks(){
   if(!csvParsed.length){showToast('⚠️ No data to import');return;}
