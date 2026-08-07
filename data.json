@@ -1012,7 +1012,7 @@
       {
         "name": "Metadata Impl - eKYC/PAN/BAV Extraction",
         "hrs": 6,
-        "done": true
+        "done": false
       },
       {
         "name": "NBTouchFlowRoutes.json - Complete Routing Configuration",
