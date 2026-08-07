@@ -962,10 +962,10 @@
     "taskName": "Parent Task Insured 2.0",
     "startDate": "2026-07-20",
     "timeSpent": 0,
-    "expectedHrs": 75,
+    "expectedHrs": 85,
     "devEndDate": "",
     "status": "To Do",
-    "environment": "DEV",
+    "environment": "UAT",
     "prevStatus": "To Do",
     "reopenCount": 0,
     "subtasks": [
