@@ -2204,17 +2204,28 @@ function toggleSub(idx){
   progress.style.width=pct+'%';
 
   // Subtask rows
-  list.innerHTML=subs.map((st,si)=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;
+  const ALL_ST_STATUS=['Pending','In Progress','Done','Blocked','In Review'];
+  list.innerHTML=subs.map((st,si)=>{
+    const stStatus=st.status||( st.done?'Done':'Pending');
+    const stColor=stStatus==='Done'?'#34d399':stStatus==='Blocked'?'#f87171':stStatus==='In Progress'?'#818cf8':stStatus==='In Review'?'#a78bfa':'#f59e0b';
+    const stBg=stStatus==='Done'?'rgba(16,185,129,.1)':stStatus==='Blocked'?'rgba(239,68,68,.1)':stStatus==='In Progress'?'rgba(99,102,241,.12)':stStatus==='In Review'?'rgba(139,92,246,.1)':'rgba(245,158,11,.1)';
+    const statusOpts=ALL_ST_STATUS.map(s=>`<option${s===stStatus?' selected':''}>${s}</option>`).join('');
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;
       background:var(--surface2);border:1px solid var(--border);transition:background .12s"
       onmouseover="this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.background='var(--surface2)'">
-      <input type="checkbox" ${st.done?'checked':''} onchange="toggleSubDoneModal(${idx},${si})"
+      <input type="checkbox" ${st.done||stStatus==='Done'?'checked':''} onchange="toggleSubDoneModal(${idx},${si})"
         style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;cursor:pointer"/>
-      <span style="flex:1;font-size:.83rem;color:${st.done?'var(--muted)':'#e2e8f0'};
-        ${st.done?'text-decoration:line-through;':''}">${esc(st.name)}</span>
+      <span style="flex:1;font-size:.83rem;color:${st.done||stStatus==='Done'?'var(--muted)':'#e2e8f0'};
+        ${st.done||stStatus==='Done'?'text-decoration:line-through;':''}">${esc(st.name)}</span>
       <span style="font-size:.75rem;font-weight:700;color:#818cf8;flex-shrink:0">${st.hrs||0}h</span>
-      <span class="badge ${st.done?'badge-done':'badge-todo'}" style="flex-shrink:0">${st.done?'Done':'Pending'}</span>
-    </div>`).join('');
+      <select onchange="updateSubStatusModal(${idx},${si},this.value)"
+        style="padding:3px 8px;border-radius:6px;border:1px solid ${stColor};
+        background:${stBg};color:${stColor};font-size:.72rem;font-weight:700;
+        font-family:inherit;cursor:pointer;outline:none;flex-shrink:0">
+        ${statusOpts}
+      </select>
+    </div>`;
+  }).join('');
 
   modal.classList.add('open');
   // Store current task index for updates
@@ -2226,11 +2237,21 @@ function closeSubtaskModal(){
 }
 
 async function toggleSubDoneModal(taskIdx,subIdx){
-  tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
-  // Refresh modal without closing
+  const st=tasks[taskIdx].subtasks[subIdx];
+  st.done=!st.done;
+  st.status=st.done?'Done':'Pending';
   toggleSub(taskIdx);
   renderAll();
-  await saveToGitHub(`Update subtask: ${tasks[taskIdx].subtasks[subIdx].name}`);
+  await saveToGitHub(`Update subtask: ${st.name}`);
+}
+
+async function updateSubStatusModal(taskIdx,subIdx,newStatus){
+  const st=tasks[taskIdx].subtasks[subIdx];
+  st.status=newStatus;
+  st.done=newStatus==='Done';
+  toggleSub(taskIdx);
+  renderAll();
+  await saveToGitHub(`Update subtask status: ${st.name}`);
 }
 async function toggleSubDone(taskIdx,subIdx){
   tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
