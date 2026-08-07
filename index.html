@@ -2198,7 +2198,7 @@ async function createRedmineIssue(subject,typeKey,description,assigneeId,parentI
     const proxyBase = 'http://localhost:3001';
     const redmineBase = cfg.redmineUrl || 'http://svn.aps1aws.lumiq.int';
     const fetchUrl = `${proxyBase}/issues.json`;
-    const res=await fetch(fetchUrl,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json','x-redmine-target':redmineBase},body:JSON.stringify(body)});
+    const res=await fetch(fetchUrl,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!res.ok){
       const e=await res.text();
       console.error('Redmine error:',res.status, e);
