@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 /**
- * Easy Tracker — Redmine CORS Proxy
+ * Easy Tracker — Redmine CORS Proxy + Controller
  * Runs on http://localhost:3001
  * Forwards to http://svn.aps1aws.lumiq.int
- * No npm install needed — built-in Node.js only
+ *
+ * Control endpoints (called by the browser via fetch — no Chrome tab):
+ *   GET /__status   → { enabled: true|false }
+ *   GET /__enable   → turns forwarding ON
+ *   GET /__disable  → turns forwarding OFF
+ *
+ * No npm install needed — built-in Node.js only.
+ * Start:  node redmine-proxy.js   (or double-click StartRedmineProxy.command)
  */
 
 const http = require('http');
@@ -11,6 +18,8 @@ const http = require('http');
 const PROXY_PORT   = 3001;
 const REDMINE_HOST = 'svn.aps1aws.lumiq.int';
 const REDMINE_PORT = 80;
+
+let enabled = true; // forwarding ON by default when proxy starts
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
@@ -28,6 +37,22 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // ── Control endpoints (browser calls these via fetch) ───
+  if (req.url === '/__status' || req.url === '/__enable' || req.url === '/__disable') {
+    if (req.url === '/__enable')  { enabled = true;  console.log('  ✅ Forwarding ENABLED'); }
+    if (req.url === '/__disable') { enabled = false; console.log('  🛑 Forwarding DISABLED'); }
+    res.writeHead(200, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ enabled }));
+    return;
+  }
+
+  // ── If disabled, reject forwarding ──────────────────────
+  if (!enabled) {
+    res.writeHead(503, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Proxy is OFF — turn it ON in Easy Tracker header' }));
+    return;
+  }
+
   console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
 
   let body = [];
@@ -35,31 +60,20 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     body = Buffer.concat(body);
 
-    // Build clean headers — only pass what Redmine needs
     const headers = {
-      'host':               REDMINE_HOST,
-      'content-type':       req.headers['content-type'] || 'application/json',
-      'x-redmine-api-key':  req.headers['x-redmine-api-key'] || '',
+      'host':              REDMINE_HOST,
+      'content-type':      req.headers['content-type'] || 'application/json',
+      'x-redmine-api-key': req.headers['x-redmine-api-key'] || '',
     };
     if (body.length > 0) headers['content-length'] = body.length;
 
-    const options = {
-      hostname: REDMINE_HOST,
-      port:     REDMINE_PORT,
-      path:     req.url,
-      method:   req.method,
-      headers,
-    };
+    const options = { hostname: REDMINE_HOST, port: REDMINE_PORT, path: req.url, method: req.method, headers };
 
     const proxyReq = http.request(options, proxyRes => {
-      const status = proxyRes.statusCode;
-      console.log(`  → Redmine: ${status}`);
-
+      console.log(`  → Redmine: ${proxyRes.statusCode}`);
       const responseHeaders = { ...proxyRes.headers, ...CORS_HEADERS };
-      // Remove transfer-encoding to avoid issues
       delete responseHeaders['transfer-encoding'];
-
-      res.writeHead(status, responseHeaders);
+      res.writeHead(proxyRes.statusCode, responseHeaders);
       proxyRes.pipe(res, { end: true });
     });
 
@@ -76,13 +90,14 @@ const server = http.createServer((req, res) => {
 
 server.listen(PROXY_PORT, '127.0.0.1', () => {
   console.log('');
-  console.log('  ⚡ Easy Tracker — Redmine CORS Proxy');
-  console.log('  ─────────────────────────────────────');
+  console.log('  ⚡ Easy Tracker — Redmine Proxy + Controller');
+  console.log('  ────────────────────────────────────────────');
   console.log(`  Proxy   : http://localhost:${PROXY_PORT}`);
   console.log(`  Redmine : http://${REDMINE_HOST}`);
+  console.log(`  Status  : Forwarding ${enabled ? 'ENABLED' : 'DISABLED'}`);
   console.log('');
-  console.log('  Keep this terminal open while using Easy Tracker.');
-  console.log('  Press Ctrl+C to stop.');
+  console.log('  Toggle ON/OFF from the Easy Tracker header — no need to touch this window.');
+  console.log('  Press Ctrl+C to fully stop.');
   console.log('');
 });
 

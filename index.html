@@ -2387,62 +2387,70 @@ async function fetchOutlookEmails(){
 }
 
 // ── Proxy Manager ────────────────────────────────────────
-let _proxyRunning = false;
-let _proxyCheckTimer = null;
+// Proxy runs as a background process (started once via StartRedmineProxy.command).
+// The header toggle ENABLES / DISABLES forwarding via fetch — no Chrome tab opens.
+let _proxyReachable = false; // is the proxy process alive?
+let _proxyEnabled = false;   // is forwarding turned on?
 
 async function checkProxyStatus(){
   try{
-    await fetch('http://localhost:3001/',{method:'GET',signal:AbortSignal.timeout(1200)});
-    _proxyRunning = true;
+    const r = await fetch('http://localhost:3001/__status',{signal:AbortSignal.timeout(1200)});
+    const d = await r.json();
+    _proxyReachable = true;
+    _proxyEnabled = !!d.enabled;
   }catch(e){
-    _proxyRunning = false;
+    _proxyReachable = false;
+    _proxyEnabled = false;
   }
   updateProxyBtn();
 }
 
 function updateProxyBtn(){
-  const btn  = null; // proxy button removed from form — header only
-  const bar  = null;
-  const note = null;
   const hBtn = document.getElementById('proxyHeaderBtn');
   const hDot = document.getElementById('proxyHeaderDot');
   const hLbl = document.getElementById('proxyHeaderLabel');
+  const hState = document.getElementById('proxyHeaderState');
 
-  if(_proxyRunning){
-    // Header pill — green
+  const on = _proxyReachable && _proxyEnabled;
+
+  if(on){
     if(hBtn){ hBtn.style.background='rgba(16,185,129,.1)'; hBtn.style.borderColor='rgba(16,185,129,.3)'; hBtn.style.color='#34d399'; }
     if(hDot){ hDot.style.background='#34d399'; hDot.style.boxShadow='0 0 6px #34d399'; }
-    if(hLbl) hLbl.textContent='Proxy On';
-    // Form button
-    if(btn){ btn.textContent='�� On'; btn.style.background='rgba(16,185,129,.12)'; btn.style.color='#34d399'; btn.style.borderColor='rgba(16,185,129,.3)'; }
-    if(bar) bar.innerHTML='';
-    if(note){ note.innerHTML='✅ Proxy running · Redmine ready'; note.style.color='#34d399'; }
+    if(hLbl) hLbl.textContent='Proxy';
+    if(hState) hState.textContent='ON';
   } else {
-    // Header pill — red
     if(hBtn){ hBtn.style.background='rgba(239,68,68,.1)'; hBtn.style.borderColor='rgba(239,68,68,.3)'; hBtn.style.color='#f87171'; }
     if(hDot){ hDot.style.background='#f87171'; hDot.style.boxShadow='none'; }
-    if(hLbl) hLbl.textContent='Proxy Off';
-    // Form button
-    if(btn){ btn.textContent='🔴 Off'; btn.style.background='rgba(239,68,68,.1)'; btn.style.color='#f87171'; btn.style.borderColor='rgba(239,68,68,.25)'; }
-    if(bar) bar.innerHTML='';
-    if(note){ note.innerHTML='⚠️ Proxy off — double-click <b>StartRedmineProxy.command</b> on Desktop'; note.style.color='#f59e0b'; }
+    if(hLbl) hLbl.textContent='Proxy';
+    if(hState) hState.textContent = _proxyReachable ? 'OFF' : 'OFF';
   }
 }
 
-function toggleProxy(){
-  if(_proxyRunning){
-    // STOP — open StopRedmineProxy.command from project folder
-    const stopFile = 'file:///Users/ishantbhatia/BandwidthTracker/StopRedmineProxy.command';
-    window.open(stopFile);
-    showToast('🛑 Stopping proxy…');
-    setTimeout(checkProxyStatus, 2500);
-  } else {
-    // START — open StartRedmineProxy.command from project folder
-    const startFile = 'file:///Users/ishantbhatia/BandwidthTracker/StartRedmineProxy.command';
-    window.open(startFile);
-    showToast('▶️ Starting proxy…');
-    setTimeout(checkProxyStatus, 3000);
+async function toggleProxy(){
+  // If proxy process not running at all, tell user to start it once
+  if(!_proxyReachable){
+    // Try a fresh check first
+    await checkProxyStatus();
+    if(!_proxyReachable){
+      showToast('▶️ Start proxy once: double-click StartRedmineProxy.command in project folder');
+      return;
+    }
   }
+
+  if(_proxyEnabled){
+    // Turn OFF — fetch, no Chrome tab
+    try{
+      await fetch('http://localhost:3001/__disable',{signal:AbortSignal.timeout(1500)});
+      showToast('🛑 Proxy forwarding turned OFF');
+    }catch(e){ showToast('⚠️ Could not reach proxy'); }
+  } else {
+    // Turn ON — fetch, no Chrome tab
+    try{
+      await fetch('http://localhost:3001/__enable',{signal:AbortSignal.timeout(1500)});
+      showToast('✅ Proxy forwarding turned ON');
+    }catch(e){ showToast('⚠️ Could not reach proxy'); }
+  }
+  checkProxyStatus();
 }
 
 // Poll proxy status every 5 seconds
