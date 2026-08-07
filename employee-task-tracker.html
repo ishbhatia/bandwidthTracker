@@ -366,6 +366,73 @@
 
     @media(max-width:600px){.modal-grid{grid-template-columns:1fr}header{flex-direction:column;gap:8px}.stats-row{grid-template-columns:repeat(2,1fr)}}
 
+    /* ── Leave Tracker ── */
+    .lv-page{max-width:1300px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+    @media(max-width:900px){.lv-page{grid-template-columns:1fr}}
+    .lv-form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;position:sticky;top:20px}
+    .lv-section-title{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .lv-section-title .ct-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);flex-shrink:0}
+    .lv-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+    .lv-type-btn{padding:8px 6px;border:1px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--muted);font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center}
+    .lv-type-btn:hover{border-color:rgba(99,102,241,.4);color:var(--text)}
+    .lv-type-btn.selected{color:#fff;border-color:transparent}
+    .lv-type-annual.selected{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+    .lv-type-sick.selected{background:linear-gradient(135deg,#ef4444,#f97316)}
+    .lv-type-wfh.selected{background:linear-gradient(135deg,#10b981,#06b6d4)}
+    .lv-type-holiday.selected{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+    .lv-type-other.selected{background:linear-gradient(135deg,#64748b,#94a3b8)}
+    /* Calendar */
+    .lv-cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
+    .lv-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+    .lv-cal-title{font-size:1rem;font-weight:700;color:#fff}
+    .lv-cal-nav{display:flex;align-items:center;gap:8px}
+    .lv-cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .lv-cal-nav button:hover{border-color:var(--accent);color:#a5b4fc}
+    .lv-cal-nav select{padding:5px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit;cursor:pointer}
+    .lv-cal-nav select:focus{outline:none;border-color:var(--accent)}
+    .lv-cal-nav select option{background:var(--surface)}
+    .lv-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+    .lv-cal-dow{text-align:center;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 0 8px}
+    .lv-cal-dow.weekend{color:#f59e0b}
+    .lv-cal-day{min-height:72px;border:1px solid var(--border);border-radius:9px;padding:6px;background:var(--surface2);transition:border-color .15s;cursor:default;position:relative}
+    .lv-cal-day.today{border-color:var(--accent);box-shadow:0 0 0 1px rgba(99,102,241,.3)}
+    .lv-cal-day.other-month{opacity:.35}
+    .lv-cal-day.weekend-day{background:rgba(245,158,11,.04)}
+    .lv-cal-day-num{font-size:.72rem;font-weight:700;color:#94a3b8;margin-bottom:3px}
+    .lv-cal-day.today .lv-cal-day-num{color:#a5b4fc}
+    .lv-leave-chip{display:flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;font-size:.62rem;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:opacity .15s}
+    .lv-leave-chip:hover{opacity:.75}
+    .lv-chip-annual{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+    .lv-chip-sick{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+    .lv-chip-wfh{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+    .lv-chip-holiday{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+    .lv-chip-other{background:rgba(100,116,139,.15);color:#94a3b8;border:1px solid rgba(100,116,139,.25)}
+    /* Team availability strip */
+    .lv-avail-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:20px}
+    .lv-avail-grid{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+    .lv-avail-row{display:flex;align-items:center;gap:10px}
+    .lv-avail-name{font-size:.8rem;font-weight:600;color:#e2e8f0;width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lv-avail-bar{flex:1;height:28px;display:flex;border-radius:7px;overflow:hidden;background:var(--surface2);border:1px solid var(--border)}
+    .lv-avail-seg{height:100%;transition:all .15s;cursor:pointer;position:relative}
+    .lv-avail-seg:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:.65rem;padding:4px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--border);z-index:10;pointer-events:none}
+    /* Leave list */
+    .lv-list-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:20px}
+    .lv-list-table{width:100%;border-collapse:collapse;font-size:.82rem}
+    .lv-list-table th{background:var(--surface2);color:var(--muted);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:9px 11px;text-align:left;border-bottom:1px solid var(--border)}
+    .lv-list-table td{padding:9px 11px;border-bottom:1px solid rgba(30,45,69,.5);vertical-align:middle}
+    .lv-list-table tr:hover td{background:rgba(99,102,241,.04)}
+    .lv-list-empty{text-align:center;padding:28px;color:var(--muted);font-size:.82rem}
+    .lv-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+    @media(max-width:700px){.lv-stat-row{grid-template-columns:repeat(2,1fr)}}
+    .lv-stat{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+    .lv-stat .lv-sn{font-size:1.8rem;font-weight:700;color:#fff;line-height:1}
+    .lv-stat .lv-sl{font-size:.68rem;color:var(--muted);margin-top:5px;text-transform:uppercase;letter-spacing:.06em}
+    .lv-today-avail{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .lv-emp-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.73rem;font-weight:600;border:1px solid}
+    .lv-emp-avail{background:rgba(16,185,129,.1);color:#34d399;border-color:rgba(16,185,129,.25)}
+    .lv-emp-away{background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.25)}
+    .lv-emp-wfh{background:rgba(6,182,212,.1);color:#67e8f9;border-color:rgba(6,182,212,.25)}
+
     /* ── RBAC Login Screen ── */
     #loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);
       display:flex;align-items:center;justify-content:center;
@@ -538,6 +605,7 @@
   <button class="tab-btn active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
   <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper</button>
   <button class="tab-btn" onclick="switchTab('personview')">👤 Person View</button>
+  <button class="tab-btn" onclick="switchTab('leave')">🗓 Leave Tracker</button>
 </nav>
 
 <!-- Dashboard Tab -->
@@ -826,6 +894,131 @@ CR-202 Dark mode feature request
 
   </div>
 </div><!-- end #tab-personview -->
+
+<!-- Leave Tracker Tab -->
+<div class="tab-page" id="tab-leave">
+<div class="lv-page">
+
+  <!-- LEFT: Add Leave Form -->
+  <div>
+    <div class="lv-form-card">
+      <div class="lv-section-title"><span class="ct-dot"></span>Mark Leave / Availability</div>
+
+      <div class="fg">
+        <label>Employee</label>
+        <select id="lvEmp" class="fg" style="padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:.92rem;background:var(--surface2);color:var(--text);font-family:inherit;width:100%">
+          <option value="">— Select employee —</option>
+        </select>
+      </div>
+
+      <div class="fg" style="margin-top:12px">
+        <label style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Leave Type</label>
+        <div class="lv-type-grid">
+          <button class="lv-type-btn lv-type-annual selected" data-type="Annual Leave" onclick="selectLeaveType(this)">🏖 Annual Leave</button>
+          <button class="lv-type-btn lv-type-sick"   data-type="Sick Leave"   onclick="selectLeaveType(this)">🤒 Sick Leave</button>
+          <button class="lv-type-btn lv-type-wfh"    data-type="WFH"          onclick="selectLeaveType(this)">🏠 WFH</button>
+          <button class="lv-type-btn lv-type-holiday" data-type="Holiday"     onclick="selectLeaveType(this)">🎉 Holiday</button>
+          <button class="lv-type-btn lv-type-other"  data-type="Other"        onclick="selectLeaveType(this)" style="grid-column:1/-1">📌 Other</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px">
+        <div class="fg">
+          <label>From Date</label>
+          <input type="date" id="lvFrom" style="padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);font-family:inherit;width:100%"/>
+        </div>
+        <div class="fg">
+          <label>To Date</label>
+          <input type="date" id="lvTo" style="padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);font-family:inherit;width:100%"/>
+        </div>
+      </div>
+
+      <div class="fg" style="margin-top:12px">
+        <label>Note (optional)</label>
+        <input type="text" id="lvNote" placeholder="e.g. Family function, Doctor visit…" style="padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);font-family:inherit;width:100%"/>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-primary" style="flex:1" onclick="addLeave()">＋ Add Leave</button>
+        <button class="btn btn-secondary" onclick="clearLeaveForm()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Today's Availability -->
+    <div class="lv-form-card" style="margin-top:16px">
+      <div class="lv-section-title"><span class="ct-dot" style="background:#10b981;box-shadow:0 0 6px #10b981"></span>Today's Team Status</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:10px" id="lvTodayDate"></div>
+      <div class="lv-today-avail" id="lvTodayStatus"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Calendar + Stats + List -->
+  <div>
+    <!-- Stats row -->
+    <div class="lv-stat-row">
+      <div class="lv-stat"><div class="lv-sn" id="lvStatTotal" style="color:#a5b4fc">0</div><div class="lv-sl">Total Leaves</div></div>
+      <div class="lv-stat"><div class="lv-sn" id="lvStatToday" style="color:#f87171">0</div><div class="lv-sl">Away Today</div></div>
+      <div class="lv-stat"><div class="lv-sn" id="lvStatWfh" style="color:#67e8f9">0</div><div class="lv-sl">WFH Today</div></div>
+      <div class="lv-stat"><div class="lv-sn" id="lvStatMonth" style="color:#34d399">0</div><div class="lv-sl">This Month</div></div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="lv-cal-wrap">
+      <div class="lv-cal-header">
+        <div class="lv-cal-title" id="lvCalTitle">August 2026</div>
+        <div class="lv-cal-nav">
+          <button onclick="lvChangeMonth(-1)">‹</button>
+          <select id="lvCalEmpFilter" onchange="renderLvCal()">
+            <option value="">All Employees</option>
+          </select>
+          <button onclick="lvChangeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="lv-cal-grid" id="lvCalGrid"></div>
+    </div>
+
+    <!-- Team Availability Bar (next 14 days) -->
+    <div class="lv-avail-card">
+      <div class="lv-section-title"><span class="ct-dot" style="background:#06b6d4;box-shadow:0 0 6px #06b6d4"></span>Team Availability — Next 14 Days</div>
+      <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(16,185,129,.5);display:inline-block"></span>Available</span>
+        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(99,102,241,.5);display:inline-block"></span>Annual Leave</span>
+        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.5);display:inline-block"></span>Sick Leave</span>
+        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(6,182,212,.4);display:inline-block"></span>WFH</span>
+        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(245,158,11,.5);display:inline-block"></span>Holiday</span>
+      </div>
+      <div style="display:flex;gap:0;margin-bottom:6px;padding-left:110px" id="lvAvailDateHeader"></div>
+      <div class="lv-avail-grid" id="lvAvailGrid"></div>
+    </div>
+
+    <!-- Leave List -->
+    <div class="lv-list-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="lv-section-title" style="margin-bottom:0"><span class="ct-dot"></span>All Leave Records</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="lvListEmpFilter" onchange="renderLvList()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit">
+            <option value="">All Employees</option>
+          </select>
+          <select id="lvListTypeFilter" onchange="renderLvList()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit">
+            <option value="">All Types</option>
+            <option>Annual Leave</option><option>Sick Leave</option>
+            <option>WFH</option><option>Holiday</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="lv-list-table">
+          <thead><tr>
+            <th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Note</th><th>Action</th>
+          </tr></thead>
+          <tbody id="lvListBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div><!-- end #tab-leave -->
 
 <!-- CSV Import Modal -->
 <div class="import-overlay" id="importCsvModal">
@@ -2050,6 +2243,7 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
   if(name==='personview'){populatePvSelect();renderPersonView();}
+  if(name==='leave'){lvLoadLocal();renderLvAll();}
 }
 
 // ── Outlook Scraper ───────────────────────────────────────
@@ -2516,6 +2710,258 @@ function renderPersonView(){
   content.innerHTML=html;
 }
 
+// ── Leave Tracker ─────────────────────────────────────────
+let leaves = [];
+let lvCalYear = new Date().getFullYear();
+let lvCalMonth = new Date().getMonth();
+let lvSelectedType = 'Annual Leave';
+
+const LV_TYPE_COLORS = {
+  'Annual Leave': { bg:'rgba(99,102,241,.5)',  chip:'lv-chip-annual'  },
+  'Sick Leave':   { bg:'rgba(239,68,68,.5)',   chip:'lv-chip-sick'    },
+  'WFH':          { bg:'rgba(6,182,212,.4)',   chip:'lv-chip-wfh'     },
+  'Holiday':      { bg:'rgba(245,158,11,.5)',  chip:'lv-chip-holiday' },
+  'Other':        { bg:'rgba(100,116,139,.5)', chip:'lv-chip-other'   },
+};
+
+function lvSaveLocal(){ localStorage.setItem('et_leaves', JSON.stringify(leaves)); }
+function lvLoadLocal(){
+  try{ const d=JSON.parse(localStorage.getItem('et_leaves')||'[]'); leaves=Array.isArray(d)?d:[]; }catch(e){ leaves=[]; }
+}
+
+function selectLeaveType(btn){
+  document.querySelectorAll('.lv-type-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  lvSelectedType = btn.dataset.type;
+}
+
+function populateLvEmployeeSelects(){
+  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
+  ['lvEmp','lvCalEmpFilter','lvListEmpFilter'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const cur = sel.value;
+    // keep first option, rebuild rest
+    while(sel.options.length > 1) sel.remove(1);
+    emps.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e; sel.appendChild(o); });
+    if(cur) sel.value = cur;
+  });
+}
+
+function lvWorkingDays(from, to){
+  let count=0, d=new Date(from);
+  const end=new Date(to);
+  while(d<=end){ const dw=d.getDay(); if(dw!==0&&dw!==6) count++; d.setDate(d.getDate()+1); }
+  return count;
+}
+
+function lvDateRange(from, to){
+  const dates=[], d=new Date(from), end=new Date(to);
+  while(d<=end){ dates.push(d.toISOString().split('T')[0]); d.setDate(d.getDate()+1); }
+  return dates;
+}
+
+function lvLeavesOnDate(dateStr, empFilter=''){
+  return leaves.filter(l=>{
+    if(empFilter && l.emp !== empFilter) return false;
+    return dateStr >= l.from && dateStr <= l.to;
+  });
+}
+
+function addLeave(){
+  const emp  = document.getElementById('lvEmp').value.trim();
+  const from = document.getElementById('lvFrom').value;
+  const to   = document.getElementById('lvTo').value;
+  const note = document.getElementById('lvNote').value.trim();
+  if(!emp){ showToast('⚠️ Select an employee'); return; }
+  if(!from||!to){ showToast('⚠️ Select from and to dates'); return; }
+  if(from > to){ showToast('⚠️ From date must be before To date'); return; }
+  const leave = { id: Date.now(), emp, type: lvSelectedType, from, to, note,
+    days: lvWorkingDays(from, to) };
+  leaves.push(leave);
+  lvSaveLocal();
+  renderLvAll();
+  showToast('✅ Leave added for ' + emp);
+  clearLeaveForm();
+}
+
+function deleteLeave(id){
+  if(!confirm('Remove this leave entry?')) return;
+  leaves = leaves.filter(l=>l.id !== id);
+  lvSaveLocal();
+  renderLvAll();
+  showToast('🗑 Leave removed');
+}
+
+function clearLeaveForm(){
+  document.getElementById('lvEmp').value='';
+  document.getElementById('lvFrom').value='';
+  document.getElementById('lvTo').value='';
+  document.getElementById('lvNote').value='';
+}
+
+function lvChangeMonth(dir){
+  lvCalMonth += dir;
+  if(lvCalMonth > 11){ lvCalMonth=0; lvCalYear++; }
+  if(lvCalMonth < 0){ lvCalMonth=11; lvCalYear--; }
+  renderLvCal();
+}
+
+function renderLvCal(){
+  const empFilter = (document.getElementById('lvCalEmpFilter')||{}).value || '';
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('lvCalTitle').textContent = MONTHS[lvCalMonth] + ' ' + lvCalYear;
+
+  const grid = document.getElementById('lvCalGrid');
+  const today = new Date().toISOString().split('T')[0];
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  let html = DAYS.map((d,i)=>`<div class="lv-cal-dow${i===0||i===6?' weekend':''}">${d}</div>`).join('');
+
+  const firstDay = new Date(lvCalYear, lvCalMonth, 1).getDay();
+  const daysInMonth = new Date(lvCalYear, lvCalMonth+1, 0).getDate();
+  const prevDays = new Date(lvCalYear, lvCalMonth, 0).getDate();
+
+  // Prev month filler
+  for(let i=firstDay-1; i>=0; i--){
+    html+=`<div class="lv-cal-day other-month"><div class="lv-cal-day-num">${prevDays-i}</div></div>`;
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = `${lvCalYear}-${String(lvCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(dateStr).getDay();
+    const isToday = dateStr===today;
+    const isWeekend = dow===0||dow===6;
+    const dayLeaves = lvLeavesOnDate(dateStr, empFilter);
+
+    let cls = 'lv-cal-day';
+    if(isToday) cls+=' today';
+    if(isWeekend) cls+=' weekend-day';
+
+    const chips = dayLeaves.slice(0,3).map(l=>{
+      const cc = (LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Other']).chip;
+      return `<div class="lv-leave-chip ${cc}" title="${l.emp} — ${l.type}${l.note?' ('+l.note+')':''}" onclick="event.stopPropagation()">
+        <span style="overflow:hidden;text-overflow:ellipsis">${l.emp.split(' ')[0]}</span>
+      </div>`;
+    }).join('');
+    const more = dayLeaves.length>3 ? `<div style="font-size:.6rem;color:var(--muted);padding-left:2px">+${dayLeaves.length-3} more</div>` : '';
+
+    html+=`<div class="${cls}"><div class="lv-cal-day-num">${d}</div>${chips}${more}</div>`;
+  }
+
+  // Next month filler
+  const totalCells = firstDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for(let d=1; d<=remaining; d++){
+    html+=`<div class="lv-cal-day other-month"><div class="lv-cal-day-num">${d}</div></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function renderLvAvailability(){
+  const dateHeader = document.getElementById('lvAvailDateHeader');
+  const grid = document.getElementById('lvAvailGrid');
+  if(!dateHeader||!grid) return;
+
+  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
+  const dates = [];
+  const today = new Date();
+  for(let i=0; i<14; i++){
+    const d = new Date(today); d.setDate(d.getDate()+i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
+
+  // Date header
+  dateHeader.innerHTML = dates.map(ds=>{
+    const d=new Date(ds); const dow=d.getDay();
+    const isWknd=dow===0||dow===6;
+    return `<div style="flex:1;text-align:center;font-size:.6rem;font-weight:700;color:${isWknd?'#f59e0b':'var(--muted)'};padding:2px 0">${d.getDate()}<br><span style="font-weight:400">${['Su','Mo','Tu','We','Th','Fr','Sa'][dow]}</span></div>`;
+  }).join('');
+
+  // Rows per employee
+  grid.innerHTML = emps.map(emp=>{
+    const segs = dates.map(ds=>{
+      const dow = new Date(ds).getDay();
+      const dl = lvLeavesOnDate(ds, emp);
+      let bg='rgba(16,185,129,.35)';
+      let tip=`${emp} — Available`;
+      if(dow===0||dow===6){ bg='rgba(100,116,139,.15)'; tip='Weekend'; }
+      else if(dl.length){
+        const l=dl[0];
+        bg=(LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Other']).bg;
+        tip=`${emp} — ${l.type}${l.note?' ('+l.note+')':''}`;
+      }
+      return `<div class="lv-avail-seg" style="flex:1;background:${bg}" data-tip="${tip}"></div>`;
+    }).join('');
+    return `<div class="lv-avail-row">
+      <div class="lv-avail-name" title="${emp}">${emp}</div>
+      <div class="lv-avail-bar">${segs}</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:.82rem;padding:10px">No employees found — add tasks first.</div>';
+}
+
+function renderLvTodayStatus(){
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('lvTodayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
+  let awayCount=0, wfhCount=0;
+
+  const badges = emps.map(emp=>{
+    const dl = lvLeavesOnDate(today, emp);
+    let cls='lv-emp-avail', icon='🟢', label='In Office';
+    if(dl.length){
+      const t=dl[0].type;
+      if(t==='WFH'){ cls='lv-emp-wfh'; icon='🏠'; label='WFH'; wfhCount++; }
+      else { cls='lv-emp-away'; icon='🔴'; label=t; awayCount++; }
+    }
+    return `<span class="lv-emp-badge ${cls}">${icon} ${emp.split(' ')[0]} <span style="opacity:.7;font-size:.65rem">${label}</span></span>`;
+  }).join('');
+
+  document.getElementById('lvTodayStatus').innerHTML = badges||'<span style="color:var(--muted);font-size:.78rem">No employees yet</span>';
+  document.getElementById('lvStatToday').textContent = awayCount;
+  document.getElementById('lvStatWfh').textContent = wfhCount;
+}
+
+function renderLvStats(){
+  const today = new Date().toISOString().split('T')[0];
+  const thisMonth = today.substring(0,7);
+  document.getElementById('lvStatTotal').textContent = leaves.length;
+  document.getElementById('lvStatMonth').textContent = leaves.filter(l=>l.from.startsWith(thisMonth)||l.to.startsWith(thisMonth)).length;
+}
+
+function renderLvList(){
+  const empF  = (document.getElementById('lvListEmpFilter')||{}).value||'';
+  const typeF = (document.getElementById('lvListTypeFilter')||{}).value||'';
+  const filtered = leaves.filter(l=>(!empF||l.emp===empF)&&(!typeF||l.type===typeF))
+    .sort((a,b)=>b.from.localeCompare(a.from));
+
+  const CHIP_CLASS = { 'Annual Leave':'lv-chip-annual','Sick Leave':'lv-chip-sick','WFH':'lv-chip-wfh','Holiday':'lv-chip-holiday','Other':'lv-chip-other' };
+
+  const body = document.getElementById('lvListBody');
+  if(!filtered.length){ body.innerHTML=`<tr><td colspan="7" class="lv-list-empty">📭 No leave records found</td></tr>`; return; }
+
+  body.innerHTML = filtered.map(l=>`
+    <tr>
+      <td><span style="font-weight:600;color:#e2e8f0">${l.emp}</span></td>
+      <td><span class="lv-leave-chip ${CHIP_CLASS[l.type]||'lv-chip-other'}" style="display:inline-flex">${l.type}</span></td>
+      <td style="color:#94a3b8">${l.from}</td>
+      <td style="color:#94a3b8">${l.to}</td>
+      <td style="font-weight:700;color:#a5b4fc">${l.days}d</td>
+      <td style="color:#64748b;font-size:.78rem">${l.note||'—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteLeave(${l.id})">🗑</button></td>
+    </tr>`).join('');
+}
+
+function renderLvAll(){
+  populateLvEmployeeSelects();
+  renderLvStats();
+  renderLvTodayStatus();
+  renderLvCal();
+  renderLvAvailability();
+  renderLvList();
+}
+
 // ── RBAC ──────────────────────────────────────────────────
 // Users: { username (case-insensitive) : sha256 hash of password }
 // To add a user: add entry below. Hash = SHA-256 of their password.
@@ -2587,6 +3033,8 @@ function checkSession(){
 // ── Init ──────────────────────────────────────────────────
 document.getElementById('startDate').valueAsDate=new Date();
 document.getElementById('scraperDate').valueAsDate=new Date();
+document.getElementById('lvFrom').valueAsDate=new Date();
+document.getElementById('lvTo').valueAsDate=new Date();
 updateRedmineNote();
 (function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);const cTo=document.getElementById('chartTo'),cFrom=document.getElementById('chartFrom');if(cTo)cTo.valueAsDate=to;if(cFrom)cFrom.valueAsDate=from;})();
 checkSession();
