@@ -587,13 +587,14 @@
   </div>
   <div class="hright">
     <div class="gh-pill"><div class="dot" id="ghDot"></div><span id="ghLabel">Not connected</span></div>
-    <button id="proxyHeaderBtn" onclick="toggleProxy()"
-      style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;
-             font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;
+    <button id="proxyHeaderBtn" onclick="toggleProxy()" title="Click to start/stop Redmine proxy"
+      style="display:flex;align-items:center;gap:6px;padding:5px 13px;border-radius:20px;
+             font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;
              border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.1);
-             color:#f87171;transition:all .2s">
-      <span id="proxyHeaderDot" style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0"></span>
-      <span id="proxyHeaderLabel">Proxy Off</span>
+             color:#f87171;transition:all .25s;letter-spacing:.01em">
+      <span id="proxyHeaderDot" style="width:7px;height:7px;border-radius:50%;background:#f87171;flex-shrink:0;transition:all .25s"></span>
+      <span id="proxyHeaderLabel">Proxy</span>
+      <span id="proxyHeaderState" style="font-size:.65rem;opacity:.8">OFF</span>
     </button>
     <div class="login-user-pill" id="loggedUserPill" style="display:none">👤 <span id="loggedUserName"></span></div>
     <button class="btn-ghost" onclick="openSetup()">⚙ Setup</button>
@@ -2402,15 +2403,18 @@ function updateProxyBtn(){
 
 function toggleProxy(){
   if(_proxyRunning){
-    // Stop: open StopRedmineProxy via a hidden link trick (only works if file is accessible)
-    showToast('🛑 To stop: close the Proxy terminal window or double-click StopRedmineProxy.command on Desktop');
+    // STOP — open StopRedmineProxy.command from project folder
+    const stopFile = 'file:///Users/ishantbhatia/BandwidthTracker/StopRedmineProxy.command';
+    window.open(stopFile);
+    showToast('🛑 Stopping proxy…');
+    setTimeout(checkProxyStatus, 2500);
   } else {
-    showToast('▶️ Double-click StartRedmineProxy.command on Desktop to start proxy');
-    // Open the .command file directly
-    window.open('file:///Users/ishantbhatia/Desktop/StartRedmineProxy.command');
+    // START — open StartRedmineProxy.command from project folder
+    const startFile = 'file:///Users/ishantbhatia/BandwidthTracker/StartRedmineProxy.command';
+    window.open(startFile);
+    showToast('▶️ Starting proxy…');
+    setTimeout(checkProxyStatus, 3000);
   }
-  // Re-check after 2 seconds
-  setTimeout(checkProxyStatus, 2000);
 }
 
 // Poll proxy status every 5 seconds
