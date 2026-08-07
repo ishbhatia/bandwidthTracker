@@ -659,6 +659,27 @@
           <option value="PROD">PROD</option>
         </select>
       </div>
+      <div id="redmineSetupNote" style="font-size:.72rem;color:#fbbf24;margin-bottom:8px"></div>
+      <div style="background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.18);border-radius:9px;padding:10px 12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="checkbox" id="addRedmine" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer"/>
+          <label for="addRedmine" style="font-size:.75rem;font-weight:600;color:#a5b4fc;cursor:pointer">🔗 Also create issue in Redmine</label>
+        </div>
+        <div class="fg" style="margin-bottom:6px">
+          <label>Assign To (Redmine)</label>
+          <select id="addRedmineAssignee" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
+            <!-- populated by JS -->
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Tracker Type</label>
+          <select id="addRedmineTracker" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
+            <option value="CR">CR — Change Request</option>
+            <option value="PD">PD — Production Defect</option>
+            <option value="DM">DM — Non-Prod Defect</option>
+          </select>
+        </div>
+      </div>
       <div class="form-actions">
         <button class="btn btn-primary" onclick="addTask()">＋ Add Task</button>
         <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
@@ -1299,8 +1320,49 @@ async function addTask(){
   const devEndDate=document.getElementById('devEndDate').value;
   if(!empName||!taskName||!startDate||isNaN(timeSpent)||timeSpent<0){alert('Please fill in all fields.');return;}
   const subtasks=getSubtasksFromForm('subtaskList');
-  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,devEndDate,status,environment,subtasks});
-  renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})`);
+
+  // ── Redmine push (optional) ──────────────────────────────
+  let redmineId=null, redmineUrl=null;
+  const doRedmine = document.getElementById('addRedmine').checked;
+  if(doRedmine){
+    const assigneeId = parseInt(document.getElementById('addRedmineAssignee').value)||DEFAULT_ASSIGNEE_ID;
+    const typeKey    = document.getElementById('addRedmineTracker').value||'CR';
+    showToast('🔗 Creating Redmine issue…');
+
+    // 1. Create parent issue
+    const parentIssue = await createRedmineIssue(
+      `[${typeKey}] ${taskName}`,
+      typeKey,
+      `Employee: ${empName}\nDate: ${startDate}\nEnvironment: ${environment}\nStatus: ${status}\nSource: Easy Tracker Dashboard`,
+      assigneeId
+    );
+
+    if(parentIssue){
+      redmineId  = parentIssue.id;
+      redmineUrl = parentIssue.url;
+      showToast(`✅ Redmine #${redmineId} created`);
+
+      // 2. Create child issues for each subtask
+      if(subtasks.length){
+        for(const st of subtasks){
+          if(!st.name) continue;
+          await createRedmineIssue(
+            st.name,
+            typeKey,
+            `Parent: #${redmineId} — ${taskName}\nEmployee: ${empName}\nEstimated: ${st.hrs||0}h`,
+            assigneeId,
+            redmineId   // parent_issue_id
+          );
+        }
+        showToast(`✅ ${subtasks.length} subtask(s) pushed to Redmine`);
+      }
+    } else {
+      showToast('⚠️ Redmine issue creation failed — task saved locally');
+    }
+  }
+
+  tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,devEndDate,status,environment,subtasks,redmineId,redmineUrl});
+  renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})${redmineId?' [Redmine #'+redmineId+']':''}`);
 }
 function clearForm(){['empName','taskName','timeSpent','expectedHrs','devEndDate'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';document.getElementById('subtaskList').innerHTML='';}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
@@ -2105,19 +2167,21 @@ function updateRedmineNote(){
   el.style.color=cfg.redmineKey?'#34d399':'#fbbf24';
 }
 
-async function createRedmineIssue(subject,typeKey,description,assigneeId){
+async function createRedmineIssue(subject,typeKey,description,assigneeId,parentIssueId){
   const cfg=getCfg();
   if(!cfg.redmineKey||!cfg.redmineProject)return null;
   const trackerId=TRACKER_MAP[typeKey]||2;
   const priorityId=PRIORITY_MAP[typeKey]||2;
-  const body={issue:{
+  const issueBody={
     project_id:cfg.redmineProject,
     tracker_id:trackerId,
     priority_id:priorityId,
     subject:subject,
     description:description||`Created from Easy Tracker\nType: ${typeKey}`,
     assigned_to_id:assigneeId||DEFAULT_ASSIGNEE_ID
-  }};
+  };
+  if(parentIssueId) issueBody.parent_issue_id = parentIssueId;
+  const body={issue:issueBody};
   try{
     const res=await fetch(`${cfg.redmineUrl}/issues.json`,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!res.ok){const e=await res.text();console.error('Redmine error:',e);return null;}
@@ -3163,6 +3227,13 @@ document.getElementById('lvFrom').valueAsDate=new Date();
 document.getElementById('lvTo').valueAsDate=new Date();
 updateRedmineNote();
 (function(){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);const cTo=document.getElementById('chartTo'),cFrom=document.getElementById('chartFrom');if(cTo)cTo.valueAsDate=to;if(cFrom)cFrom.valueAsDate=from;})();
+// Populate Redmine assignee dropdown in Add Task form
+(function(){
+  const sel = document.getElementById('addRedmineAssignee');
+  if(sel && typeof REDMINE_MEMBERS !== 'undefined'){
+    sel.innerHTML = REDMINE_MEMBERS.map(m=>`<option value="${m.id}"${m.id===DEFAULT_ASSIGNEE_ID?' selected':''}>${m.name}</option>`).join('');
+  }
+})();
 checkSession();
 if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
