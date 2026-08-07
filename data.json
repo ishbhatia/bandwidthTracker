@@ -719,17 +719,17 @@
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ Document Viewer (image display",
+        "name": "\"Mandate Decision Page ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ Document Viewer (image display",
         "hrs": 0,
         "done": false
       },
       {
-        "name": "Mandate Decision Page ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
+        "name": "Mandate Decision Page ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
         "hrs": 3,
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ Decision Section (Maker fields",
+        "name": "\"Mandate Decision Page ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ Decision Section (Maker fields",
         "hrs": 6,
         "done": false
       },
@@ -904,9 +904,10 @@
     "timeSpent": 0,
     "expectedHrs": 0,
     "devEndDate": "",
-    "status": "To Do",
+    "status": "In Review",
     "environment": "DEV",
-    "subtasks": []
+    "subtasks": [],
+    "prevStatus": "To Do"
   },
   {
     "id": 1786081379250,
