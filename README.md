@@ -84,11 +84,3 @@ git push origin main
 GIT_SSL_NO_VERIFY=true git push lumiq main
 ```
 
----
-
-## 📌 Repos
-
-| Repo | URL |
-|------|-----|
-| GitHub | https://github.com/ishbhatia/bandwidthTracker |
-| Lumiq | https://codebase.aps1aws.lumiq.int/Lumiq-Org/Easy-Tracker |
