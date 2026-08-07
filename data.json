@@ -594,7 +594,8 @@
       {
         "name": "RULE-ENGIN",
         "hrs": 0,
-        "done": false
+        "done": true,
+        "status": "Done"
       },
       {
         "name": "BMC",
