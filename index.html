@@ -1294,12 +1294,7 @@ function parseHours(str){
 }
 
 function parseCsvContent(text){
-  // Split into rows, keeping empty cells via manual parse
-  const rawLines=text.split(/\r?\n/);
-  csvParsed=[];
-
-  // ── Smart column detection ──────────────────────────────
-  // Parse each line into cells (handles quoted commas)
+  // ── CSV line splitter (handles quoted commas) ──────────
   function splitCsvLine(line){
     const cells=[];let cur='';let inQ=false;
     for(let i=0;i<line.length;i++){
@@ -1312,76 +1307,84 @@ function parseCsvContent(text){
     return cells;
   }
 
+  const rawLines=text.split(/\r?\n/);
   const rows=rawLines.map(splitCsvLine);
+  csvParsed=[];
 
-  // Find header row — look for row containing "effort" or "hrs" or "hour"
-  let headerIdx=-1;
-  let effortColIdx=-1;
-  let taskColIdx=0; // default col A
-  let childColIdx=-1;
-  let childEffortColIdx=-1;
+  // ── Detect format ──────────────────────────────────────
+  // Format A: "Parent Task XYZ, Efforts" in row 1
+  //   → row 1 col A = parent name, all subsequent non-empty col A rows = subtasks
+  // Format B: WBS multi-section (col A=parent, col D=child, col B/E=effort)
+  //   → col A filled = parent section, col A empty + col D filled = child
 
-  for(let i=0;i<Math.min(5,rows.length);i++){
-    const row=rows[i];
-    const lower=row.map(c=>c.toLowerCase());
-    // Check if this looks like a header row
-    const hasEffort=lower.some(c=>c.includes('effort')||c.includes('hrs')||c.includes('hour'));
-    if(hasEffort){
-      headerIdx=i;
-      // Find effort col for parent (col B area)
-      effortColIdx=lower.findIndex((c,idx)=>idx>0&&(c.includes('effort')||c.includes('hrs')||c.includes('hour')));
-      // Find child task col (col D area — after a gap)
-      childColIdx=lower.findIndex((c,idx)=>idx>1&&(c.includes('child')||c.includes('sub')||c.includes('task')));
-      if(childColIdx===-1)childColIdx=lower.findIndex((c,idx)=>idx>effortColIdx+1&&c.includes('task'));
-      // Find child effort col
-      if(childColIdx>-1){
+  // Check if row 0 col 1 header looks like "Efforts" / "Hrs" / "Hours"
+  const firstRow=rows[0]||[];
+  const secondCol=(firstRow[1]||'').toLowerCase();
+  const isSimpleFormat=secondCol.includes('effort')||secondCol.includes('hrs')||secondCol.includes('hour');
+
+  if(isSimpleFormat){
+    // ── Simple format: Row1=Parent, rest=Subtasks ────────
+    const parentName=(firstRow[0]||'').trim();
+    if(!parentName){renderCsvPreview();return;}
+
+    const parent={name:parentName,totalHrs:0,subtasks:[]};
+
+    for(let i=1;i<rows.length;i++){
+      const row=rows[i];
+      const name=(row[0]||'').trim();
+      const hrsRaw=(row[1]||'').trim();
+      if(!name)continue;
+      // Skip noise rows
+      if(/^(buffer|grand total|note:|total|summary)/i.test(name))continue;
+      const hrs=parseHours(hrsRaw)||0;
+      parent.subtasks.push({name,hrs,done:false});
+    }
+
+    parent.totalHrs=parent.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
+    csvParsed=[parent];
+
+  } else {
+    // ── WBS multi-section format ─────────────────────────
+    // Find header row for column positions
+    let headerIdx=-1;
+    let effortColIdx=1;
+    let childColIdx=3;
+    let childEffortColIdx=4;
+
+    for(let i=0;i<Math.min(5,rows.length);i++){
+      const lower=rows[i].map(c=>c.toLowerCase());
+      if(lower.some(c=>c.includes('effort')||c.includes('hrs')||c.includes('hour'))){
+        headerIdx=i;
+        effortColIdx=lower.findIndex((c,idx)=>idx>0&&(c.includes('effort')||c.includes('hrs')||c.includes('hour')));
+        childColIdx=lower.findIndex((c,idx)=>idx>1&&(c.includes('child')||c.includes('sub')||c.includes('task')));
+        if(childColIdx===-1)childColIdx=3;
         childEffortColIdx=lower.findIndex((c,idx)=>idx>childColIdx&&(c.includes('effort')||c.includes('hrs')||c.includes('hour')));
+        if(childEffortColIdx===-1)childEffortColIdx=childColIdx+1;
+        break;
       }
-      break;
+    }
+
+    let currentParent=null;
+    const dataRows=rows.slice(headerIdx+1);
+
+    for(const row of dataRows){
+      const col0=(row[0]||'').trim();
+      const colEff=(row[effortColIdx]||'').trim();
+      const colChild=(row[childColIdx]||'').trim();
+      const colChildEff=(row[childEffortColIdx]||'').trim();
+
+      if(!col0&&!colChild)continue;
+      if(/^(buffer|grand total|note|total|summary)/i.test(col0||colChild))continue;
+
+      if(col0){
+        currentParent={name:col0,totalHrs:parseHours(colEff)||0,subtasks:[]};
+        csvParsed.push(currentParent);
+      } else if(colChild&&currentParent){
+        currentParent.subtasks.push({name:colChild,hrs:parseHours(colChildEff)||0,done:false});
+      }
     }
   }
 
-  // If no header found, use WBS-style heuristic:
-  // col 0 = parent name, col 1 = parent effort, col 3 = child name, col 4 = child effort
-  if(headerIdx===-1){
-    // Auto-detect by scanning: if col 0 has text and col 3 is empty → parent; if col 0 empty and col 3 has text → child
-    effortColIdx=1;
-    childColIdx=3;
-    childEffortColIdx=4;
-  }
-
-  // ── Parse rows ──────────────────────────────────────────
-  let currentParent=null;
-  const dataRows=rows.slice(headerIdx+1);
-
-  for(const row of dataRows){
-    const col0=(row[0]||'').trim();
-    const col1=(row[effortColIdx]||'').trim();
-    const colC=childColIdx>-1?(row[childColIdx]||'').trim():'';
-    const colE=childEffortColIdx>-1?(row[childEffortColIdx]||'').trim():'';
-
-    // Skip completely empty rows
-    if(!col0&&!colC)continue;
-
-    // Skip known footer/noise rows
-    if(/^(buffer|grand total|note|total|summary)/i.test(col0))continue;
-    if(/^(buffer|grand total|note|total|summary)/i.test(colC))continue;
-
-    if(col0){
-      // ── Parent / section row ── (col A has value)
-      const hrs=parseHours(col1)||0;
-      currentParent={name:col0,totalHrs:hrs,subtasks:[]};
-      csvParsed.push(currentParent);
-    } else if(colC&&currentParent){
-      // ── Child / subtask row ── (col A empty, child col has value)
-      const hrs=parseHours(colE)||0;
-      currentParent.subtasks.push({name:colC,hrs,done:false});
-    }
-  }
-
-  // Remove parents with no subtasks that look like section headers with 0 hrs
-  // (keep them if they have subtasks OR have their own hrs > 0)
-  // If only 1 parent found and it has no subtasks, treat entire thing as flat list
   renderCsvPreview();
 }
 
