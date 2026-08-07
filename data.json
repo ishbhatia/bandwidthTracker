@@ -966,7 +966,7 @@
     "devEndDate": "",
     "status": "To Do",
     "environment": "DEV",
-    "prevStatus": "",
+    "prevStatus": "To Do",
     "reopenCount": 0,
     "subtasks": [
       {
@@ -1052,6 +1052,26 @@
       {
         "name": "Code Review, Testing & Debugging",
         "hrs": 8,
+        "done": false
+      },
+      {
+        "name": "need to revert and update the insured 2.0 flow condition as per new condition.",
+        "hrs": 3,
+        "done": false
+      },
+      {
+        "name": "New step and api integration for unified ref id updation",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "Pending api from client received yesterday, need to develop the wrapper api for callback api and then workflow integration.",
+        "hrs": 3,
+        "done": false
+      },
+      {
+        "name": "Flow sanity and development on issues which will come in sanity",
+        "hrs": 1,
         "done": false
       }
     ]
