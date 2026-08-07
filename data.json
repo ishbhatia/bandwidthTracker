@@ -1022,7 +1022,7 @@
       {
         "name": "External API Configuration in workflow",
         "hrs": 3,
-        "done": false
+        "done": true
       },
       {
         "name": "LEO Integration in DEQC",
