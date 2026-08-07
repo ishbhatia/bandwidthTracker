@@ -997,12 +997,12 @@
       {
         "name": "Insure2FinancialPFRCheck - Impl Development",
         "hrs": 2,
-        "done": false
+        "done": true
       },
       {
         "name": "Insure2AnurCheckCommand - ProposalDB Integration",
         "hrs": 2,
-        "done": false
+        "done": true
       },
       {
         "name": "MongoDBConfig - Dual MongoTemplate Setup",
