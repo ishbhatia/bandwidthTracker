@@ -2715,7 +2715,7 @@ function selectLeaveType(btn){
 }
 
 function populateLvEmployeeSelects(){
-  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
+  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].filter(e=>e!=='Priyansh').sort();
   ['lvEmp','lvCalEmpFilter','lvListEmpFilter'].forEach(id=>{
     const sel = document.getElementById(id);
     if(!sel) return;
@@ -2843,7 +2843,7 @@ function renderLvAvailability(){
   const grid = document.getElementById('lvAvailGrid');
   if(!dateHeader||!grid) return;
 
-  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
+  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].filter(e=>e!=='Priyansh').sort();
   const dates = [];
   const today = new Date();
   for(let i=0; i<30; i++){
@@ -2883,7 +2883,7 @@ function renderLvAvailability(){
 function renderLvTodayStatus(){
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('lvTodayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].sort();
+  const emps = [...new Set(tasks.map(t=>t.empName).filter(Boolean))].filter(e=>e!=='Priyansh').sort();
   let awayCount=0, wfhCount=0;
 
   const badges = emps.map(emp=>{
