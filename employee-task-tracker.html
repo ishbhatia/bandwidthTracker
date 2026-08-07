@@ -587,6 +587,14 @@
   </div>
   <div class="hright">
     <div class="gh-pill"><div class="dot" id="ghDot"></div><span id="ghLabel">Not connected</span></div>
+    <button id="proxyHeaderBtn" onclick="toggleProxy()"
+      style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;
+             font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;
+             border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.1);
+             color:#f87171;transition:all .2s">
+      <span id="proxyHeaderDot" style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0"></span>
+      <span id="proxyHeaderLabel">Proxy Off</span>
+    </button>
     <div class="login-user-pill" id="loggedUserPill" style="display:none">👤 <span id="loggedUserName"></span></div>
     <button class="btn-ghost" onclick="openSetup()">⚙ Setup</button>
     <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Logout</button>
@@ -2364,24 +2372,31 @@ async function checkProxyStatus(){
 }
 
 function updateProxyBtn(){
-  const btn = document.getElementById('proxyToggleBtn');
-  const bar = document.getElementById('proxyStatusBar');
+  const btn  = document.getElementById('proxyToggleBtn');
+  const bar  = document.getElementById('proxyStatusBar');
   const note = document.getElementById('redmineSetupNote');
-  if(!btn) return;
+  const hBtn = document.getElementById('proxyHeaderBtn');
+  const hDot = document.getElementById('proxyHeaderDot');
+  const hLbl = document.getElementById('proxyHeaderLabel');
+
   if(_proxyRunning){
-    btn.textContent = '🟢 Proxy Running — Click to Stop';
-    btn.style.background = 'rgba(16,185,129,.12)';
-    btn.style.color = '#34d399';
-    btn.style.borderColor = 'rgba(16,185,129,.3)';
-    if(bar) bar.innerHTML = '';
-    if(note){ note.innerHTML='✅ Redmine connected · Proxy running'; note.style.color='#34d399'; }
+    // Header pill — green
+    if(hBtn){ hBtn.style.background='rgba(16,185,129,.1)'; hBtn.style.borderColor='rgba(16,185,129,.3)'; hBtn.style.color='#34d399'; }
+    if(hDot){ hDot.style.background='#34d399'; hDot.style.boxShadow='0 0 6px #34d399'; }
+    if(hLbl) hLbl.textContent='Proxy On';
+    // Form button
+    if(btn){ btn.textContent='�� On'; btn.style.background='rgba(16,185,129,.12)'; btn.style.color='#34d399'; btn.style.borderColor='rgba(16,185,129,.3)'; }
+    if(bar) bar.innerHTML='';
+    if(note){ note.innerHTML='✅ Proxy running · Redmine ready'; note.style.color='#34d399'; }
   } else {
-    btn.textContent = '🔴 Proxy Stopped — Click to Start';
-    btn.style.background = 'rgba(239,68,68,.1)';
-    btn.style.color = '#f87171';
-    btn.style.borderColor = 'rgba(239,68,68,.25)';
-    if(bar) bar.innerHTML = '<span style="color:#f59e0b;font-size:.68rem">⚠️ Open <b>StartRedmineProxy.command</b> on Desktop to start proxy</span>';
-    if(note){ note.innerHTML='⚠️ Proxy not running — double-click <b>StartRedmineProxy.command</b> on Desktop'; note.style.color='#f87171'; }
+    // Header pill — red
+    if(hBtn){ hBtn.style.background='rgba(239,68,68,.1)'; hBtn.style.borderColor='rgba(239,68,68,.3)'; hBtn.style.color='#f87171'; }
+    if(hDot){ hDot.style.background='#f87171'; hDot.style.boxShadow='none'; }
+    if(hLbl) hLbl.textContent='Proxy Off';
+    // Form button
+    if(btn){ btn.textContent='🔴 Off'; btn.style.background='rgba(239,68,68,.1)'; btn.style.color='#f87171'; btn.style.borderColor='rgba(239,68,68,.25)'; }
+    if(bar) bar.innerHTML='';
+    if(note){ note.innerHTML='⚠️ Proxy off — double-click <b>StartRedmineProxy.command</b> on Desktop'; note.style.color='#f59e0b'; }
   }
 }
 
