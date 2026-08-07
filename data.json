@@ -942,9 +942,10 @@
     "timeSpent": 0,
     "expectedHrs": 0,
     "devEndDate": "2026-08-07",
-    "status": "To Do",
+    "status": "In Progress",
     "environment": "UAT",
-    "subtasks": []
+    "subtasks": [],
+    "prevStatus": "To Do"
   },
   {
     "id": 1786081854973,
