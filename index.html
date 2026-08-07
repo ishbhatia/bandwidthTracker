@@ -378,9 +378,6 @@
     .lv-type-btn.selected{color:#fff;border-color:transparent}
     .lv-type-annual.selected{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
     .lv-type-sick.selected{background:linear-gradient(135deg,#ef4444,#f97316)}
-    .lv-type-wfh.selected{background:linear-gradient(135deg,#10b981,#06b6d4)}
-    .lv-type-holiday.selected{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
-    .lv-type-other.selected{background:linear-gradient(135deg,#64748b,#94a3b8)}
     /* Calendar */
     .lv-cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
     .lv-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
@@ -404,9 +401,6 @@
     .lv-leave-chip:hover{opacity:.75}
     .lv-chip-annual{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
     .lv-chip-sick{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25)}
-    .lv-chip-wfh{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
-    .lv-chip-holiday{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
-    .lv-chip-other{background:rgba(100,116,139,.15);color:#94a3b8;border:1px solid rgba(100,116,139,.25)}
     /* Team availability strip */
     .lv-avail-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:20px}
     .lv-avail-grid{display:flex;flex-direction:column;gap:8px;margin-top:14px}
@@ -916,9 +910,6 @@ CR-202 Dark mode feature request
         <div class="lv-type-grid">
           <button class="lv-type-btn lv-type-annual selected" data-type="Annual Leave" onclick="selectLeaveType(this)">🏖 Annual Leave</button>
           <button class="lv-type-btn lv-type-sick"   data-type="Sick Leave"   onclick="selectLeaveType(this)">🤒 Sick Leave</button>
-          <button class="lv-type-btn lv-type-wfh"    data-type="WFH"          onclick="selectLeaveType(this)">🏠 WFH</button>
-          <button class="lv-type-btn lv-type-holiday" data-type="Holiday"     onclick="selectLeaveType(this)">🎉 Holiday</button>
-          <button class="lv-type-btn lv-type-other"  data-type="Other"        onclick="selectLeaveType(this)" style="grid-column:1/-1">📌 Other</button>
         </div>
       </div>
 
@@ -958,7 +949,6 @@ CR-202 Dark mode feature request
     <div class="lv-stat-row">
       <div class="lv-stat"><div class="lv-sn" id="lvStatTotal" style="color:#a5b4fc">0</div><div class="lv-sl">Total Leaves</div></div>
       <div class="lv-stat"><div class="lv-sn" id="lvStatToday" style="color:#f87171">0</div><div class="lv-sl">Away Today</div></div>
-      <div class="lv-stat"><div class="lv-sn" id="lvStatWfh" style="color:#67e8f9">0</div><div class="lv-sl">WFH Today</div></div>
       <div class="lv-stat"><div class="lv-sn" id="lvStatMonth" style="color:#34d399">0</div><div class="lv-sl">This Month</div></div>
     </div>
 
@@ -984,8 +974,6 @@ CR-202 Dark mode feature request
         <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(16,185,129,.5);display:inline-block"></span>Available</span>
         <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(99,102,241,.5);display:inline-block"></span>Annual Leave</span>
         <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.5);display:inline-block"></span>Sick Leave</span>
-        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(6,182,212,.4);display:inline-block"></span>WFH</span>
-        <span style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(245,158,11,.5);display:inline-block"></span>Holiday</span>
       </div>
       <div style="display:flex;gap:0;margin-bottom:6px;padding-left:110px" id="lvAvailDateHeader"></div>
       <div class="lv-avail-grid" id="lvAvailGrid"></div>
@@ -1002,7 +990,6 @@ CR-202 Dark mode feature request
           <select id="lvListTypeFilter" onchange="renderLvList()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit">
             <option value="">All Types</option>
             <option>Annual Leave</option><option>Sick Leave</option>
-            <option>WFH</option><option>Holiday</option><option>Other</option>
           </select>
         </div>
       </div>
@@ -2079,7 +2066,6 @@ const REDMINE_MEMBERS=[
   {id:459, name:'Suhel Khan'},
   {id:479, name:'Harivansh Shukla'},
   {id:487, name:'Puneet Srivastava'},
-  {id:531, name:'Priyanshi Gupta'},
   {id:631, name:'Mohd Talha'},
   {id:653, name:'Akash Kumar'},
   {id:727, name:'Ishant Bhatia'},   // default assignee
@@ -2719,9 +2705,6 @@ let lvSelectedType = 'Annual Leave';
 const LV_TYPE_COLORS = {
   'Annual Leave': { bg:'rgba(99,102,241,.5)',  chip:'lv-chip-annual'  },
   'Sick Leave':   { bg:'rgba(239,68,68,.5)',   chip:'lv-chip-sick'    },
-  'WFH':          { bg:'rgba(6,182,212,.4)',   chip:'lv-chip-wfh'     },
-  'Holiday':      { bg:'rgba(245,158,11,.5)',  chip:'lv-chip-holiday' },
-  'Other':        { bg:'rgba(100,116,139,.5)', chip:'lv-chip-other'   },
 };
 
 function lvSaveLocal(){ localStorage.setItem('et_leaves', JSON.stringify(leaves)); }
@@ -2839,7 +2822,7 @@ function renderLvCal(){
     if(isWeekend) cls+=' weekend-day';
 
     const chips = dayLeaves.slice(0,3).map(l=>{
-      const cc = (LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Other']).chip;
+      const cc = (LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Annual Leave']).chip;
       return `<div class="lv-leave-chip ${cc}" title="${l.emp} — ${l.type}${l.note?' ('+l.note+')':''}" onclick="event.stopPropagation()">
         <span style="overflow:hidden;text-overflow:ellipsis">${l.emp.split(' ')[0]}</span>
       </div>`;
@@ -2889,7 +2872,7 @@ function renderLvAvailability(){
       if(dow===0||dow===6){ bg='rgba(100,116,139,.15)'; tip='Weekend'; }
       else if(dl.length){
         const l=dl[0];
-        bg=(LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Other']).bg;
+        bg=(LV_TYPE_COLORS[l.type]||LV_TYPE_COLORS['Annual Leave']).bg;
         tip=`${emp} — ${l.type}${l.note?' ('+l.note+')':''}`;
       }
       return `<div class="lv-avail-seg" style="flex:1;background:${bg}" data-tip="${tip}"></div>`;
@@ -2912,15 +2895,13 @@ function renderLvTodayStatus(){
     let cls='lv-emp-avail', icon='🟢', label='In Office';
     if(dl.length){
       const t=dl[0].type;
-      if(t==='WFH'){ cls='lv-emp-wfh'; icon='🏠'; label='WFH'; wfhCount++; }
-      else { cls='lv-emp-away'; icon='🔴'; label=t; awayCount++; }
+      cls='lv-emp-away'; icon='🔴'; label=t; awayCount++;
     }
     return `<span class="lv-emp-badge ${cls}">${icon} ${emp.split(' ')[0]} <span style="opacity:.7;font-size:.65rem">${label}</span></span>`;
   }).join('');
 
   document.getElementById('lvTodayStatus').innerHTML = badges||'<span style="color:var(--muted);font-size:.78rem">No employees yet</span>';
   document.getElementById('lvStatToday').textContent = awayCount;
-  document.getElementById('lvStatWfh').textContent = wfhCount;
 }
 
 function renderLvStats(){
@@ -2936,21 +2917,71 @@ function renderLvList(){
   const filtered = leaves.filter(l=>(!empF||l.emp===empF)&&(!typeF||l.type===typeF))
     .sort((a,b)=>b.from.localeCompare(a.from));
 
-  const CHIP_CLASS = { 'Annual Leave':'lv-chip-annual','Sick Leave':'lv-chip-sick','WFH':'lv-chip-wfh','Holiday':'lv-chip-holiday','Other':'lv-chip-other' };
+  const CHIP_CLASS = { 'Annual Leave':'lv-chip-annual','Sick Leave':'lv-chip-sick' };
 
   const body = document.getElementById('lvListBody');
   if(!filtered.length){ body.innerHTML=`<tr><td colspan="7" class="lv-list-empty">📭 No leave records found</td></tr>`; return; }
 
-  body.innerHTML = filtered.map(l=>`
-    <tr>
+  body.innerHTML = filtered.map(l=>{
+    const isEditing = (window._lvEditId === l.id);
+    if(isEditing){
+      return `<tr style="background:rgba(99,102,241,.06)">
+        <td><span style="font-weight:600;color:#e2e8f0">${l.emp}</span></td>
+        <td>
+          <select id="lvEditType_${l.id}" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit">
+            <option${l.type==='Annual Leave'?' selected':''}>Annual Leave</option>
+            <option${l.type==='Sick Leave'?' selected':''}>Sick Leave</option>
+          </select>
+        </td>
+        <td><input type="date" id="lvEditFrom_${l.id}" value="${l.from}" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit"/></td>
+        <td><input type="date" id="lvEditTo_${l.id}"   value="${l.to}"   style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit"/></td>
+        <td style="font-weight:700;color:#a5b4fc">${l.days}d</td>
+        <td><input type="text" id="lvEditNote_${l.id}" value="${l.note||''}" placeholder="Note…" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit;width:120px"/></td>
+        <td style="display:flex;gap:5px">
+          <button class="btn btn-success btn-sm" onclick="saveLeaveEdit(${l.id})">✔ Save</button>
+          <button class="btn btn-secondary btn-sm" onclick="cancelLeaveEdit()">✕</button>
+        </td>
+      </tr>`;
+    }
+    return `<tr>
       <td><span style="font-weight:600;color:#e2e8f0">${l.emp}</span></td>
-      <td><span class="lv-leave-chip ${CHIP_CLASS[l.type]||'lv-chip-other'}" style="display:inline-flex">${l.type}</span></td>
+      <td><span class="lv-leave-chip ${CHIP_CLASS[l.type]||'lv-chip-annual'}" style="display:inline-flex">${l.type}</span></td>
       <td style="color:#94a3b8">${l.from}</td>
       <td style="color:#94a3b8">${l.to}</td>
       <td style="font-weight:700;color:#a5b4fc">${l.days}d</td>
       <td style="color:#64748b;font-size:.78rem">${l.note||'—'}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteLeave(${l.id})">🗑</button></td>
-    </tr>`).join('');
+      <td style="display:flex;gap:5px">
+        <button class="btn btn-secondary btn-sm" onclick="editLeave(${l.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteLeave(${l.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function editLeave(id){
+  window._lvEditId = id;
+  renderLvList();
+}
+
+function cancelLeaveEdit(){
+  window._lvEditId = null;
+  renderLvList();
+}
+
+function saveLeaveEdit(id){
+  const idx = leaves.findIndex(l=>l.id===id);
+  if(idx===-1) return;
+  const type = document.getElementById('lvEditType_'+id).value;
+  const from = document.getElementById('lvEditFrom_'+id).value;
+  const to   = document.getElementById('lvEditTo_'+id).value;
+  const note = document.getElementById('lvEditNote_'+id).value.trim();
+  if(!from||!to){ showToast('⚠️ Dates required'); return; }
+  if(from > to){ showToast('⚠️ From must be before To'); return; }
+  leaves[idx] = { ...leaves[idx], type, from, to, note, days: lvWorkingDays(from, to) };
+  window._lvEditId = null;
+  lvSaveLocal();
+  renderLvAll();
+  showToast('✅ Leave updated');
 }
 
 function renderLvAll(){
