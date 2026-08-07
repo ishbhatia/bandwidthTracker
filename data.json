@@ -1095,20 +1095,6 @@
     "redmineUrl": null
   },
   {
-    "id": 1786108860609,
-    "empName": "Ishant",
-    "taskName": "1",
-    "startDate": "2026-08-07",
-    "timeSpent": 1,
-    "expectedHrs": 1,
-    "devEndDate": "",
-    "status": "To Do",
-    "environment": "DEV",
-    "subtasks": [],
-    "redmineId": null,
-    "redmineUrl": null
-  },
-  {
     "id": 1786109088660,
     "empName": "Ishan",
     "taskName": "1",
