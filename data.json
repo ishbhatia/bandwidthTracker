@@ -1027,7 +1027,7 @@
       {
         "name": "LEO Integration in DEQC",
         "hrs": 0,
-        "done": false
+        "done": true
       },
       {
         "name": "Callback & Dummy Controller",
