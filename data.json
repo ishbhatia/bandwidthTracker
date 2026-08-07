@@ -733,17 +733,17 @@
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page Ã¯Â¿Â½ Document Viewer (image display",
+        "name": "\"Mandate Decision Page ÃÂ¯ÃÂ¿ÃÂ½ Document Viewer (image display",
         "hrs": 0,
         "done": false
       },
       {
-        "name": "Mandate Decision Page Ã¯Â¿Â½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
+        "name": "Mandate Decision Page ÃÂ¯ÃÂ¿ÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
         "hrs": 3,
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page Ã¯Â¿Â½ Decision Section (Maker fields",
+        "name": "\"Mandate Decision Page ÃÂ¯ÃÂ¿ÃÂ½ Decision Section (Maker fields",
         "hrs": 6,
         "done": false
       },
@@ -920,6 +920,18 @@
     "devEndDate": "",
     "status": "To Do",
     "environment": "DEV",
+    "subtasks": []
+  },
+  {
+    "id": 1786081379250,
+    "empName": "Talha",
+    "taskName": "Prod issue ticket#182470 | RCA and MHR pfr removal",
+    "startDate": "2026-08-06",
+    "timeSpent": 3,
+    "expectedHrs": 0,
+    "devEndDate": "2026-08-06",
+    "status": "Done",
+    "environment": "PROD",
     "subtasks": []
   }
 ]
