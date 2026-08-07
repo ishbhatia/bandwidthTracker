@@ -1007,7 +1007,7 @@
       {
         "name": "MongoDBConfig - Dual MongoTemplate Setup",
         "hrs": 6,
-        "done": false
+        "done": true
       },
       {
         "name": "Metadata Impl - eKYC/PAN/BAV Extraction",
