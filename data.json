@@ -1079,19 +1079,5 @@
         "done": false
       }
     ]
-  },
-  {
-    "id": 1786099602995,
-    "empName": "Ishant",
-    "taskName": "Test",
-    "startDate": "2026-08-07",
-    "timeSpent": 1,
-    "expectedHrs": 1,
-    "devEndDate": "2026-08-07",
-    "status": "Done",
-    "environment": "UAT",
-    "subtasks": [],
-    "redmineId": null,
-    "redmineUrl": null
   }
 ]
