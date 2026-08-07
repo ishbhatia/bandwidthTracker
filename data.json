@@ -719,17 +719,17 @@
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½ Document Viewer (image display",
+        "name": "\"Mandate Decision Page ÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ½ Document Viewer (image display",
         "hrs": 0,
         "done": false
       },
       {
-        "name": "Mandate Decision Page ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
+        "name": "Mandate Decision Page ÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
         "hrs": 3,
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½ Decision Section (Maker fields",
+        "name": "\"Mandate Decision Page ÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ½ Decision Section (Maker fields",
         "hrs": 6,
         "done": false
       },
@@ -961,7 +961,7 @@
     "empName": "Vijay",
     "taskName": "Parent Task Insured 2.0",
     "startDate": "2026-07-20",
-    "timeSpent": 0,
+    "timeSpent": 85,
     "expectedHrs": 85,
     "devEndDate": "",
     "status": "To Do",
@@ -972,16 +972,12 @@
       {
         "name": "Requirement Analysis & Discussion and Planning",
         "hrs": 8,
-        "done": false,
-        "prevStatus": "To Do",
-        "status": "In Progress"
+        "done": false
       },
       {
         "name": "Requirement Analysis & Flow Designb Part-2",
         "hrs": 6,
-        "done": false,
-        "prevStatus": "To Do",
-        "status": "In Progress"
+        "done": false
       },
       {
         "name": "LaunchService - Insure 2.0 Case Identification",
