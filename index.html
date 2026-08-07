@@ -578,7 +578,7 @@
 </div>
 
 <header>
-  <div class="hlogo">
+  <div class="hlogo" onclick="showAbout()" style="cursor:pointer" title="About Easy Tracker">
     <div class="hlogo-icon">⚡</div>
     <div>
       <h1>Easy Tracker</h1>
@@ -593,10 +593,36 @@
   </div>
 </header>
 
+<!-- About Modal -->
+<div class="overlay" id="aboutModal" style="align-items:center;justify-content:center">
+  <div class="modal" style="max-width:420px;text-align:center;padding:36px 32px">
+    <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 18px;box-shadow:0 0 24px rgba(99,102,241,.4)">⚡</div>
+    <div style="font-size:1.3rem;font-weight:700;background:linear-gradient(90deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px">Easy Tracker</div>
+    <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px">AI Powered Dashboard</div>
+    <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:20px;padding:5px 16px;font-size:.78rem;font-weight:700;color:#a5b4fc;margin-bottom:20px">🏷 Version 1.0.0</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:left">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Features</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:.78rem;color:#cbd5e1">
+        <span>⚡ Task Dashboard — Add, edit, track tasks</span>
+        <span>👤 Person View — Day-wise breakdown per member</span>
+        <span>�� Leave Tracker — Team availability calendar</span>
+        <span>🤖 AI Insights — Auto-detect blockers &amp; overload</span>
+        <span>💾 GitHub Storage — Every change auto-saved</span>
+        <span>📧 Outlook Scraper — <span style="color:#f59e0b;font-weight:700">Coming Soon</span></span>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);line-height:1.7">
+      <div style="margin-bottom:4px">© 2026 <span style="color:#a5b4fc;font-weight:700">Lumiq.ai</span> · All rights reserved</div>
+      <div>Built with ❤️ by <span style="color:#e2e8f0;font-weight:600">Ishant Bhatia</span></div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:20px;width:100%" onclick="document.getElementById('aboutModal').classList.remove('open')">Close</button>
+  </div>
+</div>
+
 <!-- Tab Navigation -->
 <nav class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
-  <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper</button>
+  <button class="tab-btn" onclick="switchTab('scraper')">📧 Outlook Scraper <span style="font-size:.58rem;font-weight:700;background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">Coming Soon</span></button>
   <button class="tab-btn" onclick="switchTab('personview')">👤 Person View</button>
   <button class="tab-btn" onclick="switchTab('leave')">🗓 Leave Tracker</button>
 </nav>
@@ -2217,6 +2243,11 @@ async function fetchOutlookEmails(){
     btn.disabled=false;btn.textContent='Sign in with Microsoft';
     showToast('❌ Outlook error: '+e.message);
   }
+}
+
+// ── About ────────────────────────────────────────────────
+function showAbout(){
+  document.getElementById('aboutModal').classList.add('open');
 }
 
 // ── Tab switching ─────────────────────────────────────────
