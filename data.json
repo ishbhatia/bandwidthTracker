@@ -733,17 +733,17 @@
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ï¿½ Document Viewer (image display",
+        "name": "\"Mandate Decision Page Ã¯Â¿Â½ Document Viewer (image display",
         "hrs": 0,
         "done": false
       },
       {
-        "name": "Mandate Decision Page ï¿½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
+        "name": "Mandate Decision Page Ã¯Â¿Â½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
         "hrs": 3,
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ï¿½ Decision Section (Maker fields",
+        "name": "\"Mandate Decision Page Ã¯Â¿Â½ Decision Section (Maker fields",
         "hrs": 6,
         "done": false
       },
@@ -873,5 +873,17 @@
         "done": false
       }
     ]
+  },
+  {
+    "id": 1786078601056,
+    "empName": "Vijay",
+    "taskName": "Group prod || Cases not moving from groupasia conductor queue due to no task found error",
+    "startDate": "2026-08-06",
+    "timeSpent": 2,
+    "expectedHrs": 0,
+    "devEndDate": "",
+    "status": "Done",
+    "environment": "PROD",
+    "subtasks": []
   }
 ]
