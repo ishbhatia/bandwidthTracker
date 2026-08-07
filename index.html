@@ -813,7 +813,26 @@ CR-202 Dark mode feature request
   </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- Subtask Detail Modal -->
+<div class="overlay" id="subtaskModal" style="align-items:center;justify-content:center">
+  <div class="modal" style="max-width:640px;width:95%">
+    <div class="modal-title" id="subtaskModalTitle" style="justify-content:space-between">
+      <span>📋 Subtasks</span>
+      <button class="btn btn-secondary btn-sm" onclick="closeSubtaskModal()" style="margin-left:auto">✕ Close</button>
+    </div>
+    <!-- Summary bar -->
+    <div id="subtaskModalSummary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <!-- Progress bar -->
+    <div class="st-progress" style="margin-bottom:16px">
+      <div class="st-progress-fill" id="subtaskModalProgress" style="width:0%"></div>
+    </div>
+    <!-- Subtask list -->
+    <div id="subtaskModalList" style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;padding-right:4px"></div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeSubtaskModal()">✕ Close</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="editModal">
   <div class="modal">
     <div class="modal-title">✏️ Edit Task</div>
@@ -1031,7 +1050,7 @@ async function saveEdit(){
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o&&o.id!=='subtaskModal')o.classList.remove('open');}));
 
 // ── Sort / Filter ─────────────────────────────────────────
 function sortBy(k){sortAsc=(sortKey===k)?!sortAsc:true;sortKey=k;renderTable();}
@@ -2156,9 +2175,62 @@ function getSubtasksFromForm(listId){
   }).filter(s=>s.name);
 }
 function toggleSub(idx){
-  const rows=document.querySelectorAll(`.sub-row-${idx}`);
-  const isHidden=rows[0]&&rows[0].style.display==='none';
-  rows.forEach(r=>r.style.display=isHidden?'table-row':'none');
+  const t=tasks[idx];
+  const subs=t.subtasks||[];
+  if(!subs.length)return;
+
+  const modal=document.getElementById('subtaskModal');
+  const title=document.getElementById('subtaskModalTitle');
+  const summary=document.getElementById('subtaskModalSummary');
+  const progress=document.getElementById('subtaskModalProgress');
+  const list=document.getElementById('subtaskModalList');
+
+  const subDone=subs.filter(s=>s.done).length;
+  const subHrs=subs.reduce((s,st)=>s+(+st.hrs||0),0);
+  const pct=Math.round(subDone/subs.length*100);
+
+  // Title
+  title.innerHTML=`<span>📋 ${esc(t.taskName)}</span><button class="btn btn-secondary btn-sm" onclick="closeSubtaskModal()" style="margin-left:auto">✕ Close</button>`;
+
+  // Summary chips
+  summary.innerHTML=`
+    <span class="pv-chip pv-chip-total">${subs.length} Subtasks</span>
+    <span class="pv-chip pv-chip-done">${subDone} Done</span>
+    <span class="pv-chip pv-chip-hrs">${subHrs}h Total</span>
+    <span class="pv-chip pv-chip-total" style="background:rgba(245,158,11,.1);color:#fbbf24;border-color:rgba(245,158,11,.25)">${pct}% Complete</span>
+  `;
+
+  // Progress
+  progress.style.width=pct+'%';
+
+  // Subtask rows
+  list.innerHTML=subs.map((st,si)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;
+      background:var(--surface2);border:1px solid var(--border);transition:background .12s"
+      onmouseover="this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.background='var(--surface2)'">
+      <input type="checkbox" ${st.done?'checked':''} onchange="toggleSubDoneModal(${idx},${si})"
+        style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;cursor:pointer"/>
+      <span style="flex:1;font-size:.83rem;color:${st.done?'var(--muted)':'#e2e8f0'};
+        ${st.done?'text-decoration:line-through;':''}">${esc(st.name)}</span>
+      <span style="font-size:.75rem;font-weight:700;color:#818cf8;flex-shrink:0">${st.hrs||0}h</span>
+      <span class="badge ${st.done?'badge-done':'badge-todo'}" style="flex-shrink:0">${st.done?'Done':'Pending'}</span>
+    </div>`).join('');
+
+  modal.classList.add('open');
+  // Store current task index for updates
+  modal._taskIdx=idx;
+}
+
+function closeSubtaskModal(){
+  document.getElementById('subtaskModal').classList.remove('open');
+}
+
+async function toggleSubDoneModal(taskIdx,subIdx){
+  tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
+  // Refresh modal without closing
+  toggleSub(taskIdx);
+  renderAll();
+  await saveToGitHub(`Update subtask: ${tasks[taskIdx].subtasks[subIdx].name}`);
 }
 async function toggleSubDone(taskIdx,subIdx){
   tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
