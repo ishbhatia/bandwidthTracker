@@ -982,12 +982,12 @@
       {
         "name": "LaunchService - Insure 2.0 Case Identification",
         "hrs": 2,
-        "done": false
+        "done": true
       },
       {
         "name": "Insure2Dedupe - Impl  Development",
         "hrs": 2,
-        "done": false
+        "done": true
       },
       {
         "name": "Insure2UpdatePlayerDetails - Impl Development",
