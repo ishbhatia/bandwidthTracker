@@ -683,16 +683,14 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div style="display:flex;align-items:center;gap:10px">
               <!-- Custom toggle checkbox -->
-              <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer">
-                <input type="checkbox" id="addRedmine" onchange="updateRedmineToggle()" style="position:absolute;opacity:0;width:0;height:0"/>
-                <span id="redmineToggleTrack" onclick="document.getElementById('addRedmine').click()"
-                  style="width:34px;height:18px;background:#374151;border-radius:9px;
-                         border:1px solid rgba(220,38,38,.3);transition:all .25s;
-                         display:flex;align-items:center;padding:2px;cursor:pointer">
-                  <span id="redmineToggleThumb" style="width:13px;height:13px;border-radius:50%;
-                         background:#6b7280;transition:all .25s;transform:translateX(0)"></span>
-                </span>
-              </label>
+              <input type="checkbox" id="addRedmine" style="display:none"/>
+              <div id="redmineToggleTrack" onclick="toggleRedmineBox()"
+                style="width:36px;height:20px;background:#374151;border-radius:10px;
+                       border:1px solid rgba(220,38,38,.3);transition:all .25s;
+                       display:flex;align-items:center;padding:2px;cursor:pointer;flex-shrink:0">
+                <div id="redmineToggleThumb" style="width:15px;height:15px;border-radius:50%;
+                       background:#6b7280;transition:all .25s;transform:translateX(0)"></div>
+              </div>
               <!-- Redmine brand badge -->
               <div style="display:flex;align-items:center;gap:7px">
                 <div style="width:28px;height:28px;border-radius:8px;
@@ -1422,7 +1420,7 @@ function clearForm(){
   document.getElementById('subtaskList').innerHTML='';
   // Reset Redmine toggle to OFF
   const cb=document.getElementById('addRedmine');
-  if(cb&&cb.checked){cb.checked=false;updateRedmineToggle();}
+  if(cb){cb.checked=false;updateRedmineToggle();}
 }
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
 function openEdit(idx){
@@ -2454,6 +2452,12 @@ function startProxyPolling(){
 }
 
 // ── Redmine Toggle ───────────────────────────────────────
+function toggleRedmineBox(){
+  const cb = document.getElementById('addRedmine');
+  if(!cb) return;
+  cb.checked = !cb.checked;
+  updateRedmineToggle();
+}
 function updateRedmineToggle(){
   const cb = document.getElementById('addRedmine');
   const track = document.getElementById('redmineToggleTrack');
