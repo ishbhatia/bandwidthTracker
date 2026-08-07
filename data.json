@@ -979,7 +979,9 @@
       {
         "name": "Requirement Analysis & Flow Designb Part-2",
         "hrs": 6,
-        "done": false
+        "done": false,
+        "prevStatus": "To Do",
+        "status": "In Progress"
       },
       {
         "name": "LaunchService - Insure 2.0 Case Identification",
