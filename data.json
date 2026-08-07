@@ -1081,20 +1081,6 @@
     ]
   },
   {
-    "id": 1786129176655,
-    "empName": "IshantTest",
-    "taskName": "IshantTest",
-    "startDate": "2026-08-07",
-    "timeSpent": 1,
-    "expectedHrs": 1,
-    "devEndDate": "",
-    "status": "To Do",
-    "environment": "DEV",
-    "subtasks": [],
-    "redmineId": null,
-    "redmineUrl": null
-  },
-  {
     "id": 1786129225473,
     "empName": "ISHANT",
     "taskName": "TEST1",
