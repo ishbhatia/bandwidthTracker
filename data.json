@@ -933,5 +933,17 @@
     "status": "Done",
     "environment": "PROD",
     "subtasks": []
+  },
+  {
+    "id": 1786081427469,
+    "empName": "Talha",
+    "taskName": "Prod Issue Data Not Populating in Proposal Form DB | RCA of ResourceNotFoundException",
+    "startDate": "2026-08-06",
+    "timeSpent": 2,
+    "expectedHrs": 0,
+    "devEndDate": "2026-08-06",
+    "status": "Done",
+    "environment": "PROD",
+    "subtasks": []
   }
 ]
