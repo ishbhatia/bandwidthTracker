@@ -684,8 +684,8 @@
             <div style="display:flex;align-items:center;gap:10px">
               <!-- Custom toggle checkbox -->
               <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer">
-                <input type="checkbox" id="addRedmine" style="position:absolute;opacity:0;width:0;height:0"/>
-                <span id="redmineToggleTrack" onclick="this.previousElementSibling.click();updateRedmineToggle()"
+                <input type="checkbox" id="addRedmine" onchange="updateRedmineToggle()" style="position:absolute;opacity:0;width:0;height:0"/>
+                <span id="redmineToggleTrack" onclick="document.getElementById('addRedmine').click()"
                   style="width:34px;height:18px;background:#374151;border-radius:9px;
                          border:1px solid rgba(220,38,38,.3);transition:all .25s;
                          display:flex;align-items:center;padding:2px;cursor:pointer">
@@ -1414,7 +1414,16 @@ async function addTask(){
   tasks.push({id:Date.now(),empName,taskName,startDate,timeSpent,expectedHrs,devEndDate,status,environment,subtasks,redmineId,redmineUrl});
   renderAll();clearForm();await saveToGitHub(`Add task: ${taskName} (${empName})${redmineId?' [Redmine #'+redmineId+']':''}`);
 }
-function clearForm(){['empName','taskName','timeSpent','expectedHrs','devEndDate'].forEach(id=>document.getElementById(id).value='');document.getElementById('startDate').valueAsDate=new Date();document.getElementById('status').value='To Do';document.getElementById('environment').value='DEV';document.getElementById('subtaskList').innerHTML='';}
+function clearForm(){
+  ['empName','taskName','timeSpent','expectedHrs','devEndDate'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('startDate').valueAsDate=new Date();
+  document.getElementById('status').value='To Do';
+  document.getElementById('environment').value='DEV';
+  document.getElementById('subtaskList').innerHTML='';
+  // Reset Redmine toggle to OFF
+  const cb=document.getElementById('addRedmine');
+  if(cb&&cb.checked){cb.checked=false;updateRedmineToggle();}
+}
 async function deleteTask(idx){if(!confirm('Delete this task?'))return;const t=tasks[idx];tasks.splice(idx,1);renderAll();await saveToGitHub(`Delete: ${t.taskName} (${t.empName})`);}
 function openEdit(idx){
   editIndex=idx;const t=tasks[idx];
