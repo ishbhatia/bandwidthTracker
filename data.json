@@ -719,17 +719,17 @@
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ÃÂ¯ÃÂ¿ÃÂ½ Document Viewer (image display",
+        "name": "\"Mandate Decision Page ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½ Document Viewer (image display",
         "hrs": 0,
         "done": false
       },
       {
-        "name": "Mandate Decision Page ÃÂ¯ÃÂ¿ÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
+        "name": "Mandate Decision Page ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½ NACH Form Details (ICR/OCR editable fields + comparison) (API integration inc.)",
         "hrs": 3,
         "done": false
       },
       {
-        "name": "\"Mandate Decision Page ÃÂ¯ÃÂ¿ÃÂ½ Decision Section (Maker fields",
+        "name": "\"Mandate Decision Page ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½ Decision Section (Maker fields",
         "hrs": 6,
         "done": false
       },
@@ -955,5 +955,105 @@
     "status": "Done",
     "environment": "UAT",
     "subtasks": []
+  },
+  {
+    "id": 1786084407823.5532,
+    "empName": "Vijay",
+    "taskName": "Parent Task Insured 2.0",
+    "startDate": "2026-07-20",
+    "timeSpent": 0,
+    "expectedHrs": 75,
+    "devEndDate": "",
+    "status": "To Do",
+    "environment": "DEV",
+    "prevStatus": "",
+    "reopenCount": 0,
+    "subtasks": [
+      {
+        "name": "Requirement Analysis & Discussion and Planning",
+        "hrs": 8,
+        "done": false
+      },
+      {
+        "name": "Requirement Analysis & Flow Designb Part-2",
+        "hrs": 6,
+        "done": false
+      },
+      {
+        "name": "LaunchService - Insure 2.0 Case Identification",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "Insure2Dedupe - Impl  Development",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "Insure2UpdatePlayerDetails - Impl Development",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "Insure2FinancialPFRCheck - Impl Development",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "Insure2AnurCheckCommand - ProposalDB Integration",
+        "hrs": 2,
+        "done": false
+      },
+      {
+        "name": "MongoDBConfig - Dual MongoTemplate Setup",
+        "hrs": 6,
+        "done": false
+      },
+      {
+        "name": "Metadata Impl - eKYC/PAN/BAV Extraction",
+        "hrs": 6,
+        "done": false
+      },
+      {
+        "name": "NBTouchFlowRoutes.json - Complete Routing Configuration",
+        "hrs": 8,
+        "done": false
+      },
+      {
+        "name": "External API Configuration in workflow",
+        "hrs": 3,
+        "done": false
+      },
+      {
+        "name": "LEO Integration in DEQC",
+        "hrs": 0,
+        "done": false
+      },
+      {
+        "name": "Callback & Dummy Controller",
+        "hrs": 4,
+        "done": false
+      },
+      {
+        "name": "PR Review & Merge & Deploy",
+        "hrs": 4,
+        "done": false
+      },
+      {
+        "name": "Development on Insured 2.0 Callback Wrapper Api",
+        "hrs": 6,
+        "done": false
+      },
+      {
+        "name": "Gather the required Unified API and Saving the responses for Insured 2.0 Callback request body.",
+        "hrs": 6,
+        "done": false
+      },
+      {
+        "name": "Code Review, Testing & Debugging",
+        "hrs": 8,
+        "done": false
+      }
+    ]
   }
 ]
