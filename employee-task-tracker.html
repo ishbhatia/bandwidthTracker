@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Easy Tracker — AI Dashboard</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -753,10 +754,11 @@ CR-202 Dark mode feature request
 
       <!-- Format hint -->
       <div class="import-format-hint">
-        <strong>Expected CSV format:</strong><br/>
+        <strong>Expected format (CSV or Excel):</strong><br/>
         Row 1 → Parent task name + total effort (e.g. <code>SI-NACH, 50 hrs</code>)<br/>
         Next rows → Child tasks: <code>Task name, 2 hrs</code> or <code>Task name, 1 day</code> or <code>Task name, 1.5 days</code><br/>
-        <strong>1 day = 9 hrs</strong> · Empty rows are skipped · Buffer % row is skipped
+        <strong>1 day = 9 hrs</strong> · Empty rows are skipped · Buffer % row is skipped<br/>
+        <strong>📋 Excel (.xlsx):</strong> If your file has multiple sheets, you'll be asked to pick the right tab.
       </div>
 
       <!-- Default fields applied to all tasks -->
@@ -773,10 +775,20 @@ CR-202 Dark mode feature request
 
       <!-- Drop zone -->
       <div class="import-drop-zone" id="csvDropZone">
-        <input type="file" accept=".csv,.txt" onchange="handleCsvFile(this.files[0])"/>
+        <input type="file" accept=".csv,.txt,.xlsx,.xls" onchange="handleCsvFile(this.files[0])"/>
         <div class="dz-icon">📄</div>
-        <div class="dz-title">Drop your CSV file here or click to browse</div>
-        <div class="dz-sub">Supports .csv and .txt files</div>
+        <div class="dz-title">Drop your CSV or Excel file here or click to browse</div>
+        <div class="dz-sub">Supports .csv, .txt, .xlsx, .xls</div>
+      </div>
+
+      <!-- Sheet/Tab selector (shown only for Excel with multiple sheets) -->
+      <div id="sheetPickerSection" style="display:none;margin-top:14px">
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px 15px;">
+          <div style="font-size:.75rem;font-weight:700;color:#fbbf24;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+            📋 This Excel file has multiple sheets — pick the one to import:
+          </div>
+          <div id="sheetTabList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
       </div>
 
       <!-- Preview -->
@@ -801,7 +813,26 @@ CR-202 Dark mode feature request
   </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- Subtask Detail Modal -->
+<div class="overlay" id="subtaskModal" style="align-items:center;justify-content:center">
+  <div class="modal" style="max-width:640px;width:95%">
+    <div class="modal-title" id="subtaskModalTitle" style="justify-content:space-between">
+      <span>📋 Subtasks</span>
+      <button class="btn btn-secondary btn-sm" onclick="closeSubtaskModal()" style="margin-left:auto">✕ Close</button>
+    </div>
+    <!-- Summary bar -->
+    <div id="subtaskModalSummary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <!-- Progress bar -->
+    <div class="st-progress" style="margin-bottom:16px">
+      <div class="st-progress-fill" id="subtaskModalProgress" style="width:0%"></div>
+    </div>
+    <!-- Subtask list -->
+    <div id="subtaskModalList" style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;padding-right:4px"></div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeSubtaskModal()">✕ Close</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="editModal">
   <div class="modal">
     <div class="modal-title">✏️ Edit Task</div>
@@ -1019,7 +1050,7 @@ async function saveEdit(){
   closeModal('editModal');renderAll();await saveToGitHub(`Update: ${taskName} (${empName})`);
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');editIndex=null;}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o&&o.id!=='subtaskModal')o.classList.remove('open');}));
 
 // ── Sort / Filter ─────────────────────────────────────────
 function sortBy(k){sortAsc=(sortKey===k)?!sortAsc:true;sortKey=k;renderTable();}
@@ -1201,9 +1232,64 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-acti
 
 function handleCsvFile(file){
   if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>parseCsvContent(e.target.result);
-  reader.readAsText(file);
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='xlsx'||ext==='xls'){
+    // Excel file — use SheetJS
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const sheets=wb.SheetNames;
+      if(sheets.length===1){
+        // Only one sheet — parse directly
+        const csv=XLSX.utils.sheet_to_csv(wb.Sheets[sheets[0]]);
+        document.getElementById('sheetPickerSection').style.display='none';
+        parseCsvContent(csv);
+      } else {
+        // Multiple sheets — show tab picker
+        document.getElementById('sheetPickerSection').style.display='block';
+        document.getElementById('csvPreviewSection').style.display='none';
+        const tabList=document.getElementById('sheetTabList');
+        tabList.innerHTML=sheets.map((name,i)=>`
+          <button onclick="pickSheet(${i})" id="sheetBtn-${i}"
+            style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);
+            background:var(--surface2);color:#e2e8f0;font-size:.78rem;font-weight:600;
+            cursor:pointer;font-family:inherit;transition:all .15s"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='#a5b4fc'"
+            onmouseout="if(!this.dataset.selected){this.style.borderColor='var(--border)';this.style.color='#e2e8f0'}">
+            📋 ${esc(name)}
+          </button>`).join('');
+        // Store workbook globally for sheet picking
+        window._xlsxWb=wb;
+        showToast(`📋 ${sheets.length} sheets found — pick a tab to import`);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // Plain CSV/TXT
+    document.getElementById('sheetPickerSection').style.display='none';
+    const reader=new FileReader();
+    reader.onload=e=>parseCsvContent(e.target.result);
+    reader.readAsText(file);
+  }
+}
+
+function pickSheet(idx){
+  const wb=window._xlsxWb;
+  if(!wb)return;
+  const sheetName=wb.SheetNames[idx];
+  // Highlight selected tab
+  wb.SheetNames.forEach((_,i)=>{
+    const btn=document.getElementById(`sheetBtn-${i}`);
+    if(!btn)return;
+    btn.dataset.selected=i===idx?'1':'';
+    btn.style.background=i===idx?'rgba(99,102,241,.2)':'var(--surface2)';
+    btn.style.borderColor=i===idx?'var(--accent)':'var(--border)';
+    btn.style.color=i===idx?'#a5b4fc':'#e2e8f0';
+  });
+  const csv=XLSX.utils.sheet_to_csv(wb.Sheets[sheetName]);
+  parseCsvContent(csv);
+  showToast(`📋 Loaded sheet: ${sheetName}`);
 }
 
 function parseHours(str){
@@ -1227,29 +1313,97 @@ function parseHours(str){
 }
 
 function parseCsvContent(text){
-  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l);
-  csvParsed=[];
-  let parentFound=false;
-  let parentTask=null;
+  // ── CSV line splitter (handles quoted commas) ──────────
+  function splitCsvLine(line){
+    const cells=[];let cur='';let inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cells.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    cells.push(cur.trim());
+    return cells;
+  }
 
-  for(const line of lines){
-    const commaIdx=line.indexOf(',');
-    if(commaIdx===-1)continue;
-    const col0=line.substring(0,commaIdx).trim();
-    const rest=line.substring(commaIdx+1).trim();
-    if(!col0)continue;
-    // Skip header / buffer rows
-    if(/^parent\s*task/i.test(col0)||/^efforts/i.test(rest)||/buffer/i.test(col0))continue;
-    const hrs=parseHours(rest);
-    if(!parentFound){
-      parentTask={name:col0,totalHrs:hrs,subtasks:[]};
-      parentFound=true;
-    } else {
-      if(col0&&parentTask)parentTask.subtasks.push({name:col0,hrs,done:false});
+  const rawLines=text.split(/\r?\n/);
+  const rows=rawLines.map(splitCsvLine);
+  csvParsed=[];
+
+  // ── Detect format ──────────────────────────────────────
+  // Format A: "Parent Task XYZ, Efforts" in row 1
+  //   → row 1 col A = parent name, all subsequent non-empty col A rows = subtasks
+  // Format B: WBS multi-section (col A=parent, col D=child, col B/E=effort)
+  //   → col A filled = parent section, col A empty + col D filled = child
+
+  // Check if row 0 col 1 header looks like "Efforts" / "Hrs" / "Hours"
+  const firstRow=rows[0]||[];
+  const secondCol=(firstRow[1]||'').toLowerCase();
+  const isSimpleFormat=secondCol.includes('effort')||secondCol.includes('hrs')||secondCol.includes('hour');
+
+  if(isSimpleFormat){
+    // ── Simple format: Row1=Parent, rest=Subtasks ────────
+    const parentName=(firstRow[0]||'').trim();
+    if(!parentName){renderCsvPreview();return;}
+
+    const parent={name:parentName,totalHrs:0,subtasks:[]};
+
+    for(let i=1;i<rows.length;i++){
+      const row=rows[i];
+      const name=(row[0]||'').trim();
+      const hrsRaw=(row[1]||'').trim();
+      if(!name)continue;
+      // Skip noise rows
+      if(/^(buffer|grand total|note:|total|summary)/i.test(name))continue;
+      const hrs=parseHours(hrsRaw)||0;
+      parent.subtasks.push({name,hrs,done:false});
+    }
+
+    parent.totalHrs=parent.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
+    csvParsed=[parent];
+
+  } else {
+    // ── WBS multi-section format ─────────────────────────
+    // Find header row for column positions
+    let headerIdx=-1;
+    let effortColIdx=1;
+    let childColIdx=3;
+    let childEffortColIdx=4;
+
+    for(let i=0;i<Math.min(5,rows.length);i++){
+      const lower=rows[i].map(c=>c.toLowerCase());
+      if(lower.some(c=>c.includes('effort')||c.includes('hrs')||c.includes('hour'))){
+        headerIdx=i;
+        effortColIdx=lower.findIndex((c,idx)=>idx>0&&(c.includes('effort')||c.includes('hrs')||c.includes('hour')));
+        childColIdx=lower.findIndex((c,idx)=>idx>1&&(c.includes('child')||c.includes('sub')||c.includes('task')));
+        if(childColIdx===-1)childColIdx=3;
+        childEffortColIdx=lower.findIndex((c,idx)=>idx>childColIdx&&(c.includes('effort')||c.includes('hrs')||c.includes('hour')));
+        if(childEffortColIdx===-1)childEffortColIdx=childColIdx+1;
+        break;
+      }
+    }
+
+    let currentParent=null;
+    const dataRows=rows.slice(headerIdx+1);
+
+    for(const row of dataRows){
+      const col0=(row[0]||'').trim();
+      const colEff=(row[effortColIdx]||'').trim();
+      const colChild=(row[childColIdx]||'').trim();
+      const colChildEff=(row[childEffortColIdx]||'').trim();
+
+      if(!col0&&!colChild)continue;
+      if(/^(buffer|grand total|note|total|summary)/i.test(col0||colChild))continue;
+
+      if(col0){
+        currentParent={name:col0,totalHrs:parseHours(colEff)||0,subtasks:[]};
+        csvParsed.push(currentParent);
+      } else if(colChild&&currentParent){
+        currentParent.subtasks.push({name:colChild,hrs:parseHours(colChildEff)||0,done:false});
+      }
     }
   }
 
-  if(parentTask)csvParsed=[parentTask];
   renderCsvPreview();
 }
 
@@ -1258,17 +1412,25 @@ function renderCsvPreview(){
   const body=document.getElementById('csvPreviewBody');
   const pill=document.getElementById('csvSummaryPill');
   if(!csvParsed.length){section.style.display='none';return;}
-  const p=csvParsed[0];
-  const totalChildHrs=p.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
-  const displayHrs=p.totalHrs||totalChildHrs;
-  pill.innerHTML=`<span class="import-summary-pill">✅ 1 parent · ${p.subtasks.length} subtasks · ${displayHrs}h total</span>`;
-  body.innerHTML=
-    `<tr class="is-parent"><td>📁 Parent</td><td>${esc(p.name)}</td><td>${displayHrs}h</td></tr>`
-    +p.subtasks.map(st=>`<tr class="is-child"><td>Child</td><td>${esc(st.name)}</td><td>${st.hrs}h</td></tr>`).join('');
+
+  const totalParents=csvParsed.length;
+  const totalChildren=csvParsed.reduce((s,p)=>s+p.subtasks.length,0);
+  const totalHrs=csvParsed.reduce((s,p)=>s+(p.totalHrs||p.subtasks.reduce((a,st)=>a+(+st.hrs||0),0)),0);
+
+  pill.innerHTML=`<span class="import-summary-pill">✅ ${totalParents} task${totalParents>1?'s':''} · ${totalChildren} subtasks · ${totalHrs.toFixed(1)}h total</span>`;
+
+  body.innerHTML=csvParsed.map(p=>{
+    const childHrs=p.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
+    const displayHrs=p.totalHrs||childHrs;
+    const parentRow=`<tr class="is-parent"><td>📁 Parent</td><td>${esc(p.name)}</td><td>${displayHrs}h</td></tr>`;
+    const childRows=p.subtasks.map(st=>`<tr class="is-child"><td>Child</td><td>${esc(st.name)}</td><td>${st.hrs}h</td></tr>`).join('');
+    return parentRow+childRows;
+  }).join('');
+
   section.style.display='block';
 }
 
-function clearCsvPreview(){csvParsed=[];document.getElementById('csvPreviewSection').style.display='none';}
+function clearCsvPreview(){csvParsed=[];document.getElementById('csvPreviewSection').style.display='none';document.getElementById('sheetPickerSection').style.display='none';window._xlsxWb=null;}
 
 async function importCsvTasks(){
   if(!csvParsed.length){showToast('⚠️ No data to import');return;}
@@ -1277,15 +1439,21 @@ async function importCsvTasks(){
   const startDate=document.getElementById('csvStartDate').value;
   const status=document.getElementById('csvStatus').value;
   const environment=document.getElementById('csvEnv').value;
-  const p=csvParsed[0];
-  const totalChildHrs=p.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
-  const expectedHrs=p.totalHrs||totalChildHrs;
-  tasks.push({id:Date.now(),empName,taskName:p.name,startDate,timeSpent:0,expectedHrs,devEndDate:'',status,environment,prevStatus:'',reopenCount:0,subtasks:p.subtasks});
+
+  const newTasks=csvParsed.map(p=>{
+    const childHrs=p.subtasks.reduce((s,st)=>s+(+st.hrs||0),0);
+    const expectedHrs=p.totalHrs||childHrs;
+    return{id:Date.now()+Math.random(),empName,taskName:p.name,startDate,timeSpent:0,
+      expectedHrs,devEndDate:'',status,environment,prevStatus:'',reopenCount:0,subtasks:p.subtasks};
+  });
+
+  tasks.push(...newTasks);
   renderAll();
   closeImportModal();
   clearCsvPreview();
-  showToast(`✅ Imported "${p.name}" with ${p.subtasks.length} subtasks`);
-  await saveToGitHub(`Import CSV: ${p.name} (${empName})`);
+  const totalSubs=csvParsed.reduce((s,p)=>s+p.subtasks.length,0);
+  showToast(`✅ Imported ${newTasks.length} task(s) with ${totalSubs} subtasks`);
+  await saveToGitHub(`Import CSV: ${newTasks.length} task(s) (${empName})`);
 }
 
 function renderAll(){renderStats();renderTable();renderInsights();populatePvSelect();if(document.getElementById('tab-board')&&document.getElementById('tab-board').classList.contains('active'))renderBoard();}
@@ -2007,9 +2175,83 @@ function getSubtasksFromForm(listId){
   }).filter(s=>s.name);
 }
 function toggleSub(idx){
-  const rows=document.querySelectorAll(`.sub-row-${idx}`);
-  const isHidden=rows[0]&&rows[0].style.display==='none';
-  rows.forEach(r=>r.style.display=isHidden?'table-row':'none');
+  const t=tasks[idx];
+  const subs=t.subtasks||[];
+  if(!subs.length)return;
+
+  const modal=document.getElementById('subtaskModal');
+  const title=document.getElementById('subtaskModalTitle');
+  const summary=document.getElementById('subtaskModalSummary');
+  const progress=document.getElementById('subtaskModalProgress');
+  const list=document.getElementById('subtaskModalList');
+
+  const subDone=subs.filter(s=>s.done).length;
+  const subHrs=subs.reduce((s,st)=>s+(+st.hrs||0),0);
+  const pct=Math.round(subDone/subs.length*100);
+
+  // Title
+  title.innerHTML=`<span>📋 ${esc(t.taskName)}</span><button class="btn btn-secondary btn-sm" onclick="closeSubtaskModal()" style="margin-left:auto">✕ Close</button>`;
+
+  // Summary chips
+  summary.innerHTML=`
+    <span class="pv-chip pv-chip-total">${subs.length} Subtasks</span>
+    <span class="pv-chip pv-chip-done">${subDone} Done</span>
+    <span class="pv-chip pv-chip-hrs">${subHrs}h Total</span>
+    <span class="pv-chip pv-chip-total" style="background:rgba(245,158,11,.1);color:#fbbf24;border-color:rgba(245,158,11,.25)">${pct}% Complete</span>
+  `;
+
+  // Progress
+  progress.style.width=pct+'%';
+
+  // Subtask rows
+  const ALL_ST_STATUS=['Pending','In Progress','Done','Blocked','In Review'];
+  list.innerHTML=subs.map((st,si)=>{
+    const stStatus=st.status||( st.done?'Done':'Pending');
+    const stColor=stStatus==='Done'?'#34d399':stStatus==='Blocked'?'#f87171':stStatus==='In Progress'?'#818cf8':stStatus==='In Review'?'#a78bfa':'#f59e0b';
+    const stBg=stStatus==='Done'?'rgba(16,185,129,.1)':stStatus==='Blocked'?'rgba(239,68,68,.1)':stStatus==='In Progress'?'rgba(99,102,241,.12)':stStatus==='In Review'?'rgba(139,92,246,.1)':'rgba(245,158,11,.1)';
+    const statusOpts=ALL_ST_STATUS.map(s=>`<option${s===stStatus?' selected':''}>${s}</option>`).join('');
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;
+      background:var(--surface2);border:1px solid var(--border);transition:background .12s"
+      onmouseover="this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.background='var(--surface2)'">
+      <input type="checkbox" ${st.done||stStatus==='Done'?'checked':''} onchange="toggleSubDoneModal(${idx},${si})"
+        style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;cursor:pointer"/>
+      <span style="flex:1;font-size:.83rem;color:${st.done||stStatus==='Done'?'var(--muted)':'#e2e8f0'};
+        ${st.done||stStatus==='Done'?'text-decoration:line-through;':''}">${esc(st.name)}</span>
+      <span style="font-size:.75rem;font-weight:700;color:#818cf8;flex-shrink:0">${st.hrs||0}h</span>
+      <select onchange="updateSubStatusModal(${idx},${si},this.value)"
+        style="padding:3px 8px;border-radius:6px;border:1px solid ${stColor};
+        background:${stBg};color:${stColor};font-size:.72rem;font-weight:700;
+        font-family:inherit;cursor:pointer;outline:none;flex-shrink:0">
+        ${statusOpts}
+      </select>
+    </div>`;
+  }).join('');
+
+  modal.classList.add('open');
+  // Store current task index for updates
+  modal._taskIdx=idx;
+}
+
+function closeSubtaskModal(){
+  document.getElementById('subtaskModal').classList.remove('open');
+}
+
+async function toggleSubDoneModal(taskIdx,subIdx){
+  const st=tasks[taskIdx].subtasks[subIdx];
+  st.done=!st.done;
+  st.status=st.done?'Done':'Pending';
+  toggleSub(taskIdx);
+  renderAll();
+  await saveToGitHub(`Update subtask: ${st.name}`);
+}
+
+async function updateSubStatusModal(taskIdx,subIdx,newStatus){
+  const st=tasks[taskIdx].subtasks[subIdx];
+  st.status=newStatus;
+  st.done=newStatus==='Done';
+  toggleSub(taskIdx);
+  renderAll();
+  await saveToGitHub(`Update subtask status: ${st.name}`);
 }
 async function toggleSubDone(taskIdx,subIdx){
   tasks[taskIdx].subtasks[subIdx].done=!tasks[taskIdx].subtasks[subIdx].done;
