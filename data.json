@@ -1037,17 +1037,17 @@
       {
         "name": "PR Review & Merge & Deploy",
         "hrs": 4,
-        "done": false
+        "done": true
       },
       {
         "name": "Development on Insured 2.0 Callback Wrapper Api",
         "hrs": 6,
-        "done": false
+        "done": true
       },
       {
         "name": "Gather the required Unified API and Saving the responses for Insured 2.0 Callback request body.",
         "hrs": 6,
-        "done": false
+        "done": true
       },
       {
         "name": "Code Review, Testing & Debugging",
