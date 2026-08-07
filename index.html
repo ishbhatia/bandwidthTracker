@@ -2184,10 +2184,19 @@ async function createRedmineIssue(subject,typeKey,description,assigneeId,parentI
   const body={issue:issueBody};
   try{
     const res=await fetch(`${cfg.redmineUrl}/issues.json`,{method:'POST',headers:{'X-Redmine-API-Key':cfg.redmineKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){const e=await res.text();console.error('Redmine error:',e);return null;}
+    if(!res.ok){
+      const e=await res.text();
+      console.error('Redmine error:',res.status, e);
+      showToast(`❌ Redmine ${res.status}: ${res.status===401?'Invalid API Key — check Setup':res.status===403?'Forbidden — check permissions':res.status===404?'Project not found':e.substring(0,60)}`);
+      return null;
+    }
     const data=await res.json();
     return{id:data.issue.id,url:`${cfg.redmineUrl}/issues/${data.issue.id}`};
-  }catch(e){console.error('Redmine API error:',e);return null;}
+  }catch(e){
+    console.error('Redmine API error:',e);
+    showToast('❌ Redmine unreachable — ' + (e.message||'network error'));
+    return null;
+  }
 }
 
 // ── Outlook OAuth (Microsoft Graph) — PKCE flow ──────────
