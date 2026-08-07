@@ -1258,6 +1258,7 @@ async function loadFromGitHub(){
 }
 
 async function saveToGitHub(msg){
+  if(currentUserRole==='readonly'){showToast('🔒 Read-only mode — changes not saved');return;}
   const cfg=getCfg();if(!cfg.token){showToast('⚠️ Set up GitHub first');openSetup();return;}
   setGhStatus('sync','Saving…');
   try{
@@ -1743,7 +1744,7 @@ async function importCsvTasks(){
   await saveToGitHub(`Import CSV: ${newTasks.length} task(s) (${empName})`);
 }
 
-function renderAll(){renderStats();renderTable();renderInsights();populatePvSelect();if(document.getElementById('tab-board')&&document.getElementById('tab-board').classList.contains('active'))renderBoard();}
+function renderAll(){renderStats();renderTable();renderInsights();populatePvSelect();if(document.getElementById('tab-board')&&document.getElementById('tab-board').classList.contains('active'))renderBoard();if(currentUserRole==='readonly')applyReadOnly();}
 
 // ── Export CSV ────────────────────────────────────────────
 function exportCSV(){
@@ -2779,6 +2780,7 @@ function lvLeavesOnDate(dateStr, empFilter=''){
 }
 
 function addLeave(){
+  if(currentUserRole==='readonly'){showToast('🔒 Read-only mode');return;}
   const emp  = document.getElementById('lvEmp').value.trim();
   const from = document.getElementById('lvFrom').value;
   const to   = document.getElementById('lvTo').value;
@@ -3026,7 +3028,15 @@ function renderLvAll(){
 const RBAC_USERS = {
   'harsh':   '99e631f54d915de7bd12c8b5b631293ddbce719254f5aacd55331de17e2242b4', // password: Harsh@123
   'ishant':  'd343f994cfc956dc28929eff0e8c6ec3edc8d9622cdb2edc7d57e36185826305', // password: Ishant@123
+  'viewer':  '06470f816c6846a98c2a79c2ce2cfa4fcb4ad935a8e4252065e99370ec119e0c', // password: Viewer@123
 };
+// Roles: 'admin' = full access, 'readonly' = view only
+const RBAC_ROLES = {
+  'harsh':  'admin',
+  'ishant': 'admin',
+  'viewer': 'readonly',
+};
+let currentUserRole = 'admin';
 // Session duration in ms (8 hours)
 const SESSION_DURATION = 8 * 60 * 60 * 1000;
 
@@ -3061,19 +3071,77 @@ async function doLogin(){
 }
 
 function doLogout(){
+  currentUserRole = 'admin';
   localStorage.removeItem('etSession');
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('logoutBtn').style.display = 'none';
   document.getElementById('loggedUserPill').style.display = 'none';
+  const b = document.getElementById('readonlyBanner');
+  if(b) b.remove();
 }
 
 function showApp(user){
+  currentUserRole = RBAC_ROLES[user] || 'admin';
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('logoutBtn').style.display = 'flex';
   document.getElementById('loggedUserPill').style.display = 'flex';
   document.getElementById('loggedUserName').textContent = user.charAt(0).toUpperCase() + user.slice(1);
+  if(currentUserRole === 'readonly'){
+    document.getElementById('loggedUserPill').innerHTML =
+      '👁 <span style="color:#f59e0b;font-weight:700">Read Only</span>';
+    applyReadOnly();
+  }
+}
+
+function applyReadOnly(){
+  // Hide all write action buttons after DOM is ready
+  setTimeout(()=>{
+    // Hide add/edit/delete/import buttons
+    const writeSelectors = [
+      '[onclick="addTask()"]',
+      '[onclick="openImportModal()"]',
+      '[onclick="saveEdit()"]',
+      '[onclick="importCsvTasks()"]',
+      '[onclick="importParsed()"]',
+      '[onclick="parseSubjects()"]',
+      '[onclick="addLeave()"]',
+      '.btn-danger',
+      '.btn-success',
+      '#subtaskAddTopBtn',
+      '#subtaskAddBotBtn',
+      '.st-add-btn',
+      '.st-del',
+      '[onclick*="deleteTask"]',
+      '[onclick*="deleteLeave"]',
+      '[onclick*="deleteSubtask"]',
+      '[onclick*="addSubtask"]',
+      '[onclick*="editLeave"]',
+      '[onclick*="saveLeaveEdit"]',
+      '[onclick*="openEdit"]',
+    ];
+    writeSelectors.forEach(sel=>{
+      document.querySelectorAll(sel).forEach(el=>el.style.display='none');
+    });
+    // Hide left form panel (Add New Task card)
+    const addCard = document.querySelector('.page > div:first-child');
+    if(addCard) addCard.style.display = 'none';
+    // Hide Setup button
+    document.querySelectorAll('[onclick="openSetup()"]').forEach(el=>el.style.display='none');
+    // Make inline selects read-only looking
+    document.querySelectorAll('.inline-sel').forEach(el=>{
+      el.disabled = true;
+      el.style.opacity = '0.6';
+      el.style.pointerEvents = 'none';
+    });
+    // Add readonly banner
+    const banner = document.createElement('div');
+    banner.id = 'readonlyBanner';
+    banner.style = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#fbbf24;padding:7px 20px;border-radius:20px;font-size:.75rem;font-weight:700;z-index:500;pointer-events:none;display:flex;align-items:center;gap:7px';
+    banner.innerHTML = '👁 Read-Only Mode — You can view but not edit any data';
+    document.body.appendChild(banner);
+  }, 300);
 }
 
 function checkSession(){
@@ -3083,6 +3151,7 @@ function checkSession(){
     // expires=0 means session only (no remember) — expires on page close effectively
     if(s.expires && Date.now() > s.expires){ localStorage.removeItem('etSession'); return false; }
     if(RBAC_USERS[s.user]){ showApp(s.user); return true; }
+    currentUserRole = RBAC_ROLES[s.user] || 'admin';
   }catch(e){}
   return false;
 }
