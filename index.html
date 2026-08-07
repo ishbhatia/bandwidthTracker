@@ -1243,8 +1243,9 @@ CR-202 Dark mode feature request
 // ── Config ────────────────────────────────────────────────
 const REPO_DEFAULT='ishbhatia/bandwidthTracker',BRANCH_DEFAULT='main',PATH_DEFAULT='data.json';
 const REDMINE_DEFAULT_URL='http://svn.aps1aws.lumiq.int';
+const REDMINE_DEFAULT_KEY='a848f2b2ee6c0ef353e8c06129a2f224a59d1d48';
 const REDMINE_DEFAULT_PROJECT='oktovia-recur-df';
-function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||REDMINE_DEFAULT_URL,redmineKey:localStorage.getItem('redmine_key')||'',redmineProject:localStorage.getItem('redmine_project')||REDMINE_DEFAULT_PROJECT,msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
+function getCfg(){return{token:localStorage.getItem('gh_token')||'',repo:localStorage.getItem('gh_repo')||REPO_DEFAULT,branch:localStorage.getItem('gh_branch')||BRANCH_DEFAULT,path:localStorage.getItem('gh_path')||PATH_DEFAULT,openai:localStorage.getItem('openai_key')||'',redmineUrl:localStorage.getItem('redmine_url')||REDMINE_DEFAULT_URL,redmineKey:localStorage.getItem('redmine_key')||REDMINE_DEFAULT_KEY,redmineProject:localStorage.getItem('redmine_project')||REDMINE_DEFAULT_PROJECT,msClientId:localStorage.getItem('ms_client_id')||'',msTenantId:localStorage.getItem('ms_tenant_id')||'common'};}
 // ── State ─────────────────────────────────────────────────
 let tasks=[],fileSHA='',editIndex=null,sortKey='startDate',sortAsc=true;
 const STATUS_BADGE={'To Do':'badge-todo','In Progress':'badge-progress','In Review':'badge-review','Done':'badge-done','Blocked':'badge-blocked','Reopen':'badge-reopen','Reopen (QA)':'badge-reopen-qa','Reopen (Dev)':'badge-reopen-dev'};
