@@ -643,6 +643,17 @@
           📂 Import CSV
         </button>
       </div>
+      <!-- Proxy Status — TOP of form -->
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  background:var(--surface2);border:1px solid var(--border);
+                  border-radius:9px;padding:7px 12px;margin-bottom:14px;gap:8px">
+        <div id="redmineSetupNote" style="font-size:.7rem;flex:1;line-height:1.5;color:var(--muted)"></div>
+        <button id="proxyToggleBtn" onclick="toggleProxy()"
+          style="padding:4px 12px;border-radius:7px;font-size:.7rem;font-weight:700;
+                 cursor:pointer;font-family:inherit;border:1px solid;transition:all .2s;
+                 white-space:nowrap;flex-shrink:0;background:var(--surface)">⬤ Proxy</button>
+      </div>
+      <div id="proxyStatusBar" style="display:none"></div>
       <div class="fg"><label>Employee Name</label><input id="empName" placeholder="e.g. Alice Johnson"/></div>
       <div class="fg"><label>Task Name</label><input id="taskName" placeholder="e.g. Design mockup"/></div>
       <div class="fg"><label>Start Date</label><input type="date" id="startDate"/></div>
@@ -659,14 +670,6 @@
           <option value="PROD">PROD</option>
         </select>
       </div>
-      <!-- Proxy Start/Stop — OUTSIDE the Redmine box -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px">
-        <div id="redmineSetupNote" style="font-size:.7rem;flex:1"></div>
-        <button id="proxyToggleBtn" onclick="toggleProxy()"
-          style="padding:5px 13px;border-radius:8px;font-size:.72rem;font-weight:700;
-                 cursor:pointer;font-family:inherit;border:1px solid;transition:all .2s;
-                 white-space:nowrap;flex-shrink:0">...</button>
-      </div>
 
       <!-- Redmine Box -->
       <div style="background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:11px;padding:12px 13px;margin-bottom:12px">
@@ -681,7 +684,7 @@
             <span style="font-size:.78rem;font-weight:600;color:#e2e8f0">Push issue to Redmine</span>
           </label>
         </div>
-        <div id="proxyStatusBar" style="font-size:.68rem;margin-bottom:10px"></div>
+
         <div class="fg" style="margin-bottom:8px">
           <label>Assign To</label>
           <select id="addRedmineAssignee" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
@@ -877,7 +880,7 @@ CR-202 Dark mode feature request
           <input type="checkbox" id="createRedmine" checked style="width:14px;height:14px;accent-color:var(--accent)"/>
           Also create issue in Redmine
         </label>
-        <span id="redmineSetupNote" style="font-size:.7rem;color:var(--muted)"></span>
+        <span id="scraperRedmineNote" style="font-size:.7rem;color:var(--muted)"></span>
       </div>
     </div>
   </div>
@@ -2178,7 +2181,7 @@ const DEFAULT_ASSIGNEE_ID=727; // Ishant Bhatia
 
 function updateRedmineNote(){
   const cfg=getCfg();
-  const el=document.getElementById('redmineSetupNote');
+  const el=document.getElementById('redmineSetupNote') || document.getElementById('scraperRedmineNote');
   if(!el)return;
   if(!cfg.redmineKey){
     el.innerHTML='⚠️ Add Redmine API key in ⚙ Setup';
