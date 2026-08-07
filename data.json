@@ -963,7 +963,7 @@
     "startDate": "2026-07-20",
     "timeSpent": 85,
     "expectedHrs": 85,
-    "devEndDate": "",
+    "devEndDate": "2026-08-07",
     "status": "To Do",
     "environment": "UAT",
     "prevStatus": "To Do",
