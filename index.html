@@ -661,10 +661,14 @@
       </div>
       <div id="redmineSetupNote" style="font-size:.72rem;color:#fbbf24;margin-bottom:8px"></div>
       <div style="background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.18);border-radius:9px;padding:10px 12px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <input type="checkbox" id="addRedmine" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer"/>
-          <label for="addRedmine" style="font-size:.75rem;font-weight:600;color:#a5b4fc;cursor:pointer">🔗 Also create issue in Redmine</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="addRedmine" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer"/>
+            <label for="addRedmine" style="font-size:.75rem;font-weight:600;color:#a5b4fc;cursor:pointer">🔗 Also create issue in Redmine</label>
+          </div>
+          <button id="proxyToggleBtn" onclick="toggleProxy()" style="padding:3px 10px;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid;transition:all .2s">...</button>
         </div>
+        <div id="proxyStatusBar" style="font-size:.7rem;margin-bottom:8px"></div>
         <div class="fg" style="margin-bottom:6px">
           <label>Assign To (Redmine)</label>
           <select id="addRedmineAssignee" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
@@ -2330,6 +2334,61 @@ async function fetchOutlookEmails(){
   }
 }
 
+// ── Proxy Manager ────────────────────────────────────────
+let _proxyRunning = false;
+let _proxyCheckTimer = null;
+
+async function checkProxyStatus(){
+  try{
+    await fetch('http://localhost:3001/',{method:'GET',signal:AbortSignal.timeout(1200)});
+    _proxyRunning = true;
+  }catch(e){
+    _proxyRunning = false;
+  }
+  updateProxyBtn();
+}
+
+function updateProxyBtn(){
+  const btn = document.getElementById('proxyToggleBtn');
+  const bar = document.getElementById('proxyStatusBar');
+  const note = document.getElementById('redmineSetupNote');
+  if(!btn) return;
+  if(_proxyRunning){
+    btn.textContent = '🟢 Proxy Running — Click to Stop';
+    btn.style.background = 'rgba(16,185,129,.12)';
+    btn.style.color = '#34d399';
+    btn.style.borderColor = 'rgba(16,185,129,.3)';
+    if(bar) bar.innerHTML = '';
+    if(note){ note.innerHTML='✅ Redmine connected · Proxy running'; note.style.color='#34d399'; }
+  } else {
+    btn.textContent = '🔴 Proxy Stopped — Click to Start';
+    btn.style.background = 'rgba(239,68,68,.1)';
+    btn.style.color = '#f87171';
+    btn.style.borderColor = 'rgba(239,68,68,.25)';
+    if(bar) bar.innerHTML = '<span style="color:#f59e0b;font-size:.68rem">⚠️ Open <b>StartRedmineProxy.command</b> on Desktop to start proxy</span>';
+    if(note){ note.innerHTML='⚠️ Proxy not running — double-click <b>StartRedmineProxy.command</b> on Desktop'; note.style.color='#f87171'; }
+  }
+}
+
+function toggleProxy(){
+  if(_proxyRunning){
+    // Stop: open StopRedmineProxy via a hidden link trick (only works if file is accessible)
+    showToast('🛑 To stop: close the Proxy terminal window or double-click StopRedmineProxy.command on Desktop');
+  } else {
+    showToast('▶️ Double-click StartRedmineProxy.command on Desktop to start proxy');
+    // Open the .command file directly
+    window.open('file:///Users/ishantbhatia/Desktop/StartRedmineProxy.command');
+  }
+  // Re-check after 2 seconds
+  setTimeout(checkProxyStatus, 2000);
+}
+
+// Poll proxy status every 5 seconds
+function startProxyPolling(){
+  checkProxyStatus();
+  _proxyCheckTimer = setInterval(checkProxyStatus, 5000);
+}
+
 // ── About ────────────────────────────────────────────────
 function showAbout(){
   document.getElementById('aboutModal').classList.add('open');
@@ -3255,6 +3314,7 @@ updateRedmineNote();
   }
 })();
 checkSession();
+startProxyPolling();
 if(getCfg().token){loadFromGitHub();}else{renderAll();openSetup();}
 </script>
 </body>
