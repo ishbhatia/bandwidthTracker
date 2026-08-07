@@ -659,20 +659,32 @@
           <option value="PROD">PROD</option>
         </select>
       </div>
-      <div id="redmineSetupNote" style="font-size:.72rem;color:#fbbf24;margin-bottom:8px"></div>
-      <div style="background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.18);border-radius:9px;padding:10px 12px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <input type="checkbox" id="addRedmine" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer"/>
-            <label for="addRedmine" style="font-size:.75rem;font-weight:600;color:#a5b4fc;cursor:pointer">🔗 Also create issue in Redmine</label>
-          </div>
-          <button id="proxyToggleBtn" onclick="toggleProxy()" style="padding:3px 10px;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid;transition:all .2s">...</button>
+      <!-- Proxy Start/Stop — OUTSIDE the Redmine box -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px">
+        <div id="redmineSetupNote" style="font-size:.7rem;flex:1"></div>
+        <button id="proxyToggleBtn" onclick="toggleProxy()"
+          style="padding:5px 13px;border-radius:8px;font-size:.72rem;font-weight:700;
+                 cursor:pointer;font-family:inherit;border:1px solid;transition:all .2s;
+                 white-space:nowrap;flex-shrink:0">...</button>
+      </div>
+
+      <!-- Redmine Box -->
+      <div style="background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:11px;padding:12px 13px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+          <input type="checkbox" id="addRedmine" style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;flex-shrink:0"/>
+          <label for="addRedmine" style="cursor:pointer;display:flex;align-items:center;gap:7px">
+            <span style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#b91c1c,#dc2626);
+              color:#fff;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.03em;
+              box-shadow:0 2px 8px rgba(220,38,38,.35)">
+              ● REDMINE
+            </span>
+            <span style="font-size:.78rem;font-weight:600;color:#e2e8f0">Push issue to Redmine</span>
+          </label>
         </div>
-        <div id="proxyStatusBar" style="font-size:.7rem;margin-bottom:8px"></div>
-        <div class="fg" style="margin-bottom:6px">
-          <label>Assign To (Redmine)</label>
+        <div id="proxyStatusBar" style="font-size:.68rem;margin-bottom:10px"></div>
+        <div class="fg" style="margin-bottom:8px">
+          <label>Assign To</label>
           <select id="addRedmineAssignee" style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:.82rem;font-family:inherit">
-            <!-- populated by JS -->
           </select>
         </div>
         <div class="fg" style="margin-bottom:0">
